@@ -1,4 +1,4 @@
-g++ --std=c++11 -o game \
+g++ --std=c++23 -o game \
 	main.cc \
 	GameController.cc \
 	GameObject.cc \

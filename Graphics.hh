@@ -9,7 +9,7 @@ class Graphics
 public:
     Graphics(int windowWidth, int windowHeight);
 
-    void draw(std::vector<std::shared_ptr<GameObject>>& objects);
+    void draw(std::map<int, std::shared_ptr<GameObject>>& objects);
 
     point_t getMousePos();
 

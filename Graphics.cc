@@ -16,7 +16,7 @@ Graphics::Graphics(int windowWidth, int windowHeight)
 }
 //TODO objects should be sorted by some kind of z-level
 //That probably waits until we have a better ontology for objects
-void Graphics::draw(std::vector<std::shared_ptr<GameObject>>& objects)
+void Graphics::draw(std::map<int, std::shared_ptr<GameObject>>& objects)
 {
     sf::Event event;
     while(m_window.pollEvent(event))
@@ -30,22 +30,27 @@ void Graphics::draw(std::vector<std::shared_ptr<GameObject>>& objects)
 
     m_window.clear();
 
-    for(int i=0; i<objects.size(); i++)
+    for(auto it = objects.begin(); it != objects.end(); ++it)
     {
+        std::shared_ptr<GameObject> obj = it->second;
+        if(!it->second->state.active)
+        {
+            continue;
+        }
         //scale the size and origin of the sprite
-        const sf::Texture * texture = objects[i]->sprite.getTexture();
+        const sf::Texture * texture = obj->sprite.getTexture();
         sf::Vector2f texSize(texture->getSize());
-        sf::Vector2f scale(m_cameraScale * objects[i]->size);
+        sf::Vector2f scale(m_cameraScale * obj->size);
         scale = math_util::elementwise_divide(scale, texSize);
 
-        objects[i]->sprite.setScale(scale);
+        obj->sprite.setScale(scale);
         //Since this ignores all transformations we don't need to do it every time.
         //GameObject could handle this
-        objects[i]->sprite.setOrigin(texSize.x / 2.0f, texSize.y / 2.0f);
+        obj->sprite.setOrigin(texSize.x / 2.0f, texSize.y / 2.0f);
 
-        point_t cameraPos = worldToCamera(objects[i]->state.pos);
-        objects[i]->sprite.setPosition(sf::Vector2f(cameraPos));
-        m_window.draw(objects[i]->sprite);
+        point_t cameraPos = worldToCamera(obj->state.pos);
+        obj->sprite.setPosition(sf::Vector2f(cameraPos));
+        m_window.draw(obj->sprite);
     }
 
     m_window.draw(m_reticleSprite);

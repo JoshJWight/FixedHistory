@@ -13,13 +13,21 @@ enum ColliderType{
 
 struct ObjectState
 {
+    ObjectState()
+        : pos(0, 0)
+        , active(true)
+    {
+    }
+
     point_t pos;
+    bool active;
 };
 
 class GameObject
 {
 public:
     GameObject(int id);
+    GameObject(int id, GameObject* ancestor);
 
     bool isColliding(GameObject& other);
     void bounceOutOf(GameObject& other);
@@ -34,6 +42,16 @@ public:
     sf::Sprite sprite;
 
     double moveSpeed;
+
+    bool backwards;
+
+    GameObject* ancestor;
+
+    int beginning;
+    bool hasEnding;
+    int ending;
+
+    bool recorded;
 
 };
 
