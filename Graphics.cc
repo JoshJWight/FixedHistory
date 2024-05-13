@@ -16,7 +16,7 @@ Graphics::Graphics(int windowWidth, int windowHeight)
 }
 //TODO objects should be sorted by some kind of z-level
 //That probably waits until we have a better ontology for objects
-void Graphics::draw(std::map<int, std::shared_ptr<GameObject>>& objects)
+void Graphics::draw(std::map<int, std::shared_ptr<GameObject>>& objects, int tick)
 {
     sf::Event event;
     while(m_window.pollEvent(event))
@@ -54,6 +54,15 @@ void Graphics::draw(std::map<int, std::shared_ptr<GameObject>>& objects)
     }
 
     m_window.draw(m_reticleSprite);
+
+    //Draw the tick number in the top left corner
+    sf::Text text;
+    text.setFont(TextureBank::getFont());
+    text.setString(std::to_string(tick));
+    text.setCharacterSize(24);
+    text.setFillColor(sf::Color::White);
+    text.setPosition(0, 0);
+    m_window.draw(text);
 
     m_window.display();
 }

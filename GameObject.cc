@@ -3,7 +3,14 @@
 #include "CollisionUtil.hh"
 
 GameObject::GameObject(int id)
-    : id(id), colliderType(NONE), moveSpeed(0.0), backwards(false), beginning(0), hasEnding(false), ending(0)
+    : id(id)
+    , colliderType(NONE)
+    , moveSpeed(0.0)
+    , backwards(false)
+    , beginning(0)
+    , hasEnding(false)
+    , ending(0)
+    , recorded(false)
 {
 
 }
@@ -17,6 +24,10 @@ GameObject::GameObject(int id, GameObject* ancestor)
     , state(ancestor->state)
     , sprite(ancestor->sprite)
     , backwards(!ancestor->backwards)
+    , beginning(0)
+    , hasEnding(false)
+    , ending(0)
+    , recorded(false)
 {
 
 }

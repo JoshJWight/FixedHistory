@@ -13,6 +13,16 @@ sf::Texture& TextureBank::get_texture(std::string filename)
     return m_map[filename];
 }
 
+sf::Font& TextureBank::get_font()
+{
+    if(m_font.get() == nullptr)
+    {
+        m_font.reset(new sf::Font());
+        m_font->loadFromFile("/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf");
+    }
+    return *m_font;
+}
+
 TextureBank& TextureBank::getInstance(){
     if(instance.get() == nullptr)
     {

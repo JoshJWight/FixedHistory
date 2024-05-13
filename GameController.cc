@@ -53,7 +53,7 @@ void GameController::mainLoop()
     {
         auto frameStart = std::chrono::system_clock::now();
         tick();
-        m_graphics.draw(m_objects);
+        m_graphics.draw(m_objects, m_currentTick);
 
         std::this_thread::sleep_until(frameStart + frameDuration);
     }
@@ -103,10 +103,13 @@ void GameController::pushTimeline()
     {
         m_player->hasEnding = true;
         m_player->ending = m_currentTick;
+        newPlayer->hasEnding = true;
+        newPlayer->ending = m_currentTick;
     }
     else
     {
         m_player->beginning = m_currentTick;
+        newPlayer->beginning = m_currentTick;
     }
     m_objects[newPlayer->id] = newPlayer;
     m_player = newPlayer.get();
@@ -148,6 +151,10 @@ void GameController::playTick()
         {
             obj->state.active = false;
             continue;
+        }
+        else
+        {
+            obj->state.active = true;
         }
 
         if(obj->backwards != m_backwards || obj->recorded)

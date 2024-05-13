@@ -3,13 +3,14 @@
 #include <vector>
 #include <memory>
 #include <SFML/Graphics.hpp>
+#include <SFML/Graphics/Text.hpp>
 
 class Graphics
 {
 public:
     Graphics(int windowWidth, int windowHeight);
 
-    void draw(std::map<int, std::shared_ptr<GameObject>>& objects);
+    void draw(std::map<int, std::shared_ptr<GameObject>>& objects, int tick);
 
     point_t getMousePos();
 

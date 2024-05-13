@@ -19,6 +19,12 @@ struct ObjectState
     {
     }
 
+    ObjectState(const ObjectState& other)
+        : pos(other.pos)
+        , active(other.active)
+    {
+    }
+
     point_t pos;
     bool active;
 };
