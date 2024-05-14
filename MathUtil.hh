@@ -25,6 +25,13 @@ namespace math_util{
     {
         return sf::Vector2<T>(a.x / b.x, a.y / b.y);
     }
+
+    template<typename T>
+    static sf::Vector2<T> normalize(sf::Vector2<T> a)
+    {
+        double mag = sqrt(a.x * a.x + a.y * a.y);
+        return sf::Vector2<T>(a.x / mag, a.y / mag);
+    }
 }//end namespace math
 
 #endif

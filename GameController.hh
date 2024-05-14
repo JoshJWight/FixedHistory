@@ -1,4 +1,6 @@
 #include "GameObject.hh"
+#include "Player.hh"
+#include "Bullet.hh"
 #include "Graphics.hh"
 #include "TextureBank.hh"
 #include <vector>
@@ -39,10 +41,13 @@ public:
     void mainLoop();
 private:
 
+    void checkBulletUndo();
     void restoreState(int tick);
     void popTimeline();
     void pushTimeline();
 
+    void tickPlayer(Player* player);
+    void tickBullet(Bullet* bullet);
     void playTick();
 
     void tick();
@@ -58,9 +63,11 @@ private:
 
     std::vector<HistoryBuffer> m_historyBuffers;
 
-    GameObject* m_player;
+    std::vector<Player*> m_players;
+    std::vector<Bullet*> m_bullets;
 
     int m_currentTick;
+    int m_currentTimeline;
 
     bool m_backwards;
 

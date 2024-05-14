@@ -16,17 +16,20 @@ struct ObjectState
     ObjectState()
         : pos(0, 0)
         , active(true)
+        , cooldown(0)
     {
     }
 
     ObjectState(const ObjectState& other)
         : pos(other.pos)
         , active(other.active)
+        , cooldown(other.cooldown)
     {
     }
 
     point_t pos;
     bool active;
+    int cooldown;
 };
 
 class GameObject
@@ -47,11 +50,7 @@ public:
 
     sf::Sprite sprite;
 
-    double moveSpeed;
-
     bool backwards;
-
-    GameObject* ancestor;
 
     int beginning;
     bool hasEnding;
