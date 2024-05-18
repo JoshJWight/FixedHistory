@@ -6,4 +6,5 @@ g++ --std=c++23 -o game \
 	TextureBank.cc \
 	Player.cc \
 	Bullet.cc \
+	Enemy.cc \
 	-lsfml-graphics -lsfml-window -lsfml-system

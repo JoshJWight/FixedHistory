@@ -15,7 +15,7 @@ namespace math_util{
     }
 
     template<typename T>
-    static sf::Vector2<T> dot(sf::Vector2<T> a, sf::Vector2<T> b)
+    static sf::Vector2<T> elementwise_multiply(sf::Vector2<T> a, sf::Vector2<T> b)
     {
         return sf::Vector2<T>(a.x * b.x, a.y * b.y);
     }
@@ -31,6 +31,12 @@ namespace math_util{
     {
         double mag = sqrt(a.x * a.x + a.y * a.y);
         return sf::Vector2<T>(a.x / mag, a.y / mag);
+    }
+
+    template<typename T>
+    static T length(sf::Vector2<T> a)
+    {
+        return sqrt(a.x * a.x + a.y * a.y);
     }
 }//end namespace math
 

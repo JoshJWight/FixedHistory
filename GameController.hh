@@ -1,6 +1,7 @@
 #include "GameObject.hh"
 #include "Player.hh"
 #include "Bullet.hh"
+#include "Enemy.hh"
 #include "Graphics.hh"
 #include "TextureBank.hh"
 #include <vector>
@@ -40,6 +41,7 @@ public:
     GameController();
     void mainLoop();
 private:
+    void addObject(std::shared_ptr<GameObject> obj);
 
     void checkBulletUndo();
     void restoreState(int tick);
@@ -48,6 +50,7 @@ private:
 
     void tickPlayer(Player* player);
     void tickBullet(Bullet* bullet);
+    void tickEnemy(Enemy* enemy);
     void playTick();
 
     void tick();
@@ -65,6 +68,7 @@ private:
 
     std::vector<Player*> m_players;
     std::vector<Bullet*> m_bullets;
+    std::vector<Enemy*> m_enemies;
 
     int m_currentTick;
     int m_currentTimeline;

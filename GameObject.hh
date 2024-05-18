@@ -15,21 +15,23 @@ struct ObjectState
 {
     ObjectState()
         : pos(0, 0)
-        , active(true)
         , cooldown(0)
+        , patrolIdx(0)
     {
     }
 
     ObjectState(const ObjectState& other)
         : pos(other.pos)
-        , active(other.active)
         , cooldown(other.cooldown)
+        , patrolIdx(other.patrolIdx)
     {
     }
 
     point_t pos;
-    bool active;
-    int cooldown;
+    int cooldown; //Used by player
+
+    //Enemy AI params
+    int patrolIdx;
 };
 
 class GameObject
@@ -41,6 +43,11 @@ public:
     bool isColliding(GameObject& other);
     void bounceOutOf(GameObject& other);
     double radius();
+
+    bool activeAt(int tick)
+    {
+        return tick >= beginning && (!hasEnding || tick <= ending);
+    }
 
     ColliderType colliderType;
 

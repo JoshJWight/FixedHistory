@@ -10,38 +10,43 @@ GameController::GameController()
     , m_lastID(0)
     , m_eUnpressed(true)
 {
+    m_historyBuffers.push_back(HistoryBuffer());
+
     std::shared_ptr<Player>player(new Player(nextID()));
     player->state.pos = point_t(0, 0);
-    player->colliderType = CIRCLE;
-    player->size = point_t(10, 10);
-    player->sprite.setTexture(TextureBank::get("smiley.png"));
     m_players.push_back(player.get());
+    addObject(player);
 
     std::shared_ptr<GameObject> obj(new GameObject(nextID()));
     obj->state.pos = point_t(10, 10);
     obj-> colliderType = BOX;
     obj-> size = point_t(20, 20);
     obj->sprite.setTexture(TextureBank::get("box.png"));
+    addObject(obj);
 
     std::shared_ptr<GameObject> obj2(new GameObject(nextID()));
     obj2->state.pos = point_t(-20, -30);
     obj2-> colliderType = BOX;
     obj2-> size = point_t(20, 30);
     obj2->sprite.setTexture(TextureBank::get("box.png"));
+    addObject(obj2);
 
+    std::shared_ptr<Enemy> enemy(new Enemy(nextID()));
+    enemy->state.pos = point_t(50, 50);
+    enemy->patrolPoints.push_back(point_t(50, 50));
+    enemy->patrolPoints.push_back(point_t(50, 100));
+    enemy->patrolPoints.push_back(point_t(100, 100));
+    enemy->patrolPoints.push_back(point_t(100, 50));
+    m_enemies.push_back(enemy.get());
+    addObject(enemy);
+}
 
-    m_objects[player->id] = player;
+//Only for initial setup
+void GameController::addObject(std::shared_ptr<GameObject> obj)
+{
     m_objects[obj->id] = obj;
-    m_objects[obj2->id] = obj2;
-
-    m_historyBuffers.push_back(HistoryBuffer());
-
-    m_historyBuffers.back().buffer[player->id] = std::vector<ObjectState>(1);
-    m_historyBuffers.back().buffer[player->id][0] = player->state;
     m_historyBuffers.back().buffer[obj->id] = std::vector<ObjectState>(1);
     m_historyBuffers.back().buffer[obj->id][0] = obj->state;
-    m_historyBuffers.back().buffer[obj2->id] = std::vector<ObjectState>(1);
-    m_historyBuffers.back().buffer[obj2->id][0] = obj2->state;
 }
 
 void GameController::mainLoop()
@@ -53,7 +58,8 @@ void GameController::mainLoop()
     {
         auto frameStart = std::chrono::system_clock::now();
         tick();
-        m_graphics.draw(m_objects, m_currentTick);
+        point_t cameraCenter = m_players.back()->state.pos;
+        m_graphics.draw(m_objects, m_currentTick, cameraCenter);
 
         std::this_thread::sleep_until(frameStart + frameDuration);
     }
@@ -180,9 +186,6 @@ void GameController::tickPlayer(Player* player)
         point_t bulletPos = player->state.pos + direction * player->size.x;
         std::shared_ptr<Bullet> bullet(new Bullet(nextID()));
         bullet->state.pos = bulletPos;
-        bullet->colliderType = CIRCLE;
-        bullet->size = point_t(5, 5);
-        bullet->sprite.setTexture(TextureBank::get("blam.png"));
         bullet->velocity = direction * Bullet::SPEED;
 
         bullet->originTimeline = m_currentTimeline;
@@ -210,11 +213,27 @@ void GameController::tickPlayer(Player* player)
 
 void GameController::tickBullet(Bullet* bullet)
 {
-    if(!bullet->state.active || bullet->backwards != m_backwards)
+    if(!bullet->activeAt(m_currentTick) || bullet->backwards != m_backwards)
     {
         return;
     }
     bullet->state.pos += bullet->velocity;
+}
+
+void GameController::tickEnemy(Enemy* enemy)
+{
+    if(!enemy->activeAt(m_currentTick) || enemy->backwards != m_backwards)
+    {
+        return;
+    }
+
+    point_t patrolOffset = enemy->patrolPoints[enemy->state.patrolIdx] - enemy->state.pos;
+    if(math_util::length(patrolOffset) <= enemy->moveSpeed)
+    {
+        enemy->state.patrolIdx = (enemy->state.patrolIdx + 1) % enemy->patrolPoints.size();
+        patrolOffset = enemy->patrolPoints[enemy->state.patrolIdx] - enemy->state.pos;
+    }
+    enemy->state.pos += math_util::normalize(patrolOffset) * enemy->moveSpeed;
 }
 
 void GameController::playTick()
@@ -225,18 +244,18 @@ void GameController::playTick()
         tickBullet(bullet);
     }
 
+    for(Enemy* enemy : m_enemies)
+    {
+        tickEnemy(enemy);
+    }
+
     //Store object states in history buffer
     for(auto pair : m_objects)
     {
         std::shared_ptr<GameObject> obj = pair.second;
         if(m_currentTick < obj->beginning || (obj->hasEnding && m_currentTick > obj->ending))
         {
-            obj->state.active = false;
             continue;
-        }
-        else
-        {
-            obj->state.active = true;
         }
 
         if(obj->backwards != m_backwards || obj->recorded)

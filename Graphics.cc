@@ -16,8 +16,10 @@ Graphics::Graphics(int windowWidth, int windowHeight)
 }
 //TODO objects should be sorted by some kind of z-level
 //That probably waits until we have a better ontology for objects
-void Graphics::draw(std::map<int, std::shared_ptr<GameObject>>& objects, int tick)
+void Graphics::draw(std::map<int, std::shared_ptr<GameObject>>& objects, int tick, point_t cameraCenter)
 {
+    m_cameraWorldPos = cameraCenter;
+
     sf::Event event;
     while(m_window.pollEvent(event))
     {
@@ -33,7 +35,7 @@ void Graphics::draw(std::map<int, std::shared_ptr<GameObject>>& objects, int tic
     for(auto it = objects.begin(); it != objects.end(); ++it)
     {
         std::shared_ptr<GameObject> obj = it->second;
-        if(!it->second->state.active)
+        if(!it->second->activeAt(tick))
         {
             continue;
         }
