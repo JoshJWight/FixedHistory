@@ -4,13 +4,13 @@
 #include <cmath>
 #include <SFML/System/Vector2.hpp>
 
-typedef sf::Vector2<double> point_t;
+typedef sf::Vector2<float> point_t;
 
 namespace math_util{
-    static double dist(point_t p1, point_t p2)
+    static float dist(point_t p1, point_t p2)
     {
-        double dx = p2.x - p1.x;
-        double dy = p2.y - p1.y;
+        float dx = p2.x - p1.x;
+        float dy = p2.y - p1.y;
         return sqrt(dx * dx + dy * dy);
     }
 
@@ -29,7 +29,7 @@ namespace math_util{
     template<typename T>
     static sf::Vector2<T> normalize(sf::Vector2<T> a)
     {
-        double mag = sqrt(a.x * a.x + a.y * a.y);
+        T mag = sqrt(a.x * a.x + a.y * a.y);
         return sf::Vector2<T>(a.x / mag, a.y / mag);
     }
 

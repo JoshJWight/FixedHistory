@@ -42,7 +42,7 @@ public:
 
     bool isColliding(GameObject& other);
     void bounceOutOf(GameObject& other);
-    double radius();
+    float radius();
 
     bool activeAt(int tick)
     {

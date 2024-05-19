@@ -4,6 +4,7 @@
 #include "Enemy.hh"
 #include "Graphics.hh"
 #include "TextureBank.hh"
+#include "Level.hh"
 #include <vector>
 #include <iostream>
 #include <chrono>
@@ -62,6 +63,7 @@ private:
     int m_lastID;
 
     Graphics m_graphics;
+    Level m_level;
     std::map<int, std::shared_ptr<GameObject>> m_objects;
 
     std::vector<HistoryBuffer> m_historyBuffers;

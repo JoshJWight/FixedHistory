@@ -1,4 +1,5 @@
 #include "GameObject.hh"
+#include "Level.hh"
 #include "TextureBank.hh"
 #include <vector>
 #include <memory>
@@ -10,11 +11,13 @@ class Graphics
 public:
     Graphics(int windowWidth, int windowHeight);
 
-    void draw(std::map<int, std::shared_ptr<GameObject>>& objects, int tick, point_t cameraCenter);
+    void draw(const Level & level, std::map<int, std::shared_ptr<GameObject>>& objects, int tick, point_t cameraCenter);
 
     point_t getMousePos();
 
 private:
+    void setSpriteScale(sf::Sprite & sprite, point_t worldSize);
+
     point_t worldToCamera(point_t worldPoint);
     point_t cameraToWorld(sf::Vector2f cameraPoint);
 
@@ -22,11 +25,13 @@ private:
 
     point_t m_cameraWorldPos;
     //Number of pixels per world unit
-    double m_cameraScale;
+    float m_cameraScale;
 
     point_t m_windowSize;
 
     sf::Sprite m_reticleSprite;
 
+    sf::Sprite m_wallSprite;
+    sf::Sprite m_floorSprite;
 
 };

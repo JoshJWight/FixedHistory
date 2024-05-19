@@ -12,11 +12,26 @@ Graphics::Graphics(int windowWidth, int windowHeight)
     float cursorScale = 0.4;
     m_reticleSprite.setScale(cursorScale, cursorScale);
 
+    m_floorSprite.setTexture(TextureBank::get("floor.png"));
+    m_wallSprite.setTexture(TextureBank::get("wall.png"));
+
     m_window.setMouseCursorVisible(false);
 }
+
+void Graphics::setSpriteScale(sf::Sprite & sprite, point_t worldSize)
+{
+    const sf::Texture * texture = sprite.getTexture();
+    sf::Vector2f texSize(texture->getSize());
+    sf::Vector2f scale(m_cameraScale * worldSize);
+    scale = math_util::elementwise_divide(scale, texSize);
+
+    sprite.setScale(scale);
+    sprite.setOrigin(texSize.x / 2.0f, texSize.y / 2.0f);
+}
+
 //TODO objects should be sorted by some kind of z-level
 //That probably waits until we have a better ontology for objects
-void Graphics::draw(std::map<int, std::shared_ptr<GameObject>>& objects, int tick, point_t cameraCenter)
+void Graphics::draw(const Level & level, std::map<int, std::shared_ptr<GameObject>>& objects, int tick, point_t cameraCenter)
 {
     m_cameraWorldPos = cameraCenter;
 
@@ -32,6 +47,29 @@ void Graphics::draw(std::map<int, std::shared_ptr<GameObject>>& objects, int tic
 
     m_window.clear();
 
+    //Draw the level
+    
+    for(int x = 0; x < level.width; ++x)
+    {
+        for(int y = 0; y < level.height; ++y)
+        {
+            point_t worldPos = point_t(x * level.scale, y * level.scale) + level.bottomLeft;
+            if(level.tiles[x][y] == Level::WALL)
+            {
+                m_wallSprite.setPosition(worldToCamera(worldPos));
+                setSpriteScale(m_wallSprite, point_t(1, 1) * level.scale);
+                m_window.draw(m_wallSprite);
+            }
+            else
+            {
+                m_floorSprite.setPosition(worldToCamera(worldPos));
+                setSpriteScale(m_floorSprite, point_t(1, 1) * level.scale);
+                m_window.draw(m_floorSprite);
+            }
+        }
+    }
+
+    //Draw other stuff
     for(auto it = objects.begin(); it != objects.end(); ++it)
     {
         std::shared_ptr<GameObject> obj = it->second;
@@ -39,16 +77,8 @@ void Graphics::draw(std::map<int, std::shared_ptr<GameObject>>& objects, int tic
         {
             continue;
         }
-        //scale the size and origin of the sprite
-        const sf::Texture * texture = obj->sprite.getTexture();
-        sf::Vector2f texSize(texture->getSize());
-        sf::Vector2f scale(m_cameraScale * obj->size);
-        scale = math_util::elementwise_divide(scale, texSize);
 
-        obj->sprite.setScale(scale);
-        //Since this ignores all transformations we don't need to do it every time.
-        //GameObject could handle this
-        obj->sprite.setOrigin(texSize.x / 2.0f, texSize.y / 2.0f);
+        setSpriteScale(obj->sprite, obj->size);
 
         point_t cameraPos = worldToCamera(obj->state.pos);
         obj->sprite.setPosition(sf::Vector2f(cameraPos));
@@ -72,6 +102,7 @@ void Graphics::draw(std::map<int, std::shared_ptr<GameObject>>& objects, int tic
 point_t Graphics::getMousePos()
 {
     sf::Vector2f mouseCameraPos(sf::Mouse::getPosition(m_window));
+    //TODO move this
     m_reticleSprite.setPosition(mouseCameraPos);
 
     return cameraToWorld(mouseCameraPos);
@@ -83,16 +114,16 @@ point_t Graphics::worldToCamera(point_t worldPoint)
     point_t cameraDiff = worldDiff * m_cameraScale;
     //In SFML the +y axis is downwards on the screen, but my world space
     //has +y as the up direction, because I find it easier to think in
-    cameraDiff.y *= -1.0;
-    return cameraDiff + (m_windowSize / 2.0);
+    cameraDiff.y *= -1.0f;
+    return cameraDiff + (m_windowSize / 2.0f);
 }
 
 
 point_t Graphics::cameraToWorld(sf::Vector2f cameraPoint)
 {
     point_t point(cameraPoint);
-    point -= m_windowSize / 2.0;
-    point.y *= -1.0;
+    point -= m_windowSize / 2.0f;
+    point.y *= -1.0f;
     point /= m_cameraScale;
     point += m_cameraWorldPos;
     return point;

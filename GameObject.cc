@@ -29,9 +29,9 @@ GameObject::GameObject(int id, GameObject* ancestor)
 
 }
 
-double GameObject::radius()
+float GameObject::radius()
 {
-    return size.x / 2.0;
+    return size.x / 2.0f;
 }
 
 bool GameObject::isColliding(GameObject& other)
@@ -56,10 +56,10 @@ bool GameObject::isColliding(GameObject& other)
         else if(other.colliderType==BOX)
         {
             //Top right, bottom left
-            point_t tr1 = state.pos + (size / 2.0);
-            point_t bl1 = state.pos - (size / 2.0);
-            point_t tr2 = other.state.pos + (other.size / 2.0);
-            point_t bl2 = other.state.pos - (other.size / 2.0);
+            point_t tr1 = state.pos + (size / 2.0f);
+            point_t bl1 = state.pos - (size / 2.0f);
+            point_t tr2 = other.state.pos + (other.size / 2.0f);
+            point_t bl2 = other.state.pos - (other.size / 2.0f);
 
             return (tr1.y > bl2.y && bl2.y < tr2.y && bl1.x < tr2.x && tr1.x > bl2.x);
         }

@@ -8,7 +8,7 @@ class Bullet : public GameObject
 {
 public:
     constexpr static int LIFETIME = 300;
-    constexpr static double SPEED = 5;
+    constexpr static float SPEED = 5;
 
     Bullet(int id);
 

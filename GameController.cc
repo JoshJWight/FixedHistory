@@ -1,6 +1,8 @@
 #include "GameController.hh"
 #include <SFML/Window/Keyboard.hpp>
 
+#include <fstream>
+
 GameController::GameController()
     : m_graphics(800, 600)
     , m_currentTick(-1)//Start at -1 so that the first tick is 0
@@ -9,14 +11,21 @@ GameController::GameController()
     , m_lastBreakpoint(0)
     , m_lastID(0)
     , m_eUnpressed(true)
+    , m_level(20, 20, point_t(-200, -200), 20.0f)
 {
+    std::ifstream file("testlevel.txt");
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    m_level.setFromString(buffer.str());
+    file.close();
+
     m_historyBuffers.push_back(HistoryBuffer());
 
     std::shared_ptr<Player>player(new Player(nextID()));
     player->state.pos = point_t(0, 0);
     m_players.push_back(player.get());
     addObject(player);
-
+/*
     std::shared_ptr<GameObject> obj(new GameObject(nextID()));
     obj->state.pos = point_t(10, 10);
     obj-> colliderType = BOX;
@@ -30,7 +39,7 @@ GameController::GameController()
     obj2-> size = point_t(20, 30);
     obj2->sprite.setTexture(TextureBank::get("box.png"));
     addObject(obj2);
-
+*/
     std::shared_ptr<Enemy> enemy(new Enemy(nextID()));
     enemy->state.pos = point_t(50, 50);
     enemy->patrolPoints.push_back(point_t(50, 50));
@@ -59,7 +68,7 @@ void GameController::mainLoop()
         auto frameStart = std::chrono::system_clock::now();
         tick();
         point_t cameraCenter = m_players.back()->state.pos;
-        m_graphics.draw(m_objects, m_currentTick, cameraCenter);
+        m_graphics.draw(m_level, m_objects, m_currentTick, cameraCenter);
 
         std::this_thread::sleep_until(frameStart + frameDuration);
     }

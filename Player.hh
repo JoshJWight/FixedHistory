@@ -9,7 +9,7 @@ public:
     Player(int id);
     Player(int id, Player* ancestor);
 
-    double moveSpeed;
+    float moveSpeed;
     int fireCooldown;
 
 };

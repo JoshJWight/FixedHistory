@@ -9,7 +9,7 @@ class Enemy : public GameObject
 public:
     Enemy(int id);
 
-    double moveSpeed;
+    float moveSpeed;
 
     int deathTimeline;
 
