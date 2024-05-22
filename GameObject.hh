@@ -17,6 +17,7 @@ struct ObjectState
         : pos(0, 0)
         , cooldown(0)
         , patrolIdx(0)
+        , angle_deg(0)
     {
     }
 
@@ -24,10 +25,14 @@ struct ObjectState
         : pos(other.pos)
         , cooldown(other.cooldown)
         , patrolIdx(other.patrolIdx)
+        , angle_deg(other.angle_deg)
     {
     }
 
     point_t pos;
+    //Angle the entity is facing towards
+    //0 is right, 90 is up, 180 is left, 270 is down
+    float angle_deg;
     int cooldown; //Used by player
 
     //Enemy AI params
@@ -64,7 +69,6 @@ public:
     int ending;
 
     bool recorded;
-
 };
 
 #endif

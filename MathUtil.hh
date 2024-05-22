@@ -30,6 +30,11 @@ namespace math_util{
     static sf::Vector2<T> normalize(sf::Vector2<T> a)
     {
         T mag = sqrt(a.x * a.x + a.y * a.y);
+        if(mag == 0)
+        {
+            //Pick an arbitrary direction
+            return sf::Vector2<T>(0, 1);
+        }
         return sf::Vector2<T>(a.x / mag, a.y / mag);
     }
 
@@ -37,6 +42,43 @@ namespace math_util{
     static T length(sf::Vector2<T> a)
     {
         return sqrt(a.x * a.x + a.y * a.y);
+    }
+
+    static float angleBetween(point_t a, point_t b)
+    {
+        return atan2(b.y - a.y, b.x - a.x) * 180.0f / M_PI;
+    }
+
+    static float rotateAngleTowards(float currentAngle, float targetAngle, float maxRotate)
+    {
+        float diff = targetAngle - currentAngle;
+        if (diff > 180) {
+            diff -= 360;
+        }
+        if (diff < -180) {
+            diff += 360;
+        }
+        if (diff > maxRotate) {
+            diff = maxRotate;
+        }
+        if (diff < -maxRotate) {
+            diff = -maxRotate;
+        }
+
+        float result = currentAngle + diff;
+        if (result > 180) {
+            result -= 360;
+        }
+        if (result < -180) {
+            result += 360;
+        }
+        return result;
+    }
+
+    static float rotateTowardsPoint(float currentAngle, point_t currentPos, point_t targetPos, float maxRotate)
+    {
+        float targetAngle = angleBetween(currentPos, targetPos);
+        return rotateAngleTowards(currentAngle, targetAngle, maxRotate);
     }
 }//end namespace math
 

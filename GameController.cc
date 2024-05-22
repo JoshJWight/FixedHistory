@@ -188,15 +188,15 @@ void GameController::tickPlayer(Player* player)
         player->state.pos.x += player->moveSpeed;
     }
 
+    point_t mouseWorldPos = m_graphics.getMousePos();
     if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && player->state.cooldown == 0)
     {
-        point_t mouseWorldPos = m_graphics.getMousePos();
         point_t direction = math_util::normalize(mouseWorldPos - player->state.pos);
         point_t bulletPos = player->state.pos + direction * player->size.x;
         std::shared_ptr<Bullet> bullet(new Bullet(nextID()));
         bullet->state.pos = bulletPos;
         bullet->velocity = direction * Bullet::SPEED;
-
+        bullet->state.angle_deg = math_util::angleBetween(player->state.pos, mouseWorldPos);
         bullet->originTimeline = m_currentTimeline;
         bullet->backwards = player->backwards;
         bullet->hasEnding = true;
@@ -218,6 +218,8 @@ void GameController::tickPlayer(Player* player)
         m_historyBuffers.back().buffer[bullet->id] = std::vector<ObjectState>(m_currentTick+1);
         m_historyBuffers.back().buffer[bullet->id][m_currentTick] = bullet->state;
     }
+
+    player->state.angle_deg = math_util::rotateTowardsPoint(player->state.angle_deg, player->state.pos, mouseWorldPos, 5.0f);
 }
 
 void GameController::tickBullet(Bullet* bullet)
@@ -243,6 +245,8 @@ void GameController::tickEnemy(Enemy* enemy)
         patrolOffset = enemy->patrolPoints[enemy->state.patrolIdx] - enemy->state.pos;
     }
     enemy->state.pos += math_util::normalize(patrolOffset) * enemy->moveSpeed;
+
+    enemy->state.angle_deg = math_util::rotateTowardsPoint(enemy->state.angle_deg, enemy->state.pos, enemy->patrolPoints[enemy->state.patrolIdx], 5.0f);
 }
 
 void GameController::playTick()

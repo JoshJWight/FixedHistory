@@ -82,6 +82,7 @@ void Graphics::draw(const Level & level, std::map<int, std::shared_ptr<GameObjec
 
         point_t cameraPos = worldToCamera(obj->state.pos);
         obj->sprite.setPosition(sf::Vector2f(cameraPos));
+        obj->sprite.setRotation(obj->state.angle_deg * -1.0f);
         m_window.draw(obj->sprite);
     }
 
