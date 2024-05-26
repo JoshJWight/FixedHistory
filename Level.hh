@@ -224,13 +224,82 @@ public:
         setupNavMesh();
     }
 
-    TileType tileAt(const point_t & pos) {
-        int x = pos.x - bottomLeft.x / scale;
-        int y = pos.y - bottomLeft.y / scale;
-        if (x < 0 || x >= tiles.size() || y < 0 || y >= tiles[0].size()) {
+    bool checkVisibility(point_t start, point_t dest) const
+    {
+        const NavNode* startNode = nodeAt(start);
+        const NavNode* destNode = nodeAt(dest);
+
+        if(startNode == nullptr || destNode == nullptr)
+        {
+            return false;
+        }
+
+        if(startNode->id == destNode->id)
+        {
+            return true;
+        }
+
+        float DELTA_SIZE = 1;
+
+        if(math_util::dist(start, dest) < DELTA_SIZE)
+        {
+            return true;
+        }
+
+        point_t delta = math_util::normalize(dest - start) * DELTA_SIZE;
+
+        point_t current = start;
+        while(true)
+        {
+            current += delta;
+            if(math_util::dist(start, current) + DELTA_SIZE > math_util::dist(start, dest))
+            {
+                return true;
+            }
+            const NavNode* node = nodeAt(current);
+            if(node == nullptr)
+            {
+                return false;
+            }
+            if(node->id == destNode->id)
+            {
+                return true;
+            }
+            if(tileAt(current) == WALL)
+            {
+                return false;
+            }
+        }
+    }
+
+    bool checkVisibility(point_t start, point_t dest_center, float dest_radius) const
+    {
+        point_t a = dest_center + point_t(dest_radius, dest_radius);
+        point_t b = dest_center + point_t(dest_radius, -dest_radius);
+        point_t c = dest_center + point_t(-dest_radius, -dest_radius);
+        point_t d = dest_center + point_t(-dest_radius, dest_radius);
+
+        return checkVisibility(start, a) || checkVisibility(start, b) || checkVisibility(start, c) || checkVisibility(start, d);
+    }
+
+    TileType tileAt(const point_t & pos) const
+    {
+        int x = (pos.x - bottomLeft.x) / scale;
+        int y = (pos.y - bottomLeft.y) / scale;
+        if (x < 0 || x >= width || y < 0 || y >= height) {
             return WALL;
         }
         return tiles[x][y].type;
+    }
+
+    const NavNode* nodeAt(const point_t & pos) const
+    {
+        int x = (pos.x - bottomLeft.x) / scale;
+        int y = (pos.y - bottomLeft.y) / scale;
+        if (x < 0 || x >= width || y < 0 || y >= height) {
+            return nullptr;
+        }
+        return &tiles[x][y].node;
     }
 
     point_t bottomLeft;

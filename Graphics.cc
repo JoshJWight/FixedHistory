@@ -55,6 +55,10 @@ void Graphics::draw(const Level & level, std::map<int, std::shared_ptr<GameObjec
         {
             //point_t worldPos = point_t(x * level.scale, y * level.scale) + level.bottomLeft;
             point_t worldPos = level.tiles[x][y].node.pos;
+            if(!level.checkVisibility(m_cameraWorldPos, worldPos, level.scale * 0.499f))
+            {
+                continue;
+            }
             if(level.tiles[x][y].type == Level::WALL)
             {
                 m_wallSprite.setPosition(worldToCamera(worldPos));
@@ -74,7 +78,11 @@ void Graphics::draw(const Level & level, std::map<int, std::shared_ptr<GameObjec
     for(auto it = objects.begin(); it != objects.end(); ++it)
     {
         std::shared_ptr<GameObject> obj = it->second;
-        if(!it->second->activeAt(tick))
+        if(!obj->activeAt(tick))
+        {
+            continue;
+        }
+        if(!level.checkVisibility(m_cameraWorldPos, obj->state.pos, obj->size.x / 2.0f))
         {
             continue;
         }
