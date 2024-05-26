@@ -18,6 +18,8 @@ struct ObjectState
         , cooldown(0)
         , patrolIdx(0)
         , angle_deg(0)
+        , aiState(0)
+        , targetId(-1)
     {
     }
 
@@ -26,6 +28,8 @@ struct ObjectState
         , cooldown(other.cooldown)
         , patrolIdx(other.patrolIdx)
         , angle_deg(other.angle_deg)
+        , aiState(other.aiState)
+        , targetId(other.targetId)
     {
     }
 
@@ -37,6 +41,8 @@ struct ObjectState
 
     //Enemy AI params
     int patrolIdx;
+    int aiState;
+    int targetId;
 };
 
 class GameObject

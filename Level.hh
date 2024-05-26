@@ -3,6 +3,8 @@
 
 #include <vector>
 #include <string>
+#include <map>
+#include <queue>
 #include <stdexcept>
 #include <iostream>
 
@@ -15,6 +17,29 @@ public:
         WALL
     };
 
+    struct NavNode {
+        NavNode()
+            : pos(0, 0)
+            , x(0)
+            , y(0)
+            , id(0)
+        {
+        }
+
+        //Position in world space
+        point_t pos;
+        //Position in level grid
+        int x;
+        int y;
+        int id;
+        std::vector<NavNode*> neighbors;
+    };
+
+    struct Tile {
+        TileType type;
+        NavNode node;
+    };
+
     Level(int _width, int _height, const point_t & _bottomLeft, float _scale)
         : bottomLeft(_bottomLeft)
         , scale(_scale)
@@ -23,8 +48,152 @@ public:
     {
         tiles.resize(width);
         for (int i = 0; i < width; i++) {
-            tiles[i].resize(height, EMPTY);
+            tiles[i].resize(height);
         }
+    }
+
+    void setupNavMesh() 
+    {
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                tiles[x][y].node.pos = point_t((x + 0.5f) * scale + bottomLeft.x, (y + 0.5f) * scale + bottomLeft.y);
+                tiles[x][y].node.x = x;
+                tiles[x][y].node.y = y;
+                tiles[x][y].node.id = y * width + x;
+
+                if (tiles[x][y].type == WALL) {
+                    continue;
+                }
+                bool upEmpty = y < height - 1 && tiles[x][y + 1].type == EMPTY;
+                bool downEmpty = y > 0 && tiles[x][y - 1].type == EMPTY;
+                bool leftEmpty = x > 0 && tiles[x - 1][y].type == EMPTY;
+                bool rightEmpty = x < width - 1 && tiles[x + 1][y].type == EMPTY;
+                //Adjacent
+                if(upEmpty) {
+                    tiles[x][y].node.neighbors.push_back(&tiles[x][y + 1].node);
+                }
+                if(downEmpty) {
+                    tiles[x][y].node.neighbors.push_back(&tiles[x][y - 1].node);
+                }
+                if(leftEmpty) {
+                    tiles[x][y].node.neighbors.push_back(&tiles[x - 1][y].node);
+                }
+                if(rightEmpty) {
+                    tiles[x][y].node.neighbors.push_back(&tiles[x + 1][y].node);
+                }
+                //Diagonal
+                if(upEmpty && leftEmpty && tiles[x - 1][y + 1].type == EMPTY) {
+                    tiles[x][y].node.neighbors.push_back(&tiles[x - 1][y + 1].node);
+                }
+                if(upEmpty && rightEmpty && tiles[x + 1][y + 1].type == EMPTY) {
+                    tiles[x][y].node.neighbors.push_back(&tiles[x + 1][y + 1].node);
+                }
+                if(downEmpty && leftEmpty && tiles[x - 1][y - 1].type == EMPTY) {
+                    tiles[x][y].node.neighbors.push_back(&tiles[x - 1][y - 1].node);
+                }
+                if(downEmpty && rightEmpty && tiles[x + 1][y - 1].type == EMPTY) {
+                    tiles[x][y].node.neighbors.push_back(&tiles[x + 1][y - 1].node);
+                }
+                
+            }
+        }
+    }
+
+    struct NavMove {
+        //Since priority_queue is a max heap, we want to reverse the comparison
+        bool operator<(const NavMove & other) const {
+            return dist > other.dist;
+        }
+
+        NavNode* node;
+        float dist;
+    };
+
+    point_t navigate(const point_t & start, const point_t & end) {
+        float startX = (start.x - bottomLeft.x) / scale;
+        float startY = (start.y - bottomLeft.y) / scale;
+        float endX = (end.x - bottomLeft.x) / scale;
+        float endY = (end.y - bottomLeft.y) / scale;
+
+        if (startX < 0 || startY < 0 || startX >= width || startY >= height) {
+            throw std::runtime_error("Start position out of bounds");
+        }
+
+        Tile& startTile = tiles[(int)startX][(int)startY];
+        Tile& endTile = tiles[(int)endX][(int)endY];
+
+        if (startTile.type == WALL || endTile.type == WALL) {
+            std::cout << "Start or end position is a wall. Cannot navigate!" << std::endl;
+            return start;
+        }
+
+        if(startTile.node.id == endTile.node.id) {
+            //Within the same tile, can just go directly there
+            return end;
+        }
+
+        //Dijkstra's algorithm
+        std::map<int, float> dist;
+        std::priority_queue<NavMove> queue;
+        queue.push({&startTile.node, 0.0f});
+
+        bool found = false;
+
+        //std::cout << "Navigate: forward search" << std::endl;
+
+        while(!queue.empty()) {
+            NavMove move = queue.top();
+            queue.pop();
+
+            if(dist.find(move.node->id) != dist.end()) {
+                //Already visited
+                continue;
+            }
+            dist[move.node->id] = move.dist;
+            //std::cout << move.node->pos.x << ", " << move.node->pos.y << ": " << move.dist << std::endl;
+
+            if (move.node->id == endTile.node.id) {
+                found = true;
+                break;
+            }
+
+            for (NavNode* neighbor : move.node->neighbors) {
+                float newDist = dist[move.node->id] + math_util::dist(move.node->pos, neighbor->pos);
+                if (dist.find(neighbor->id) == dist.end()) {
+                    queue.push({neighbor, newDist});
+                }
+            }
+        }
+
+        if (!found) {
+            std::cout << "Could not find path!" << std::endl;
+            return start;
+        }
+        else {
+            //std::cout << "Navigate: backtrace" << std::endl;
+            //Note: this backtrace assumes that being neighbors is reciprocal
+            NavNode* current = &endTile.node;
+            while (true) {
+                //std::cout << current->pos.x << ", " << current->pos.y << std::endl;
+                float minDist = std::numeric_limits<float>::max();
+                NavNode* next = nullptr;
+                for (NavNode* neighbor : current->neighbors) {
+                    if (dist.find(neighbor->id) != dist.end() && dist[neighbor->id] < minDist) {
+                        minDist = dist[neighbor->id];
+                        next = neighbor;
+                    }
+                }
+                if(next == nullptr) {
+                    throw std::runtime_error("Navigation backtrace failed! This shouldn't happen!");
+                }
+                if(next->id == startTile.node.id) {
+                    return current->pos;
+                }
+                current = next;
+            }
+
+        }
+
     }
 
     void setFromString(const std::string & str) {
@@ -41,15 +210,18 @@ public:
                 }
                 if (c == 'X') {
                     std::cout << "X";
-                    tiles[x][height - y - 1] = WALL;
+                    tiles[x][height - y - 1].type = WALL;
                 }
                 else{
+                    tiles[x][height - y - 1].type = EMPTY;
                     std::cout << " ";
                 }
                 x++;
             }
         }
         std::cout << std::endl;
+ 
+        setupNavMesh();
     }
 
     TileType tileAt(const point_t & pos) {
@@ -58,7 +230,7 @@ public:
         if (x < 0 || x >= tiles.size() || y < 0 || y >= tiles[0].size()) {
             return WALL;
         }
-        return tiles[x][y];
+        return tiles[x][y].type;
     }
 
     point_t bottomLeft;
@@ -66,7 +238,7 @@ public:
     size_t height;
     float scale;
 
-    std::vector<std::vector<TileType>> tiles;
+    std::vector<std::vector<Tile>> tiles;
     
 };
 

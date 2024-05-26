@@ -53,8 +53,9 @@ void Graphics::draw(const Level & level, std::map<int, std::shared_ptr<GameObjec
     {
         for(int y = 0; y < level.height; ++y)
         {
-            point_t worldPos = point_t(x * level.scale, y * level.scale) + level.bottomLeft;
-            if(level.tiles[x][y] == Level::WALL)
+            //point_t worldPos = point_t(x * level.scale, y * level.scale) + level.bottomLeft;
+            point_t worldPos = level.tiles[x][y].node.pos;
+            if(level.tiles[x][y].type == Level::WALL)
             {
                 m_wallSprite.setPosition(worldToCamera(worldPos));
                 setSpriteScale(m_wallSprite, point_t(1, 1) * level.scale);

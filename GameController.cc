@@ -42,10 +42,10 @@ GameController::GameController()
 */
     std::shared_ptr<Enemy> enemy(new Enemy(nextID()));
     enemy->state.pos = point_t(50, 50);
-    enemy->patrolPoints.push_back(point_t(50, 50));
-    enemy->patrolPoints.push_back(point_t(50, 100));
-    enemy->patrolPoints.push_back(point_t(100, 100));
-    enemy->patrolPoints.push_back(point_t(100, 50));
+    enemy->patrolPoints.push_back(point_t(-175, -175));
+    enemy->patrolPoints.push_back(point_t(175, -175));
+    enemy->patrolPoints.push_back(point_t(-175, 175));
+    enemy->patrolPoints.push_back(point_t(175, 175));
     m_enemies.push_back(enemy.get());
     addObject(enemy);
 }
@@ -238,15 +238,29 @@ void GameController::tickEnemy(Enemy* enemy)
         return;
     }
 
-    point_t patrolOffset = enemy->patrolPoints[enemy->state.patrolIdx] - enemy->state.pos;
-    if(math_util::length(patrolOffset) <= enemy->moveSpeed)
+    if(enemy->state.aiState == Enemy::AI_PATROL)
     {
-        enemy->state.patrolIdx = (enemy->state.patrolIdx + 1) % enemy->patrolPoints.size();
-        patrolOffset = enemy->patrolPoints[enemy->state.patrolIdx] - enemy->state.pos;
-    }
-    enemy->state.pos += math_util::normalize(patrolOffset) * enemy->moveSpeed;
+        if(math_util::dist(enemy->state.pos, enemy->patrolPoints[enemy->state.patrolIdx]) <= enemy->moveSpeed)
+        {
+            enemy->state.patrolIdx = (enemy->state.patrolIdx + 1) % enemy->patrolPoints.size();
+        }
 
-    enemy->state.angle_deg = math_util::rotateTowardsPoint(enemy->state.angle_deg, enemy->state.pos, enemy->patrolPoints[enemy->state.patrolIdx], 5.0f);
+        point_t moveToward = m_level.navigate(enemy->state.pos, enemy->patrolPoints[enemy->state.patrolIdx]);
+        enemy->state.pos += math_util::normalize(moveToward - enemy->state.pos) * enemy->moveSpeed;
+        enemy->state.angle_deg = math_util::rotateTowardsPoint(enemy->state.angle_deg, enemy->state.pos, moveToward, 5.0f);
+    }
+    else if(enemy->state.aiState == Enemy::AI_CHASE)
+    {
+        //TODO
+    }
+    else if(enemy->state.aiState == Enemy::AI_ATTACK)
+    {
+        //TODO
+    }
+    else
+    {
+        throw std::runtime_error("Unknown AI state");
+    }
 }
 
 void GameController::playTick()
