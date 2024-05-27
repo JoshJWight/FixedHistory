@@ -3,7 +3,6 @@
 
 Enemy::Enemy(int id)
     : GameObject(id)
-    , deathTimeline(-1)
     , moveSpeed(0.5)
 {
     colliderType = CIRCLE;

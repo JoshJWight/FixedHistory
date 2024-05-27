@@ -90,7 +90,7 @@ point_t Level::navigate(const point_t & start, const point_t & end) {
     bool found = false;
 
     //std::cout << "Navigate: forward search" << std::endl;
-
+    int iterations = 0;
     while(!queue.empty()) {
         NavMove move = queue.top();
         queue.pop();
@@ -112,6 +112,11 @@ point_t Level::navigate(const point_t & start, const point_t & end) {
             if (dist.find(neighbor->id) == dist.end()) {
                 queue.push({neighbor, newDist});
             }
+        }
+        iterations++;
+        if(iterations > 1000000){
+            std::cout << "Navigate: too many iterations on forward pass!" << std::endl;
+            return start;
         }
     }
 
@@ -140,6 +145,12 @@ point_t Level::navigate(const point_t & start, const point_t & end) {
                 return current->pos;
             }
             current = next;
+
+            iterations++;
+            if(iterations > 1000000){
+                std::cout << "Navigate: too many iterations on backtrace!" << std::endl;
+                return start;
+            }
         }
 
     }

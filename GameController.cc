@@ -229,6 +229,18 @@ void GameController::tickBullet(Bullet* bullet)
         return;
     }
     bullet->state.pos += bullet->velocity;
+
+    if(m_level.tileAt(bullet->state.pos) == Level::WALL)
+    {
+        if(bullet->backwards)
+        {
+            bullet->beginning = m_currentTick;
+        }
+        else
+        {
+            bullet->ending = m_currentTick;
+        }
+    }
 }
 
 void GameController::tickEnemy(Enemy* enemy)
@@ -236,6 +248,14 @@ void GameController::tickEnemy(Enemy* enemy)
     if(!enemy->activeAt(m_currentTick) || enemy->backwards != m_backwards)
     {
         return;
+    }
+
+    for(Bullet* bullet: m_bullets)
+    {
+        if(enemy->state.aiState != Enemy::AI_DEAD && enemy->isColliding(*bullet))
+        {
+            enemy->state.aiState = Enemy::AI_DEAD;
+        }
     }
 
     if(enemy->state.aiState == Enemy::AI_PATROL)
@@ -256,6 +276,10 @@ void GameController::tickEnemy(Enemy* enemy)
     else if(enemy->state.aiState == Enemy::AI_ATTACK)
     {
         //TODO
+    }
+    else if(enemy->state.aiState == Enemy::AI_DEAD)
+    {
+        //Do nothing
     }
     else
     {
