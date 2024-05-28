@@ -66,12 +66,49 @@ void GameController::mainLoop()
     while(true)
     {
         auto frameStart = std::chrono::system_clock::now();
-        tick();
+        m_statusString = "";
+        bool rewind = sf::Keyboard::isKeyPressed(sf::Keyboard::LShift);
+        TickType type = rewind ? REWIND : ADVANCE;
+        if(type == ADVANCE && checkParadoxes())
+        {
+            type = PAUSE;
+        }
+        tick(type);
         point_t cameraCenter = m_players.back()->state.pos;
-        m_graphics.draw(m_level, m_objects, m_currentTick, cameraCenter);
+        m_graphics.draw(m_level, m_objects, m_currentTick, cameraCenter, m_statusString);
 
         std::this_thread::sleep_until(frameStart + frameDuration);
     }
+}
+
+bool GameController::checkParadoxes()
+{
+    //Death of any player
+    for(Player* player : m_players)
+    {
+        if(!player->activeAt(m_currentTick))
+        {
+            continue;
+        }
+
+        for(Bullet* bullet : m_bullets)
+        {
+            if(bullet->activeAt(m_currentTick) && player->isColliding(*bullet))
+            {
+                if(player->id == m_players.back()->id)
+                {
+                    m_statusString = "YOU DIED";
+                }
+                else{
+                    m_statusString = "A PAST YOU DIED";
+                }
+                return true;
+            }
+        }
+    }
+
+    //If we got here, no paradoxes
+    return false;
 }
 
 void GameController::checkBulletUndo()
@@ -324,7 +361,7 @@ void GameController::playTick()
     }
 }
 
-void GameController::tick()
+void GameController::tick(TickType type)
 {
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::E))
     {
@@ -346,7 +383,7 @@ void GameController::tick()
     point_t mouseWorldPos = m_graphics.getMousePos();
     if(m_backwards)
     {
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
+        if(type == REWIND)
         {
             //Rewinding backwards time
             if(m_currentTick < m_historyBuffers.back().breakpoint)
@@ -360,7 +397,7 @@ void GameController::tick()
                 popTimeline();
             }
         }
-        else
+        else if(type == ADVANCE)
         {
             //Normal backwards time
             if(m_currentTick > 0)
@@ -369,11 +406,19 @@ void GameController::tick()
 
                 playTick();
             }
+            else
+            {
+                m_statusString = "TIME'S BOUNDARY";
+            }
+        }
+        else
+        {
+            //Paused
         }
     }
     else
     {
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
+        if(type == REWIND)
         {
             //Rewind
             if(m_currentTick > m_historyBuffers.back().breakpoint)
@@ -387,15 +432,19 @@ void GameController::tick()
             }
             else
             {
-                //Do nothing, we're at the beginning
+                m_statusString = "TIME'S BOUNDARY";
             }
         }
-        else
+        else if(type == ADVANCE)
         {
             //Normal
             m_currentTick++;
 
             playTick();
+        }
+        else
+        {
+            //Paused
         }
     }
 }

@@ -16,6 +16,18 @@ Graphics::Graphics(int windowWidth, int windowHeight)
     m_wallSprite.setTexture(TextureBank::get("wall.png"));
 
     m_window.setMouseCursorVisible(false);
+
+    m_tickCounter.setFont(TextureBank::getFont());
+    m_tickCounter.setString("0");
+    m_tickCounter.setCharacterSize(24);
+    m_tickCounter.setFillColor(sf::Color::White);
+    m_tickCounter.setPosition(0, 0);
+
+    m_statusText.setFont(TextureBank::getFont());
+    m_statusText.setCharacterSize(40);
+    m_statusText.setFillColor(sf::Color::Red);
+    m_statusText.setPosition(200, 200);
+    m_statusText.setString("Default text. This should not be seen.");
 }
 
 void Graphics::setSpriteScale(sf::Sprite & sprite, point_t worldSize)
@@ -31,7 +43,7 @@ void Graphics::setSpriteScale(sf::Sprite & sprite, point_t worldSize)
 
 //TODO objects should be sorted by some kind of z-level
 //That probably waits until we have a better ontology for objects
-void Graphics::draw(const Level & level, std::map<int, std::shared_ptr<GameObject>>& objects, int tick, point_t cameraCenter)
+void Graphics::draw(const Level & level, std::map<int, std::shared_ptr<GameObject>>& objects, int tick, point_t cameraCenter, const std::string& statusString)
 {
     m_cameraWorldPos = cameraCenter;
 
@@ -97,14 +109,14 @@ void Graphics::draw(const Level & level, std::map<int, std::shared_ptr<GameObjec
 
     m_window.draw(m_reticleSprite);
 
-    //Draw the tick number in the top left corner
-    sf::Text text;
-    text.setFont(TextureBank::getFont());
-    text.setString(std::to_string(tick));
-    text.setCharacterSize(24);
-    text.setFillColor(sf::Color::White);
-    text.setPosition(0, 0);
-    m_window.draw(text);
+    m_tickCounter.setString(std::to_string(tick));
+    m_window.draw(m_tickCounter);
+
+    if(statusString!="")
+    {
+        m_statusText.setString(statusString);
+        m_window.draw(m_statusText);
+    }
 
     m_window.display();
 }

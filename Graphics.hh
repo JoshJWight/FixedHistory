@@ -11,7 +11,7 @@ class Graphics
 public:
     Graphics(int windowWidth, int windowHeight);
 
-    void draw(const Level & level, std::map<int, std::shared_ptr<GameObject>>& objects, int tick, point_t cameraCenter);
+    void draw(const Level & level, std::map<int, std::shared_ptr<GameObject>>& objects, int tick, point_t cameraCenter, const std::string& statusString);
 
     point_t getMousePos();
 
@@ -33,5 +33,7 @@ private:
 
     sf::Sprite m_wallSprite;
     sf::Sprite m_floorSprite;
-
+ 
+    sf::Text m_tickCounter;
+    sf::Text m_statusText;
 };

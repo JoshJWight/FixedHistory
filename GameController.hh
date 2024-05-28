@@ -42,6 +42,15 @@ public:
     GameController();
     void mainLoop();
 private:
+    enum TickType
+    {
+        ADVANCE,
+        REWIND,
+        PAUSE
+    };
+
+    bool checkParadoxes();
+
     void addObject(std::shared_ptr<GameObject> obj);
 
     void checkBulletUndo();
@@ -54,7 +63,7 @@ private:
     void tickEnemy(Enemy* enemy);
     void playTick();
 
-    void tick();
+    void tick(TickType type);
 
     int nextID(){
         return m_lastID++;
@@ -78,6 +87,9 @@ private:
     bool m_backwards;
 
     int m_lastBreakpoint;
+
+    //Text shown in the middle of the screen
+    std::string m_statusString;
 
     //Keyboard jank
     bool m_eUnpressed;
