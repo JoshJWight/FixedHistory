@@ -43,6 +43,8 @@ struct ObjectState
     int patrolIdx;
     int aiState;
     int targetId;
+    point_t lastSeen;
+    int chargeTime;
 };
 
 class GameObject
@@ -50,6 +52,9 @@ class GameObject
 public:
     GameObject(int id);
     GameObject(int id, GameObject* ancestor);
+
+    //A virtual function is necessary for polymorphism
+    virtual ~GameObject() {}
 
     bool isColliding(GameObject& other);
     void bounceOutOf(GameObject& other);

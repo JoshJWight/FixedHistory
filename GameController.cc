@@ -25,21 +25,7 @@ GameController::GameController()
     player->state.pos = point_t(0, 0);
     m_players.push_back(player.get());
     addObject(player);
-/*
-    std::shared_ptr<GameObject> obj(new GameObject(nextID()));
-    obj->state.pos = point_t(10, 10);
-    obj-> colliderType = BOX;
-    obj-> size = point_t(20, 20);
-    obj->sprite.setTexture(TextureBank::get("box.png"));
-    addObject(obj);
 
-    std::shared_ptr<GameObject> obj2(new GameObject(nextID()));
-    obj2->state.pos = point_t(-20, -30);
-    obj2-> colliderType = BOX;
-    obj2-> size = point_t(20, 30);
-    obj2->sprite.setTexture(TextureBank::get("box.png"));
-    addObject(obj2);
-*/
     std::shared_ptr<Enemy> enemy(new Enemy(nextID()));
     enemy->state.pos = point_t(50, 50);
     enemy->patrolPoints.push_back(point_t(-175, -175));
@@ -280,6 +266,30 @@ void GameController::tickBullet(Bullet* bullet)
     }
 }
 
+bool GameController::playerVisibleToEnemy(Player* player, Enemy* enemy)
+{
+    bool visible = true;
+
+    float angleToPlayer = math_util::angleBetween(enemy->state.pos, player->state.pos);
+    float angleDiff = math_util::angleDiff(enemy->state.angle_deg, angleToPlayer);
+
+    //Close enough to see
+    visible &= (std::abs(angleDiff) > (Enemy::VIEW_ANGLE / 2.0f));
+    //Within view angle
+    visible &= (math_util::dist(enemy->state.pos, player->state.pos) < Enemy::VIEW_RADIUS);
+    //Not obstructed
+    visible &= m_level.checkVisibility(enemy->state.pos, player->state.pos);
+
+    return visible;
+}
+
+void GameController::navigateEnemy(Enemy* enemy, point_t target)
+{
+    point_t moveToward = m_level.navigate(enemy->state.pos, target);
+    enemy->state.pos += math_util::normalize(moveToward - enemy->state.pos) * enemy->moveSpeed;
+    enemy->state.angle_deg = math_util::rotateTowardsPoint(enemy->state.angle_deg, enemy->state.pos, moveToward, 5.0f);
+}
+
 void GameController::tickEnemy(Enemy* enemy)
 {
     if(!enemy->activeAt(m_currentTick) || enemy->backwards != m_backwards)
@@ -302,17 +312,116 @@ void GameController::tickEnemy(Enemy* enemy)
             enemy->state.patrolIdx = (enemy->state.patrolIdx + 1) % enemy->patrolPoints.size();
         }
 
-        point_t moveToward = m_level.navigate(enemy->state.pos, enemy->patrolPoints[enemy->state.patrolIdx]);
-        enemy->state.pos += math_util::normalize(moveToward - enemy->state.pos) * enemy->moveSpeed;
-        enemy->state.angle_deg = math_util::rotateTowardsPoint(enemy->state.angle_deg, enemy->state.pos, moveToward, 5.0f);
+        navigateEnemy(enemy, enemy->patrolPoints[enemy->state.patrolIdx]);
+
+        //Check if a player is seen
+        for(Player* player : m_players)
+        {
+            if(playerVisibleToEnemy(player, enemy))
+            {
+                enemy->state.aiState = Enemy::AI_CHASE;
+                enemy->state.targetId = player->id;
+                enemy->state.lastSeen = player->state.pos;
+                break;
+            }
+        }
     }
     else if(enemy->state.aiState == Enemy::AI_CHASE)
     {
-        //TODO
+        Player* target = dynamic_cast<Player*>(m_objects[enemy->state.targetId].get());
+        if(playerVisibleToEnemy(target, enemy))
+        {
+            enemy->state.lastSeen = target->state.pos;
+            if(math_util::dist(enemy->state.pos, target->state.pos) < Enemy::ATTACK_RADIUS)
+            {
+                enemy->state.aiState = Enemy::AI_ATTACK;
+            }
+            else
+            {
+                navigateEnemy(enemy, target->state.pos);
+            }
+        }
+        else
+        {
+            if(math_util::dist(enemy->state.pos, enemy->state.lastSeen) < enemy->moveSpeed)
+            {
+                enemy->state.aiState = Enemy::AI_PATROL;
+            }
+            else
+            {
+                navigateEnemy(enemy, enemy->state.lastSeen);
+            }
+        }
     }
     else if(enemy->state.aiState == Enemy::AI_ATTACK)
     {
-        //TODO
+        Player* target = dynamic_cast<Player*>(m_objects[enemy->state.targetId].get());
+        if(playerVisibleToEnemy(target, enemy))
+        {
+            enemy->state.lastSeen = target->state.pos;
+            enemy->state.angle_deg = math_util::rotateTowardsPoint(enemy->state.angle_deg, enemy->state.pos, target->state.pos, 5.0f);
+
+            if(enemy->state.chargeTime == Enemy::ATTACK_CHARGE_TIME)
+            {
+                point_t direction = math_util::normalize(target->state.pos - enemy->state.pos);
+                point_t bulletPos = enemy->state.pos + direction * enemy->size.x;
+                std::shared_ptr<Bullet> bullet(new Bullet(nextID()));
+                bullet->state.pos = bulletPos;
+                bullet->velocity = direction * Bullet::SPEED;
+                bullet->state.angle_deg = math_util::angleBetween(enemy->state.pos, target->state.pos);
+                bullet->originTimeline = m_currentTimeline;
+                bullet->backwards = enemy->backwards;
+                bullet->hasEnding = true;
+                if(enemy->backwards)
+                {
+                    bullet->ending = m_currentTick;
+                    bullet->beginning = m_currentTick - Bullet::LIFETIME;
+                }
+                else
+                {
+                    bullet->beginning = m_currentTick;
+                    bullet->ending = m_currentTick + Bullet::LIFETIME;
+                }
+
+                m_bullets.push_back(bullet.get());
+                m_objects[bullet->id] = bullet;
+                m_historyBuffers.back().buffer[bullet->id] = std::vector<ObjectState>(m_currentTick+1);
+                m_historyBuffers.back().buffer[bullet->id][m_currentTick] = bullet->state;
+
+                enemy->state.chargeTime = 0;
+            }
+            //Continue an attack in progress as long as we can see the target
+            else if(enemy->state.chargeTime > 0)
+            {
+                enemy->state.chargeTime++;
+            }
+            //But if not shooting, close distance first if needed
+            else if(math_util::dist(enemy->state.pos, target->state.pos) > Enemy::ATTACK_RADIUS)
+            {
+                enemy->state.aiState = Enemy::AI_CHASE;
+            }
+            //If target is close enough, start charging
+            else
+            {
+                enemy->state.chargeTime++;
+            }
+        }
+        else
+        {
+            enemy->state.chargeTime = 0;
+            enemy->state.aiState = Enemy::AI_CHASE;
+            //If there is another visible target, swap to that.
+            for(Player* player : m_players)
+            {
+                if(playerVisibleToEnemy(player, enemy))
+                {
+                    
+                    enemy->state.targetId = player->id;
+                    enemy->state.lastSeen = player->state.pos;
+                    break;
+                }
+            }
+        }
     }
     else if(enemy->state.aiState == Enemy::AI_DEAD)
     {

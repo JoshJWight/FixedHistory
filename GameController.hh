@@ -58,6 +58,9 @@ private:
     void popTimeline();
     void pushTimeline();
 
+    bool playerVisibleToEnemy(Player* player, Enemy* enemy);
+    void navigateEnemy(Enemy* enemy, point_t target);
+
     void tickPlayer(Player* player);
     void tickBullet(Bullet* bullet);
     void tickEnemy(Enemy* enemy);

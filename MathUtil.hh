@@ -49,6 +49,18 @@ namespace math_util{
         return atan2(b.y - a.y, b.x - a.x) * 180.0f / M_PI;
     }
 
+    static float angleDiff(float a, float b)
+    {
+        float diff = b - a;
+        if (diff > 180) {
+            diff -= 360;
+        }
+        if (diff < -180) {
+            diff += 360;
+        }
+        return diff;
+    }
+
     static float rotateAngleTowards(float currentAngle, float targetAngle, float maxRotate)
     {
         float diff = targetAngle - currentAngle;
