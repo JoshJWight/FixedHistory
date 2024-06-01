@@ -14,10 +14,10 @@ public:
         AI_DEAD = 3
     };
 
-    constexpr static float VIEW_RADIUS = 60;
+    constexpr static float VIEW_RADIUS = 90;
     constexpr static float VIEW_ANGLE = 90;
-    constexpr static float ATTACK_RADIUS = 40;
-    constexpr static float ATTACK_CHARGE_TIME = 30;
+    constexpr static float ATTACK_RADIUS = 70;
+    constexpr static float ATTACK_CHARGE_TIME = 60;
 
     Enemy(int id);
 

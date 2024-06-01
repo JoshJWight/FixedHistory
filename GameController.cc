@@ -274,7 +274,7 @@ bool GameController::playerVisibleToEnemy(Player* player, Enemy* enemy)
     float angleDiff = math_util::angleDiff(enemy->state.angle_deg, angleToPlayer);
 
     //Close enough to see
-    visible &= (std::abs(angleDiff) > (Enemy::VIEW_ANGLE / 2.0f));
+    visible &= (std::abs(angleDiff) < (Enemy::VIEW_ANGLE / 2.0f));
     //Within view angle
     visible &= (math_util::dist(enemy->state.pos, player->state.pos) < Enemy::VIEW_RADIUS);
     //Not obstructed
@@ -329,6 +329,12 @@ void GameController::tickEnemy(Enemy* enemy)
     else if(enemy->state.aiState == Enemy::AI_CHASE)
     {
         Player* target = dynamic_cast<Player*>(m_objects[enemy->state.targetId].get());
+        if(!target->activeAt(m_currentTick))
+        {
+            enemy->state.aiState = Enemy::AI_PATROL;
+            return;
+        }
+
         if(playerVisibleToEnemy(target, enemy))
         {
             enemy->state.lastSeen = target->state.pos;
@@ -356,12 +362,18 @@ void GameController::tickEnemy(Enemy* enemy)
     else if(enemy->state.aiState == Enemy::AI_ATTACK)
     {
         Player* target = dynamic_cast<Player*>(m_objects[enemy->state.targetId].get());
+        if(!target->activeAt(m_currentTick))
+        {
+            enemy->state.aiState = Enemy::AI_PATROL;
+            return;
+        }
+
         if(playerVisibleToEnemy(target, enemy))
         {
             enemy->state.lastSeen = target->state.pos;
             enemy->state.angle_deg = math_util::rotateTowardsPoint(enemy->state.angle_deg, enemy->state.pos, target->state.pos, 5.0f);
 
-            if(enemy->state.chargeTime == Enemy::ATTACK_CHARGE_TIME)
+            if(enemy->state.chargeTime >= Enemy::ATTACK_CHARGE_TIME)
             {
                 point_t direction = math_util::normalize(target->state.pos - enemy->state.pos);
                 point_t bulletPos = enemy->state.pos + direction * enemy->size.x;
