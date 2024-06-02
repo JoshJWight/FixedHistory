@@ -9,7 +9,7 @@
 class TextureBank
 {
 public:
-    static sf::Texture& get(std::string filename){
+    static sf::Texture& get(const std::string & filename){
         return getInstance().get_texture(filename);
     }
 
@@ -19,7 +19,7 @@ public:
 
 protected:
     TextureBank() {};
-    sf::Texture& get_texture(std::string filename);
+    sf::Texture& get_texture(const std::string & filename);
     sf::Font& get_font();
 
     static std::shared_ptr<TextureBank> instance;

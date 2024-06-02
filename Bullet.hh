@@ -15,6 +15,7 @@ public:
     point_t velocity;
 
     int originTimeline;
+    int creatorId;
 };
 
 #endif

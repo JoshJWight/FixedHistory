@@ -2,7 +2,7 @@
 
 std::shared_ptr<TextureBank> TextureBank::instance;
 
-sf::Texture& TextureBank::get_texture(std::string filename)
+sf::Texture& TextureBank::get_texture(const std::string & filename)
 {
     if(m_map.count(filename) == 0)
     {

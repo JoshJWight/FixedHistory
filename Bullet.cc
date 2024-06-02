@@ -8,5 +8,5 @@ Bullet::Bullet(int id)
 
     colliderType = CIRCLE;
     size = point_t(5, 5);
-    sprite.setTexture(TextureBank::get("blam.png"));
+    setupSprites({"blam.png"});
 }

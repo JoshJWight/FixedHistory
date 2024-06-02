@@ -99,12 +99,14 @@ void Graphics::draw(const Level & level, std::map<int, std::shared_ptr<GameObjec
             continue;
         }
 
-        setSpriteScale(obj->sprite, obj->size);
+        sf::Sprite & sprite = obj->getSprite();
+
+        setSpriteScale(sprite, obj->size);
 
         point_t cameraPos = worldToCamera(obj->state.pos);
-        obj->sprite.setPosition(sf::Vector2f(cameraPos));
-        obj->sprite.setRotation(obj->state.angle_deg * -1.0f);
-        m_window.draw(obj->sprite);
+        sprite.setPosition(sf::Vector2f(cameraPos));
+        sprite.setRotation(obj->state.angle_deg * -1.0f);
+        m_window.draw(sprite);
     }
 
     m_window.draw(m_reticleSprite);

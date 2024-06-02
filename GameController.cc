@@ -273,9 +273,9 @@ bool GameController::playerVisibleToEnemy(Player* player, Enemy* enemy)
     float angleToPlayer = math_util::angleBetween(enemy->state.pos, player->state.pos);
     float angleDiff = math_util::angleDiff(enemy->state.angle_deg, angleToPlayer);
 
-    //Close enough to see
-    visible &= (std::abs(angleDiff) < (Enemy::VIEW_ANGLE / 2.0f));
     //Within view angle
+    visible &= (std::abs(angleDiff) < (Enemy::VIEW_ANGLE / 2.0f));
+    //Close enough to see
     visible &= (math_util::dist(enemy->state.pos, player->state.pos) < Enemy::VIEW_RADIUS);
     //Not obstructed
     visible &= m_level.checkVisibility(enemy->state.pos, player->state.pos);
@@ -297,8 +297,15 @@ void GameController::tickEnemy(Enemy* enemy)
         return;
     }
 
+    enemy->state.animIdx = enemy->state.aiState;
+
     for(Bullet* bullet: m_bullets)
     {
+        if(!bullet->activeAt(m_currentTick))
+        {
+            continue;
+        }
+
         if(enemy->state.aiState != Enemy::AI_DEAD && enemy->isColliding(*bullet))
         {
             enemy->state.aiState = Enemy::AI_DEAD;

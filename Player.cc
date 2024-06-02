@@ -9,7 +9,7 @@ Player::Player(int id)
 
     colliderType = CIRCLE;
     size = point_t(10, 10);
-    sprite.setTexture(TextureBank::get("smiley.png"));
+    setupSprites({"smiley.png"});
 }
 
 Player::Player(int id, Player* ancestor)

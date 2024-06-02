@@ -7,5 +7,5 @@ Enemy::Enemy(int id)
 {
     colliderType = CIRCLE;
     size = point_t(10, 10);
-    sprite.setTexture(TextureBank::get("frowny.png"));
+    setupSprites({"bored.png", "frowny.png", "enraged.png", "dead.png"});
 }
