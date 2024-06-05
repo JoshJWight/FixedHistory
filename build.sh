@@ -8,4 +8,5 @@ g++ --std=c++23 -o game \
 	Bullet.cc \
 	Enemy.cc \
 	Level.cc \
+	Controls.cc \
 	-lsfml-graphics -lsfml-window -lsfml-system

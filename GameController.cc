@@ -1,5 +1,4 @@
 #include "GameController.hh"
-#include <SFML/Window/Keyboard.hpp>
 
 #include <fstream>
 
@@ -10,7 +9,6 @@ GameController::GameController()
     , m_backwards(false)
     , m_lastBreakpoint(0)
     , m_lastID(0)
-    , m_eUnpressed(true)
     , m_level(20, 20, point_t(-200, -200), 20.0f)
 {
     std::ifstream file("testlevel.txt");
@@ -52,9 +50,11 @@ void GameController::mainLoop()
     while(true)
     {
         auto frameStart = std::chrono::system_clock::now();
+
+        m_controls.tick();
+
         m_statusString = "";
-        bool rewind = sf::Keyboard::isKeyPressed(sf::Keyboard::LShift);
-        TickType type = rewind ? REWIND : ADVANCE;
+        TickType type = m_controls.rewind ? REWIND : ADVANCE;
         if(type == ADVANCE && checkParadoxes())
         {
             type = PAUSE;
@@ -194,25 +194,25 @@ void GameController::tickPlayer(Player* player)
         player->state.cooldown--;
     }
 
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+    if(m_controls.up)
     {
         player->state.pos.y += player->moveSpeed;
     }
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+    if(m_controls.down)
     {
         player->state.pos.y -= player->moveSpeed;
     }
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+    if(m_controls.left)
     {
         player->state.pos.x -= player->moveSpeed;
     }
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+    if(m_controls.right)
     {
         player->state.pos.x += player->moveSpeed;
     }
 
     point_t mouseWorldPos = m_graphics.getMousePos();
-    if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && player->state.cooldown == 0)
+    if(m_controls.fire && player->state.cooldown == 0)
     {
         point_t direction = math_util::normalize(mouseWorldPos - player->state.pos);
         point_t bulletPos = player->state.pos + direction * player->size.x;
@@ -491,20 +491,10 @@ void GameController::playTick()
 
 void GameController::tick(TickType type)
 {
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::E))
+    if(m_controls.reverse)
     {
-        //The above isn't checking for the key being pressed, it's checking for the key being held down
-        //So only do this once per press
-        if(m_eUnpressed)
-        {
-            m_eUnpressed = false;
-            pushTimeline();
-            return;
-        }
-    }
-    else
-    {
-        m_eUnpressed = true;
+        pushTimeline();
+        return;
     }
 
 

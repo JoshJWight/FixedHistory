@@ -5,6 +5,7 @@
 #include "Graphics.hh"
 #include "TextureBank.hh"
 #include "Level.hh"
+#include "Controls.hh"
 #include <vector>
 #include <iostream>
 #include <chrono>
@@ -75,6 +76,8 @@ private:
     int m_lastID;
 
     Graphics m_graphics;
+    Controls m_controls;
+
     Level m_level;
     std::map<int, std::shared_ptr<GameObject>> m_objects;
 
@@ -93,7 +96,4 @@ private:
 
     //Text shown in the middle of the screen
     std::string m_statusString;
-
-    //Keyboard jank
-    bool m_eUnpressed;
 };
