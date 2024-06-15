@@ -529,7 +529,7 @@ void GameController::tickTimeBox(TimeBox* timeBox)
         timeBox->state.attachedObjectId = timeBox->activeOccupant->id;
 
         //If about to run into a point where someone else was in the box, kick the current occupant out
-        for(int i=1; i<TimeBox::OCCUPANCY_SPACING; i++)
+        for(int i=1; i<TimeBox::OCCUPANCY_SPACING + 300; i++)
         {
             int timestepToCheck;
             if(m_backwards)
@@ -549,7 +549,16 @@ void GameController::tickTimeBox(TimeBox* timeBox)
             ObjectState & state = m_historyBuffers.back()[timeBox->id][timestepToCheck];
             if(state.boxOccupied && state.attachedObjectId != timeBox->activeOccupant->id)
             {
-                m_shouldReverse = true;
+                if(i<TimeBox::OCCUPANCY_SPACING)
+                {
+                    m_shouldReverse = true;
+                }
+                else
+                {
+                    int secondsLeft = (i - TimeBox::OCCUPANCY_SPACING) / 60;
+                    m_statusString = "AUTO-EJECT IN " + std::to_string(secondsLeft);
+                    break;
+                }
             }
         }
     } 
@@ -575,6 +584,11 @@ void GameController::playTick()
     for(Enemy* enemy : m_enemies)
     {
         tickEnemy(enemy);
+    }
+
+    for(TimeBox* timeBox : m_timeBoxes)
+    {
+        tickTimeBox(timeBox);
     }
 
     //Store object states in history buffer
