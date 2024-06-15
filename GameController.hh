@@ -2,6 +2,7 @@
 #include "Player.hh"
 #include "Bullet.hh"
 #include "Enemy.hh"
+#include "TimeBox.hh"
 #include "Graphics.hh"
 #include "TextureBank.hh"
 #include "Level.hh"
@@ -65,6 +66,7 @@ private:
     void tickPlayer(Player* player);
     void tickBullet(Bullet* bullet);
     void tickEnemy(Enemy* enemy);
+    void tickTimeBox(TimeBox* timeBox);
     void playTick();
 
     void tick(TickType type);
@@ -86,6 +88,7 @@ private:
     std::vector<Player*> m_players;
     std::vector<Bullet*> m_bullets;
     std::vector<Enemy*> m_enemies;
+    std::vector<TimeBox*> m_timeBoxes;
 
     int m_currentTick;
     int m_currentTimeline;
@@ -96,4 +99,9 @@ private:
 
     //Text shown in the middle of the screen
     std::string m_statusString;
+
+
+    //Flags only valid for the current tick
+    bool m_shouldReverse;
+    TimeBox* m_boxToEnter;
 };

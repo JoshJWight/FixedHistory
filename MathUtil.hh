@@ -92,6 +92,11 @@ namespace math_util{
         float targetAngle = angleBetween(currentPos, targetPos);
         return rotateAngleTowards(currentAngle, targetAngle, maxRotate);
     }
+
+    static point_t moveInDirection(point_t pos, float angle, float distance)
+    {
+        return pos + point_t(cos(angle * M_PI / 180.0f) * distance, sin(angle * M_PI / 180.0f) * distance);
+    }
 }//end namespace math
 
 #endif

@@ -18,10 +18,13 @@ struct ObjectState
 {
     ObjectState()
         : pos(0, 0)
-        , cooldown(0)
-        , patrolIdx(0)
         , angle_deg(0)
         , animIdx(0)
+        , cooldown(0)
+        , boxOccupied(false)
+        , attachedObjectId(-1)
+        , visible(true)
+        , patrolIdx(0)
         , aiState(0)
         , targetId(-1)
         , chargeTime(0)
@@ -30,10 +33,13 @@ struct ObjectState
 
     ObjectState(const ObjectState& other)
         : pos(other.pos)
-        , cooldown(other.cooldown)
-        , patrolIdx(other.patrolIdx)
         , angle_deg(other.angle_deg)
         , animIdx(other.animIdx)
+        , cooldown(other.cooldown)
+        , boxOccupied(other.boxOccupied)
+        , attachedObjectId(other.attachedObjectId)
+        , visible(other.visible)
+        , patrolIdx(other.patrolIdx)
         , aiState(other.aiState)
         , targetId(other.targetId)
         , chargeTime(other.chargeTime)
@@ -48,6 +54,11 @@ struct ObjectState
     int animIdx;
 
     int cooldown; //Used by player
+
+    //Time box related stuff - these are used by both the box and the occupant
+    bool boxOccupied;
+    int attachedObjectId;
+    bool visible;
 
     //Enemy AI params
     int patrolIdx;

@@ -94,6 +94,10 @@ void Graphics::draw(const Level & level, std::map<int, std::shared_ptr<GameObjec
         {
             continue;
         }
+        if(!obj->state.visible)
+        {
+            continue;
+        }
         if(!level.checkVisibility(m_cameraWorldPos, obj->state.pos, obj->size.x / 2.0f))
         {
             continue;
