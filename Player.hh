@@ -6,6 +6,8 @@
 class Player : public GameObject
 {
 public:
+    constexpr static float INTERACT_RADIUS = 10;
+
     Player(int id);
     Player(int id, Player* ancestor);
 

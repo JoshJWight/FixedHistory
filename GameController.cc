@@ -39,6 +39,11 @@ GameController::GameController()
     box->state.pos = point_t(100, 100);
     m_timeBoxes.push_back(box.get());
     addObject(box);
+
+    std::shared_ptr<Switch> sw(new Switch(nextID()));
+    sw->state.pos = point_t(-100, -100);
+    m_switches.push_back(sw.get());
+    addObject(sw);
 }
 
 //Only for initial setup
@@ -233,11 +238,29 @@ void GameController::tickPlayer(Player* player)
     {
         for(TimeBox* timeBox : m_timeBoxes)
         {
-            if(math_util::dist(player->state.pos, timeBox->state.pos) < timeBox->size.x
+            if(math_util::dist(player->state.pos, timeBox->state.pos) < (timeBox->size.x + Player::INTERACT_RADIUS)
                 && !timeBox->state.boxOccupied)
             {
                 m_shouldReverse = true;
                 m_boxToEnter = timeBox;
+                break;
+            }
+        }
+
+        for(Switch* sw : m_switches)
+        {
+            if(math_util::dist(player->state.pos, sw->state.pos) < (sw->size.x + Player::INTERACT_RADIUS)
+                && sw->backwards == m_backwards)
+            {
+                if(sw->state.aiState == Switch::OFF)
+                {
+                    sw->state.aiState = Switch::ON;
+                }
+                else
+                {
+                    sw->state.aiState = Switch::OFF;
+                }
+                break;
             }
         }
     }
@@ -573,6 +596,19 @@ void GameController::tickTimeBox(TimeBox* timeBox)
     }
 }
 
+void GameController::tickSwitch(Switch* sw)
+{
+    if(sw->backwards != m_backwards)
+    {
+        sw->state = m_historyBuffers.back()[sw->id][m_currentTick];
+        return;
+    }
+
+    sw->state.animIdx = sw->state.aiState;
+
+    //TODO set state of doors or other connected things
+}
+
 void GameController::playTick()
 {
     tickPlayer(m_players.back());
@@ -589,6 +625,11 @@ void GameController::playTick()
     for(TimeBox* timeBox : m_timeBoxes)
     {
         tickTimeBox(timeBox);
+    }
+
+    for(Switch* sw : m_switches)
+    {
+        tickSwitch(sw);
     }
 
     //Store object states in history buffer

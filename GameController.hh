@@ -3,6 +3,7 @@
 #include "Bullet.hh"
 #include "Enemy.hh"
 #include "TimeBox.hh"
+#include "Switch.hh"
 #include "Graphics.hh"
 #include "TextureBank.hh"
 #include "Level.hh"
@@ -67,6 +68,7 @@ private:
     void tickBullet(Bullet* bullet);
     void tickEnemy(Enemy* enemy);
     void tickTimeBox(TimeBox* timeBox);
+    void tickSwitch(Switch* sw);
     void playTick();
 
     void tick(TickType type);
@@ -89,6 +91,7 @@ private:
     std::vector<Bullet*> m_bullets;
     std::vector<Enemy*> m_enemies;
     std::vector<TimeBox*> m_timeBoxes;
+    std::vector<Switch*> m_switches;
 
     int m_currentTick;
     int m_currentTimeline;
