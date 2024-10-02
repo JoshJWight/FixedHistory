@@ -437,10 +437,10 @@ void GameController::tickEnemy(Enemy* enemy)
 
         if(playerVisibleToEnemy(target, enemy))
         {
-            enemy->state.lastSeen = target->state.pos;
+            enemy->nextState.lastSeen = target->state.pos;
             if(math_util::dist(enemy->state.pos, target->state.pos) < Enemy::ATTACK_RADIUS)
             {
-                enemy->state.aiState = Enemy::AI_ATTACK;
+                enemy->nextState.aiState = Enemy::AI_ATTACK;
             }
             else
             {
@@ -479,7 +479,7 @@ void GameController::tickEnemy(Enemy* enemy)
                 point_t bulletPos = enemy->state.pos + direction * enemy->size.x;
                 std::shared_ptr<Bullet> bullet(new Bullet(nextID()));
                 bullet->state.pos = bulletPos;
-                bullet->velocity = direction * Bullet::SPEED;
+                bullet->velocity = direction * Bullet::SPEED / 4.0f; //Enemy bullets are slower
                 bullet->state.angle_deg = math_util::angleBetween(enemy->state.pos, target->state.pos);
                 bullet->originTimeline = m_currentTimeline;
                 bullet->backwards = enemy->backwards;
@@ -660,6 +660,12 @@ void GameController::playTick()
 
 void GameController::tick(TickType type)
 {
+    for(auto pair : m_objects)
+    {
+        std::shared_ptr<GameObject> obj = pair.second;
+        obj->nextState = obj->state;
+    }
+
     //Reset per-tick flags
     m_shouldReverse = false;
     m_boxToEnter = nullptr;
