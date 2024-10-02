@@ -101,11 +101,17 @@ public:
         }
     }
 
+    void applyNextState()
+    {
+        state = nextState;
+    }
+
     ColliderType colliderType;
 
     int id;
     ObjectState state;
     point_t size;
+    ObjectState nextState;
 
     std::vector<sf::Sprite> sprites;
 
