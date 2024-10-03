@@ -2,7 +2,7 @@ CXX = g++
 CXXFLAGS = --std=c++23
 LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system
 
-SRCS = main.cc GameController.cc GameObject.cc Graphics.cc TextureBank.cc Player.cc Bullet.cc Enemy.cc Level.cc Controls.cc
+SRCS = main.cc GameController.cc GameObject.cc Graphics.cc TextureBank.cc Player.cc Bullet.cc Enemy.cc Level.cc Controls.cc Door.cc
 OBJS = $(SRCS:.cc=.o)
 TARGET = game
 

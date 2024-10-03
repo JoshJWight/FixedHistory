@@ -1,18 +1,20 @@
 # GameController Knowledge
 
-- Central class managing game logic and state
-- Handles ticking of game objects
-- Manages time manipulation mechanics
-- Coordinates interactions between different game objects
-- Handles paradox checking and resolution
-- Manages history buffers for time manipulation
+## Door Ticking Mechanism
 
-Key methods:
-- mainLoop(): Main game loop
-- tick(): Advances game state
-- checkParadoxes(): Checks for time paradoxes
-- pushTimeline(): Creates a new timeline
-- popTimeline(): Removes the current timeline
+The GameController now includes a function for ticking doors, which introduces a complex interaction between doors, switches, and time manipulation:
 
-Note: Be cautious when modifying this class as it's central to the game's core mechanics.
+- Doors are connected to multiple switches
+- Door state (open/closed) is determined by the number of active switches:
+  - Odd number of active switches: door is open
+  - Even number of active switches: door is closed
+- The ticking function handles both forward and backward time progression
+- This mechanism adds depth to puzzle design and time manipulation gameplay
 
+Key considerations:
+- Ensure consistency of door states during time manipulation
+- Be aware of potential paradoxes or unexpected behavior in complex switch-door setups
+- Consider the impact on level design and puzzle complexity
+- Test thoroughly with various switch-door configurations and time manipulation scenarios
+
+This new mechanic opens up possibilities for intricate time-based puzzles and challenges players to think about cause-and-effect relationships across different timelines.

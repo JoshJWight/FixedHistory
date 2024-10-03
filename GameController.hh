@@ -4,6 +4,7 @@
 #include "Enemy.hh"
 #include "TimeBox.hh"
 #include "Switch.hh"
+#include "Door.hh"
 #include "Graphics.hh"
 #include "TextureBank.hh"
 #include "Level.hh"
@@ -69,6 +70,7 @@ private:
     void tickEnemy(Enemy* enemy);
     void tickTimeBox(TimeBox* timeBox);
     void tickSwitch(Switch* sw);
+    void tickDoor(Door* door);
     void playTick();
 
     void tick(TickType type);
@@ -92,6 +94,7 @@ private:
     std::vector<Enemy*> m_enemies;
     std::vector<TimeBox*> m_timeBoxes;
     std::vector<Switch*> m_switches;
+    std::vector<Door*> m_doors;
 
     int m_currentTick;
     int m_currentTimeline;

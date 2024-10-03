@@ -44,6 +44,17 @@ GameController::GameController()
     sw->state.pos = point_t(-100, -100);
     m_switches.push_back(sw.get());
     addObject(sw);
+
+    // Add a new Door
+    std::shared_ptr<Door> door(new Door(nextID()));
+    door->state.pos = point_t(150, 150);
+    m_doors.push_back(door.get());
+    addObject(door);
+
+    // Connect the switch to the door
+    door->addSwitch(sw.get());
+
+
 }
 
 //Only for initial setup
@@ -254,11 +265,11 @@ void GameController::tickPlayer(Player* player)
             {
                 if(sw->state.aiState == Switch::OFF)
                 {
-                    sw->state.aiState = Switch::ON;
+                    sw->nextState.aiState = Switch::ON;
                 }
                 else
                 {
-                    sw->state.aiState = Switch::OFF;
+                    sw->nextState.aiState = Switch::OFF;
                 }
                 break;
             }
@@ -607,8 +618,32 @@ void GameController::tickSwitch(Switch* sw)
     }
 
     sw->nextState.animIdx = sw->state.aiState;
+}
 
-    //TODO set state of doors or other connected things
+void GameController::tickDoor(Door* door)
+{
+    if(!door->activeAt(m_currentTick))
+    {
+        return;
+    }
+
+    if(door->backwards != m_backwards)
+    {
+        door->nextState = m_historyBuffers.back()[door->id][m_currentTick];
+        return;
+    }
+
+    int onSwitches = 0;
+    for(Switch* sw : door->getConnectedSwitches())
+    {
+        if(sw->state.aiState == Switch::ON)
+        {
+            onSwitches++;
+        }
+    }
+
+    door->nextState.aiState = (onSwitches % 2 == 1) ? Door::OPEN : Door::CLOSED;
+    door->nextState.animIdx = door->nextState.aiState;
 }
 
 void GameController::playTick()
@@ -632,6 +667,11 @@ void GameController::playTick()
     for(Switch* sw : m_switches)
     {
         tickSwitch(sw);
+    }
+
+    for(Door* door : m_doors)
+    {
+        tickDoor(door);
     }
 
     //Apply next states to current states
