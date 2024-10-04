@@ -1,9 +1,12 @@
 CXX = g++
-CXXFLAGS = --std=c++23
+CXXFLAGS = --std=c++23 -I$(SRC_DIR) -I$(SRC_DIR)/objects
 LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system
 
-SRCS = main.cc GameController.cc GameObject.cc Graphics.cc TextureBank.cc Player.cc Bullet.cc Enemy.cc Level.cc Controls.cc Door.cc
-OBJS = $(SRCS:.cc=.o)
+SRC_DIR = src
+OBJ_DIR = obj
+
+SRCS = $(wildcard $(SRC_DIR)/*.cc) $(wildcard $(SRC_DIR)/objects/*.cc)
+OBJS = $(SRCS:$(SRC_DIR)/%.cc=$(OBJ_DIR)/%.o)
 TARGET = game
 
 all: $(TARGET)
@@ -11,10 +14,11 @@ all: $(TARGET)
 $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
-%.o: %.cc
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc
+	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -rf $(OBJ_DIR) $(TARGET)
 
 .PHONY: all clean

@@ -1,10 +1,10 @@
-#include "GameObject.hh"
-#include "Player.hh"
-#include "Bullet.hh"
-#include "Enemy.hh"
-#include "TimeBox.hh"
-#include "Switch.hh"
-#include "Door.hh"
+#include <objects/GameObject.hh>
+#include <objects/Player.hh>
+#include <objects/Bullet.hh>
+#include <objects/Enemy.hh>
+#include <objects/TimeBox.hh>
+#include <objects/Switch.hh>
+#include <objects/Door.hh>
 #include "Graphics.hh"
 #include "TextureBank.hh"
 #include "Level.hh"

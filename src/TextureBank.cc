@@ -7,7 +7,8 @@ sf::Texture& TextureBank::get_texture(const std::string & filename)
     if(m_map.count(filename) == 0)
     {
         m_map[filename] = sf::Texture();
-        m_map[filename].loadFromFile(filename);
+        std::string assetsPath = "assets/";
+        m_map[filename].loadFromFile(assetsPath + filename);
     }
 
     return m_map[filename];
