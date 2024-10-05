@@ -43,7 +43,7 @@ void Graphics::setSpriteScale(sf::Sprite & sprite, point_t worldSize)
 
 //TODO objects should be sorted by some kind of z-level
 //That probably waits until we have a better ontology for objects
-void Graphics::draw(const Level & level, std::map<int, std::shared_ptr<GameObject>>& objects, int tick, point_t cameraCenter, const std::string& statusString)
+void Graphics::draw(GameState * state, int tick, point_t cameraCenter, const std::string& statusString)
 {
     m_cameraWorldPos = cameraCenter;
 
@@ -61,33 +61,32 @@ void Graphics::draw(const Level & level, std::map<int, std::shared_ptr<GameObjec
 
     //Draw the level
     
-    for(int x = 0; x < level.width; ++x)
+    for(int x = 0; x < state->level->width; ++x)
     {
-        for(int y = 0; y < level.height; ++y)
+        for(int y = 0; y < state->level->height; ++y)
         {
-            //point_t worldPos = point_t(x * level.scale, y * level.scale) + level.bottomLeft;
-            point_t worldPos = level.tiles[x][y].node.pos;
-            if(!level.checkVisibility(m_cameraWorldPos, worldPos, level.scale * 0.499f))
+            point_t worldPos = state->level->tiles[x][y].node.pos;
+            if(!search::checkVisibility(state, m_cameraWorldPos, worldPos, state->level->scale * 0.499f))
             {
                 continue;
             }
-            if(level.tiles[x][y].type == Level::WALL)
+            if(state->level->tiles[x][y].type == Level::WALL)
             {
                 m_wallSprite.setPosition(worldToCamera(worldPos));
-                setSpriteScale(m_wallSprite, point_t(1, 1) * level.scale);
+                setSpriteScale(m_wallSprite, point_t(1, 1) * state->level->scale);
                 m_window.draw(m_wallSprite);
             }
             else
             {
                 m_floorSprite.setPosition(worldToCamera(worldPos));
-                setSpriteScale(m_floorSprite, point_t(1, 1) * level.scale);
+                setSpriteScale(m_floorSprite, point_t(1, 1) * state->level->scale);
                 m_window.draw(m_floorSprite);
             }
         }
     }
 
     //Draw other stuff
-    for(auto it = objects.begin(); it != objects.end(); ++it)
+    for(auto it = state->objects.begin(); it != state->objects.end(); ++it)
     {
         std::shared_ptr<GameObject> obj = it->second;
         if(!obj->activeAt(tick))
@@ -98,7 +97,7 @@ void Graphics::draw(const Level & level, std::map<int, std::shared_ptr<GameObjec
         {
             continue;
         }
-        if(!level.checkVisibility(m_cameraWorldPos, obj->state.pos, obj->size.x / 2.0f))
+        if(!search::checkVisibility(state, m_cameraWorldPos, obj->state.pos, obj->size.x / 2.0f))
         {
             continue;
         }

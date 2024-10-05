@@ -5,13 +5,15 @@
 #include <memory>
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Text.hpp>
+#include "GameState.hh"
+#include "Search.hh"
 
 class Graphics
 {
 public:
     Graphics(int windowWidth, int windowHeight);
 
-    void draw(const Level & level, std::map<int, std::shared_ptr<GameObject>>& objects, int tick, point_t cameraCenter, const std::string& statusString);
+    void draw(GameState* state, int tick, point_t cameraCenter, const std::string& statusString);
 
     point_t getMousePos();
 

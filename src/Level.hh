@@ -54,13 +54,7 @@ public:
         float dist;
     };
 
-    point_t navigate(const point_t & start, const point_t & end);
-
     void setFromString(const std::string & str);
-
-    bool checkVisibility(point_t start, point_t dest) const;
-
-    bool checkVisibility(point_t start, point_t dest_center, float dest_radius) const;
 
     TileType tileAt(const point_t & pos) const;
 

@@ -9,36 +9,14 @@
 #include "TextureBank.hh"
 #include "Level.hh"
 #include "Controls.hh"
+#include "GameState.hh"
+#include "Search.hh"
 #include <vector>
 #include <iostream>
 #include <chrono>
 #include <thread>
 
-struct HistoryBuffer
-{
-    HistoryBuffer()
-        : breakpoint(0)
-    {
-    }
 
-    HistoryBuffer(const HistoryBuffer& other, int breakpoint)
-        : buffer(other.buffer)
-        , breakpoint(breakpoint)
-    {
-    }
-
-    std::vector<ObjectState>& operator[](int i)
-    {
-        if(buffer.find(i) == buffer.end())
-        {
-            throw std::runtime_error("No buffer for object " + std::to_string(i));
-        }
-        return buffer.at(i);
-    }
-
-    std::map<int, std::vector<ObjectState>> buffer;
-    int breakpoint;
-};
 
 class  GameController
 {
@@ -84,10 +62,7 @@ private:
     Graphics m_graphics;
     Controls m_controls;
 
-    Level m_level;
-    std::map<int, std::shared_ptr<GameObject>> m_objects;
-
-    std::vector<HistoryBuffer> m_historyBuffers;
+    std::shared_ptr<GameState> m_gameState;
 
     std::vector<Player*> m_players;
     std::vector<Bullet*> m_bullets;
