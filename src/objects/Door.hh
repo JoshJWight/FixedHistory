@@ -19,6 +19,11 @@ public:
     void addSwitch(Switch* sw);
     const std::vector<Switch*>& getConnectedSwitches() const;
 
+    bool isObstruction() override
+    {
+        return state.aiState == CLOSED;
+    }
+
 private:
     std::vector<Switch*> m_connectedSwitches;
 };

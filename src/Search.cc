@@ -34,6 +34,14 @@ bool checkVisibility(GameState * state, point_t start, point_t dest)
         {
             return true;
         }
+        //TODO the performance of this seems bad, improve later
+        for(const auto & objpair: state->objects)
+        {
+            if(objpair.second->isObstruction() && objpair.second->isColliding(current))
+            {
+                return false;
+            }
+        }
         const Level::NavNode* node = state->level->nodeAt(current);
         if(node == nullptr)
         {

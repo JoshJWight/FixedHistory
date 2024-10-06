@@ -78,6 +78,7 @@ public:
     virtual ~GameObject() {}
 
     bool isColliding(GameObject& other);
+    bool isColliding(point_t point);
     void bounceOutOf(GameObject& other);
     float radius();
 
@@ -106,6 +107,11 @@ public:
         state = nextState;
     }
 
+    virtual bool isObstruction()
+    {
+        return false;
+    }
+
     ColliderType colliderType;
 
     int id;
@@ -121,7 +127,7 @@ public:
     bool hasEnding;
     int ending;
 
-    bool recorded;
+    bool recorded;    
 };
 
 #endif

@@ -69,6 +69,24 @@ bool GameObject::isColliding(GameObject& other)
     return false;
 }
 
+bool GameObject::isColliding(point_t point)
+{
+    if(colliderType==CIRCLE)
+    {
+        return math_util::dist(state.pos, point) < radius();
+    }
+    else if(colliderType==BOX)
+    {
+        point_t tr = state.pos + (size / 2.0f);
+        point_t bl = state.pos - (size / 2.0f);
+
+        return (point.y > bl.y && point.y < tr.y && point.x > bl.x && point.x < tr.x);
+    }
+
+    //Generally you get here if the object has no collider
+    return false;
+}
+
 void GameObject::bounceOutOf(GameObject& other)
 {
     //TODO
