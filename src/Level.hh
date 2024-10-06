@@ -54,6 +54,8 @@ public:
         float dist;
     };
 
+    void setFromLines(const std::vector<std::string> & lines);
+
     void setFromString(const std::string & str);
 
     TileType tileAt(const point_t & pos) const;

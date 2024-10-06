@@ -1,0 +1,13 @@
+5 6
+XXXXX
+XXXaX
+X.XbX
+XcXdX
+X.feX
+XXXXX
+player 0 f
+switch 1 a 
+switch 2 e
+door 3 c 1
+door 4 d 1 2
+timebox 5 b

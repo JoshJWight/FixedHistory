@@ -64,13 +64,6 @@ private:
 
     std::shared_ptr<GameState> m_gameState;
 
-    std::vector<Player*> m_players;
-    std::vector<Bullet*> m_bullets;
-    std::vector<Enemy*> m_enemies;
-    std::vector<TimeBox*> m_timeBoxes;
-    std::vector<Switch*> m_switches;
-    std::vector<Door*> m_doors;
-
     int m_currentTick;
     int m_currentTimeline;
 

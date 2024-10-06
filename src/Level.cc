@@ -59,7 +59,25 @@ void Level::setupNavMesh()
     }
 }
 
-
+void Level::setFromLines(const std::vector<std::string> & lines) {
+    if (lines.size() != height) {
+        throw std::runtime_error("Level does not fit this string");
+    }
+    for (int y = 0; y < height; y++) {
+        if (lines[y].size() != width) {
+            throw std::runtime_error("Level does not fit this string");
+        }
+        for (int x = 0; x < width; x++) {
+            if (lines[y][x] == 'X') {
+                tiles[x][height - y - 1].type = WALL;
+            }
+            else{
+                tiles[x][height - y - 1].type = EMPTY;
+            }
+        }
+    }
+    setupNavMesh();
+}
 
 void Level::setFromString(const std::string & str) {
     int x = 0;

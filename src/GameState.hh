@@ -2,6 +2,12 @@
 #define __GAMESTATE_HH__
 
 #include "Level.hh"
+#include "objects/Player.hh"
+#include "objects/Bullet.hh"
+#include "objects/Enemy.hh"
+#include "objects/TimeBox.hh"
+#include "objects/Switch.hh"
+#include "objects/Door.hh"
 #include <objects/GameObject.hh>
 
 struct HistoryBuffer
@@ -35,6 +41,13 @@ struct GameState {
     std::map<int, std::shared_ptr<GameObject>> objects;
     std::vector<HistoryBuffer> historyBuffers;
 
+    std::vector<Player*> players;
+    std::vector<Bullet*> bullets;
+    std::vector<Enemy*> enemies;
+    std::vector<TimeBox*> timeBoxes;
+    std::vector<Switch*> switches;
+    std::vector<Door*> doors;
+
     GameState()
         : level(nullptr)
     {
@@ -57,6 +70,25 @@ struct GameState {
             obj->state = historyBuffers.back()[obj->id][tick];
         }
     }
+
+    template <typename T>
+    T* getObject(int id)
+    {
+        auto it = objects.find(id);
+        if(it == objects.end())
+        {
+            throw std::runtime_error("No object with ID " + std::to_string(id));
+        }
+
+        T* ptr = dynamic_cast<T*>(it->second.get());
+        if(ptr == nullptr)
+        {
+            throw std::runtime_error("Object with ID " + std::to_string(id) + " is not of type " + typeid(T).name());
+        }
+        return ptr;
+    }
 };
+
+std::shared_ptr<GameState> loadGameState(const std::string& filename);
 
 #endif
