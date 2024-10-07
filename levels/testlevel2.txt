@@ -1,10 +1,10 @@
-5 6
-XXXXX
-XXXaX
-X.XbX
-XcXdX
-X.feX
-XXXXX
+9 6
+XXXXXXXXX
+XXX....aX
+X.X..b..X
+XcXdXXXXX
+X.feXXXXX
+XXXXXXXXX
 player 0 f
 switch 1 a 
 switch 2 e

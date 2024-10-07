@@ -50,6 +50,7 @@ struct GameState {
 
     GameState()
         : level(nullptr)
+        , m_lastID(0)
     {
         historyBuffers.push_back(HistoryBuffer());
     }
@@ -60,6 +61,11 @@ struct GameState {
         objects[obj->id] = obj;
         historyBuffers.back().buffer[obj->id] = std::vector<ObjectState>(1);
         historyBuffers.back().buffer[obj->id][0] = obj->state;
+
+        if(obj->id >= m_lastID)
+        {
+            m_lastID = obj->id + 1;
+        }
     }
 
     void restoreState(int tick)
@@ -87,6 +93,12 @@ struct GameState {
         }
         return ptr;
     }
+
+    int nextID(){
+        return m_lastID++;
+    }
+
+    int m_lastID;
 };
 
 std::shared_ptr<GameState> loadGameState(const std::string& filename);

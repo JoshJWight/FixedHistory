@@ -7,53 +7,8 @@ GameController::GameController()
     , m_shouldReverse(false)
     , m_backwards(false)
     , m_lastBreakpoint(0)
-    , m_lastID(0)
 {
     m_gameState = loadGameState("levels/testlevel2.txt");
-    /*
-    m_gameState = std::make_shared<GameState>();
-    m_gameState->level = std::make_shared<Level>(20, 20, point_t(-200, -200), 20.0f);
-
-    std::ifstream file("testlevel.txt");
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    m_gameState->level->setFromString(buffer.str());
-    file.close();
-
-    std::shared_ptr<Player>player(new Player(nextID()));
-    player->state.pos = point_t(0, 0);
-    m_gameState->players.push_back(player.get());
-    m_gameState->addObject(player);
-
-    std::shared_ptr<Enemy> enemy(new Enemy(nextID()));
-    enemy->state.pos = point_t(50, 50);
-    enemy->patrolPoints.push_back(point_t(-175, -175));
-    enemy->patrolPoints.push_back(point_t(175, -175));
-    enemy->patrolPoints.push_back(point_t(-175, 175));
-    enemy->patrolPoints.push_back(point_t(175, 175));
-    m_gameState->enemies.push_back(enemy.get());
-    m_gameState->addObject(enemy);
-
-    std::shared_ptr<TimeBox> box(new TimeBox(nextID()));
-    box->state.pos = point_t(100, 100);
-    m_gameState->timeBoxes.push_back(box.get());
-    m_gameState->addObject(box);
-
-    std::shared_ptr<Switch> sw(new Switch(nextID()));
-    sw->state.pos = point_t(-100, -100);
-    m_gameState->switches.push_back(sw.get());
-    m_gameState->addObject(sw);
-
-    // Add a new Door
-    std::shared_ptr<Door> door(new Door(nextID()));
-    door->state.pos = point_t(150, 150);
-    m_gameState->doors.push_back(door.get());
-    m_gameState->addObject(door);
-
-    // Connect the switch to the door
-    door->addSwitch(sw.get());
-    */
-
 }
 
 void GameController::mainLoop()
@@ -173,7 +128,7 @@ void GameController::pushTimeline()
 
     //Create a new player entity
     Player* oldPlayer = m_gameState->players.back();
-    std::shared_ptr<Player> newPlayer(new Player(nextID(), oldPlayer));
+    std::shared_ptr<Player> newPlayer(new Player(m_gameState->nextID(), oldPlayer));
     oldPlayer->recorded = true;
     if(m_backwards)
     {
@@ -291,7 +246,7 @@ void GameController::tickPlayer(Player* player)
     {
         point_t direction = math_util::normalize(mouseWorldPos - player->state.pos);
         point_t bulletPos = player->state.pos + direction * player->size.x;
-        std::shared_ptr<Bullet> bullet(new Bullet(nextID()));
+        std::shared_ptr<Bullet> bullet(new Bullet(m_gameState->nextID()));
         bullet->state.pos = bulletPos;
         bullet->velocity = direction * Bullet::SPEED;
         bullet->state.angle_deg = math_util::angleBetween(player->state.pos, mouseWorldPos);
@@ -475,7 +430,7 @@ void GameController::tickEnemy(Enemy* enemy)
             {
                 point_t direction = math_util::normalize(target->state.pos - enemy->state.pos);
                 point_t bulletPos = enemy->state.pos + direction * enemy->size.x;
-                std::shared_ptr<Bullet> bullet(new Bullet(nextID()));
+                std::shared_ptr<Bullet> bullet(new Bullet(m_gameState->nextID()));
                 bullet->state.pos = bulletPos;
                 bullet->velocity = direction * Bullet::SPEED / 4.0f; //Enemy bullets are slower
                 bullet->state.angle_deg = math_util::angleBetween(enemy->state.pos, target->state.pos);

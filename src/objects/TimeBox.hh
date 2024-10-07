@@ -9,6 +9,7 @@ public:
 
     TimeBox(int id)
         : GameObject(id)
+        , activeOccupant(nullptr)
     {
         colliderType = BOX;
         size = point_t(25, 25);

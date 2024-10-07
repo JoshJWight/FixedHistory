@@ -37,14 +37,12 @@ std::shared_ptr<GameState> loadGameState(const std::string& filename)
     state->level = std::make_shared<Level>(width, height, bottomLeft, scale);
     state->level->setFromLines(tileLines);
 
-    while(true)
+    while(!file.eof())
     {
         std::string line;
         std::getline(file, line);
-        if(file.eof())
-        {
-            break;
-        }
+        std::cout << line << std::endl;
+        
         std::istringstream iss(line);
 
         std::string objType, location;

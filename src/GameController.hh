@@ -53,12 +53,6 @@ private:
 
     void tick(TickType type);
 
-    int nextID(){
-        return m_lastID++;
-    }
-
-    int m_lastID;
-
     Graphics m_graphics;
     Controls m_controls;
 
