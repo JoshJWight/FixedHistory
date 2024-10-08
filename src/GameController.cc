@@ -637,6 +637,10 @@ void GameController::playTick()
                 m_gameState->historyBuffers.back()[obj->id][m_currentTick] = obj->state;
             }
         }
+        else
+        {
+            obj->state = m_gameState->historyBuffers.back()[obj->id][m_currentTick];
+        }
     }
 }
 
