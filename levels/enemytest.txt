@@ -1,0 +1,16 @@
+10 10
+XXXXXXXXXX
+X........X
+X.a....b.X
+X........X
+X...XXX..X
+X...XpX..X
+X........X
+X.d....c.X
+X........X
+XXXXXXXXXX
+player 0 p
+enemy 1 a b c d
+enemy 2 b c d a
+enemy 3 c d a b
+enemy 4 d a b c

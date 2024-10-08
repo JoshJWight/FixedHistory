@@ -77,6 +77,10 @@ point_t navigate(GameState * state, const point_t & start, const point_t & end) 
     if (startX < 0 || startY < 0 || startX >= state->level->width || startY >= state->level->height) {
         throw std::runtime_error("Start position out of bounds");
     }
+    if (endX < 0 || endY < 0 || endX >= state->level->width || endY >= state->level->height) {
+        std::cout << "navigate: End position out of bounds, doing nothing instead." << std::endl;
+        return start;
+    }
 
     Level::Tile& startTile = state->level->tiles[(int)startX][(int)startY];
     Level::Tile& endTile = state->level->tiles[(int)endX][(int)endY];

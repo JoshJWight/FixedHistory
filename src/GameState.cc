@@ -4,6 +4,22 @@
 #include <sstream>
 #include <string>
 
+point_t getLocation(const std::vector<std::string>& tileLines, const std::string & location, float scale, point_t bottomLeft)
+{
+    for(int x = 0; x < tileLines[0].size(); x++)
+    {
+        for(int y=0; y < tileLines.size(); y++)
+        {
+            if(tileLines[y][x] == location[0])
+            {
+                return point_t((x + 0.5) * scale + bottomLeft.x, (tileLines.size() - y - 0.5) * scale + bottomLeft.y);
+            }
+        }
+    }
+    std::cout << "Could not find location " << location << std::endl;
+    return point_t(0, 0);
+}
+
 std::shared_ptr<GameState> loadGameState(const std::string& filename)
 {
     std::shared_ptr<GameState> state = std::make_shared<GameState>();
@@ -50,18 +66,7 @@ std::shared_ptr<GameState> loadGameState(const std::string& filename)
         iss >> objType >> id >> location;
         std::cout << "Object type: " << objType << " ID: " << id << " Location: " << location << std::endl;
 
-        point_t position(0, 0);
-        for(int x = 0; x < width; x++)
-        {
-            for(int y=0; y < height; y++)
-            {
-                if(tileLines[y][x] == location[0])
-                {
-                    position = point_t((x + 0.5) * scale + bottomLeft.x, (height - y - 0.5) * scale + bottomLeft.y);
-                    break;
-                }
-            }
-        }
+        point_t position = getLocation(tileLines, location, scale, bottomLeft);
 
         std::shared_ptr<GameObject> obj;
         if(objType == "player")
@@ -71,8 +76,17 @@ std::shared_ptr<GameState> loadGameState(const std::string& filename)
         }
         else if(objType == "enemy")
         {
-            obj = std::make_shared<Enemy>(id);
-            state->enemies.push_back(static_cast<Enemy*>(obj.get()));
+            std::shared_ptr<Enemy> enemy = std::make_shared<Enemy>(id);
+            enemy->patrolPoints.push_back(position);
+            while(!iss.eof())
+            {
+                std::string patrolPoint;
+                iss >> patrolPoint;
+                enemy->patrolPoints.push_back(getLocation(tileLines, patrolPoint, scale, bottomLeft));
+            }
+
+            state->enemies.push_back(enemy.get());
+            obj = enemy;
         }
         else if(objType == "switch")
         {

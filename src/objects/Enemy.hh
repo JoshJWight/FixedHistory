@@ -17,7 +17,7 @@ public:
     constexpr static float VIEW_RADIUS = 90;
     constexpr static float VIEW_ANGLE = 90;
     constexpr static float ATTACK_RADIUS = 70;
-    constexpr static float ATTACK_CHARGE_TIME = 60;
+    constexpr static float ATTACK_CHARGE_TIME = 30;
 
     Enemy(int id);
 

@@ -8,7 +8,7 @@ GameController::GameController()
     , m_backwards(false)
     , m_lastBreakpoint(0)
 {
-    m_gameState = loadGameState("levels/testlevel2.txt");
+    m_gameState = loadGameState("levels/enemytest.txt");
 }
 
 void GameController::mainLoop()
@@ -239,6 +239,12 @@ void GameController::tickPlayer(Player* player)
     if(m_controls.right)
     {
         player->nextState.pos.x += player->moveSpeed;
+    }
+
+    //No walking through walls
+    if(m_gameState->level->tileAt(player->state.pos) != Level::WALL && m_gameState->level->tileAt(player->nextState.pos) == Level::WALL)
+    {
+        player->nextState.pos = player->state.pos;
     }
 
     point_t mouseWorldPos = m_graphics.getMousePos();
