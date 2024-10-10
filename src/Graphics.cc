@@ -1,6 +1,7 @@
 #include "Graphics.hh"
 
 #include <iostream>
+#include <algorithm>
 
 Graphics::Graphics(int windowWidth, int windowHeight)
     :m_window(sf::VideoMode(windowWidth, windowHeight), "NemesisHeist"),
@@ -26,7 +27,7 @@ Graphics::Graphics(int windowWidth, int windowHeight)
     m_statusText.setFont(TextureBank::getFont());
     m_statusText.setCharacterSize(40);
     m_statusText.setFillColor(sf::Color::Red);
-    m_statusText.setPosition(200, 200);
+    m_statusText.setPosition(0, 0);
     m_statusText.setString("Default text. This should not be seen.");
 }
 
@@ -120,6 +121,8 @@ void Graphics::draw(GameState * state, int tick, point_t cameraCenter, const std
     if(statusString!="")
     {
         m_statusText.setString(statusString);
+        int charSize = std::max(10.0, 200 / std::sqrt(statusString.size()));
+        m_statusText.setCharacterSize(charSize);
         m_window.draw(m_statusText);
     }
 

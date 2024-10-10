@@ -71,6 +71,38 @@ struct ObjectState
 class GameObject
 {
 public:
+    enum ObjectType
+    {
+        UNDEFINED,
+        PLAYER,
+        BULLET,
+        ENEMY,
+        TIMEBOX,
+        SWITCH,
+        DOOR
+    };
+
+    static std::string typeToString(ObjectType type)
+    {
+        switch(type)
+        {
+            case PLAYER:
+                return "player";
+            case BULLET:
+                return "bullet";
+            case ENEMY:
+                return "enemy";
+            case TIMEBOX:
+                return "timebox";
+            case SWITCH:
+                return "switch";
+            case DOOR:
+                return "door";
+            default:
+                return "undefined";
+        }
+    }
+
     GameObject(int id);
     GameObject(int id, GameObject* ancestor);
 
@@ -110,6 +142,10 @@ public:
     virtual bool isObstruction()
     {
         return false;
+    }
+
+    virtual ObjectType type(){
+        return UNDEFINED;
     }
 
     ColliderType colliderType;

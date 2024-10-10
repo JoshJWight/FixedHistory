@@ -62,6 +62,24 @@ bool GameController::checkParadoxes()
         }
     }
 
+    //Violation of observations
+    for(Player* player : m_gameState->players)
+    {
+        if(!player->activeAt(m_currentTick))
+        {
+            continue;
+        }
+        if(player->recorded)
+        {
+            std::string result = observation::checkObservations(m_gameState.get(), player, m_currentTick);
+            if(result != "")
+            {
+                m_statusString = result;
+                return true;
+            }
+        }
+    }
+
     //If we got here, no paradoxes
     return false;
 }
@@ -596,6 +614,8 @@ void GameController::tickDoor(Door* door)
 
 void GameController::playTick()
 {
+    observation::recordObservations(m_gameState.get(), m_gameState->players.back(), m_currentTick);
+
     tickPlayer(m_gameState->players.back());
     for(Bullet* bullet : m_gameState->bullets)
     {

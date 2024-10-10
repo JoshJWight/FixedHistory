@@ -14,6 +14,14 @@ public:
     float moveSpeed;
     int fireCooldown;
 
+    struct Observation
+    {
+        ObjectType type;
+        ObjectState state;
+    };
+    typedef std::vector<Observation> ObservationFrame;
+
+    std::vector<ObservationFrame> observations;
 };
 
 #endif

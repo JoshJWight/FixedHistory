@@ -24,6 +24,11 @@ public:
         return state.aiState == CLOSED;
     }
 
+    ObjectType type() override
+    {
+        return DOOR;
+    }
+
 private:
     std::vector<Switch*> m_connectedSwitches;
 };

@@ -12,6 +12,11 @@ public:
 
     Bullet(int id);
 
+    ObjectType type() override
+    {
+        return BULLET;
+    }
+
     point_t velocity;
 
     int originTimeline;

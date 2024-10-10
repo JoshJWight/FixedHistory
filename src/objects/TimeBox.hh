@@ -16,6 +16,11 @@ public:
         setupSprites({"box.png"});
     }
 
+    ObjectType type() override
+    {
+        return TIMEBOX;
+    }
+
     GameObject* activeOccupant;
 };
 

@@ -19,6 +19,11 @@ public:
         size = point_t(8, 8);
         setupSprites({"switchon.png", "switchoff.png"});
     }
+
+    ObjectType type() override
+    {
+        return SWITCH;
+    }
 };
 
 #endif

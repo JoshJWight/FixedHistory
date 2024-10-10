@@ -21,6 +21,11 @@ public:
 
     Enemy(int id);
 
+    ObjectType type() override
+    {
+        return ENEMY;
+    }
+
     float moveSpeed;
 
     std::vector<point_t> patrolPoints;
