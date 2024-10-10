@@ -16,18 +16,32 @@ void GameController::mainLoop()
     //~60 FPS
     int msPerFrame = 16;
     std::chrono::duration<int, std::milli> frameDuration(msPerFrame);
+
+    bool paradox = false;
+
     while(true)
     {
         auto frameStart = std::chrono::system_clock::now();
 
         m_controls.tick();
 
-        m_statusString = "";
-        TickType type = m_controls.rewind ? REWIND : ADVANCE;
-        if(type == ADVANCE && checkParadoxes())
+        TickType type = PAUSE;
+        if(m_controls.rewind)
         {
-            type = PAUSE;
+            m_statusString = "";
+            type = REWIND;
+            paradox = false;
         }
+        else if(!paradox)
+        {
+            m_statusString = "";
+            paradox = checkParadoxes();
+            if(!paradox)
+            {
+                type = ADVANCE;
+            }
+        }
+
         tick(type);
         point_t cameraCenter = m_gameState->players.back()->state.pos;
         m_graphics.draw(m_gameState.get(), m_currentTick, cameraCenter, m_statusString);
@@ -38,6 +52,8 @@ void GameController::mainLoop()
 
 bool GameController::checkParadoxes()
 {
+    //Note: m_currentTick is still the tick we just finished doing
+
     //Death of any player
     for(Player* player : m_gameState->players)
     {
@@ -147,6 +163,7 @@ void GameController::pushTimeline()
     //Create a new player entity
     Player* oldPlayer = m_gameState->players.back();
     std::shared_ptr<Player> newPlayer(new Player(m_gameState->nextID(), oldPlayer));
+    std::cout << "Creating new player with ID " << newPlayer->id << std::endl;
     oldPlayer->recorded = true;
     if(m_backwards)
     {
@@ -191,6 +208,9 @@ void GameController::pushTimeline()
     //Add a buffer to the new history buffer for the new player
     m_gameState->historyBuffers.back().buffer[newPlayer->id] = std::vector<ObjectState>(m_currentTick+1);
     m_gameState->historyBuffers.back().buffer[newPlayer->id][m_currentTick] = newPlayer->state;
+
+    newPlayer->observations.resize(m_currentTick+1);
+    observation::recordObservations(m_gameState.get(), newPlayer.get(), m_currentTick);
 }
 
 void GameController::tickPlayer(Player* player)
@@ -614,8 +634,6 @@ void GameController::tickDoor(Door* door)
 
 void GameController::playTick()
 {
-    observation::recordObservations(m_gameState.get(), m_gameState->players.back(), m_currentTick);
-
     tickPlayer(m_gameState->players.back());
     for(Bullet* bullet : m_gameState->bullets)
     {
@@ -668,6 +686,7 @@ void GameController::playTick()
             obj->state = m_gameState->historyBuffers.back()[obj->id][m_currentTick];
         }
     }
+    observation::recordObservations(m_gameState.get(), m_gameState->players.back(), m_currentTick);
 }
 
 void GameController::tick(TickType type)

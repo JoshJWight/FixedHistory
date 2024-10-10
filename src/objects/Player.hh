@@ -11,6 +11,11 @@ public:
     Player(int id);
     Player(int id, Player* ancestor);
 
+    ObjectType type() override
+    {
+        return PLAYER;
+    }
+
     float moveSpeed;
     int fireCooldown;
 
