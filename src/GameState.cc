@@ -60,10 +60,21 @@ std::shared_ptr<GameState> loadGameState(const std::string& filename)
         std::cout << line << std::endl;
         
         std::istringstream iss(line);
+        std::vector<std::string> tokens;
+        while(!iss.eof())
+        {
+            std::string token;
+            iss >> token;
+            tokens.push_back(token);
+        }
 
-        std::string objType, location;
-        int id;
-        iss >> objType >> id >> location;
+        if(tokens.size() < 3)
+        {
+            throw std::runtime_error("Invalid line, not enough tokens: " + line);
+        }
+        std::string objType = tokens[0];
+        int id = std::stoi(tokens[1]);
+        std::string location = tokens[2];
         std::cout << "Object type: " << objType << " ID: " << id << " Location: " << location << std::endl;
 
         point_t position = getLocation(tileLines, location, scale, bottomLeft);
@@ -78,10 +89,9 @@ std::shared_ptr<GameState> loadGameState(const std::string& filename)
         {
             std::shared_ptr<Enemy> enemy = std::make_shared<Enemy>(id);
             enemy->patrolPoints.push_back(position);
-            while(!iss.eof())
+            for(int i=3; i<tokens.size(); i++)
             {
-                std::string patrolPoint;
-                iss >> patrolPoint;
+                std::string patrolPoint = tokens[i];
                 enemy->patrolPoints.push_back(getLocation(tileLines, patrolPoint, scale, bottomLeft));
             }
 
@@ -90,16 +100,35 @@ std::shared_ptr<GameState> loadGameState(const std::string& filename)
         }
         else if(objType == "switch")
         {
-            obj = std::make_shared<Switch>(id);
-            state->switches.push_back(static_cast<Switch*>(obj.get()));
+            std::shared_ptr<Switch> sw = std::make_shared<Switch>(id);
+
+            if(tokens.size() < 4)
+            {
+                throw std::runtime_error("Not enough tokens for switch");
+            }
+            std::string startingState = tokens[3];
+            if(startingState == "on")
+            {
+                sw->state.aiState = Switch::ON;
+            }
+            else if(startingState == "off")
+            {
+                sw->state.aiState = Switch::OFF;
+            }
+            else
+            {
+                throw std::runtime_error("Unknown switch state " + startingState);
+            }
+
+            state->switches.push_back(sw.get());
+            obj = sw;
         }
         else if(objType == "door")
         {
             std::shared_ptr<Door> door = std::make_shared<Door>(id);
-            while(!iss.eof())
+            for(int i=3; i<tokens.size(); i++)
             {
-                int switchID;
-                iss >> switchID;
+                int switchID = std::stoi(tokens[i]);
                 
                 std::cout << "Switch ID: " << switchID << std::endl;
                 door->addSwitch(state->getObject<Switch>(switchID));
