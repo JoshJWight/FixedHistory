@@ -111,8 +111,7 @@ public:
 
     bool isColliding(GameObject& other);
     bool isColliding(point_t point);
-    void bounceOutOf(GameObject& other);
-    float radius();
+    float radius() const;
 
     bool activeAt(int tick)
     {

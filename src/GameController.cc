@@ -362,7 +362,7 @@ bool GameController::playerVisibleToEnemy(Player* player, Enemy* enemy)
     //Close enough to see
     visible &= (math_util::dist(enemy->state.pos, player->state.pos) < Enemy::VIEW_RADIUS);
     //Not obstructed
-    visible &= search::checkVisibility(m_gameState.get(), enemy->state.pos, player->state.pos);
+    visible &= search::checkVisibility(m_gameState.get(), enemy->state.pos, enemy->radius(), player->state.pos, player->radius());
 
     return visible;
 }

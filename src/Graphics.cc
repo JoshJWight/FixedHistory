@@ -60,14 +60,17 @@ void Graphics::draw(GameState * state, int tick, point_t cameraCenter, const std
 
     m_window.clear();
 
-    //Draw the level
-    
+    //Giving the camera some radius helps if the player is near the edge of a tile
+    const float CAMERA_RADIUS = 10.0f;
+
+    //Draw each tile of the level
     for(int x = 0; x < state->level->width; ++x)
     {
         for(int y = 0; y < state->level->height; ++y)
         {
             point_t worldPos = state->level->tiles[x][y].node.pos;
-            if(!search::checkVisibility(state, m_cameraWorldPos, worldPos, state->level->scale * 0.499f))
+            
+            if(!search::checkVisibility(state, m_cameraWorldPos, CAMERA_RADIUS, worldPos, state->level->scale * 0.499f))
             {
                 continue;
             }
@@ -98,7 +101,7 @@ void Graphics::draw(GameState * state, int tick, point_t cameraCenter, const std
         {
             continue;
         }
-        if(!search::checkVisibility(state, m_cameraWorldPos, obj->state.pos, obj->size.x / 2.0f))
+        if(!search::checkVisibility(state, m_cameraWorldPos, CAMERA_RADIUS, obj->state.pos, obj->size.x / 2.0f))
         {
             continue;
         }

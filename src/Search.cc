@@ -68,6 +68,22 @@ bool checkVisibility(GameState * state, point_t start, point_t dest_center, floa
     return checkVisibility(state, start, a) || checkVisibility(state, start, b) || checkVisibility(state, start, c) || checkVisibility(state, start, d);
 }
 
+bool checkVisibility(GameState * state, point_t start, float start_radius, point_t dest_center, float dest_radius)
+{
+    
+    float angle = math_util::angleBetween(start, dest_center);
+    point_t orthogonalVector1 = math_util::normalize(point_t(cos((angle * M_PI/180.0) + M_PI_2), sin((angle * M_PI/180.0) + M_PI_2)));
+    point_t orthogonalVector2 = math_util::normalize(point_t(cos((angle * M_PI/180.0) - M_PI_2), sin((angle * M_PI/180.0) - M_PI_2)));
+
+    bool result = false;
+    //Make three checks, one between the centers and two along tangent lines
+    result |= checkVisibility(state, start, dest_center);
+    result |= checkVisibility(state, start + (orthogonalVector1 * start_radius), dest_center + (orthogonalVector1 * dest_radius));
+    result |= checkVisibility(state, start + (orthogonalVector2 * start_radius), dest_center + (orthogonalVector2 * dest_radius));
+
+    return result;
+}
+
 point_t navigate(GameState * state, const point_t & start, const point_t & end) {
     float startX = (start.x - state->level->bottomLeft.x) / state->level->scale;
     float startY = (start.y - state->level->bottomLeft.y) / state->level->scale;

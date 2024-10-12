@@ -32,13 +32,13 @@ void recordObservations(GameState * state, Player * player, int tick)
             continue;
         }
 
-        if(search::checkVisibility(state, player->state.pos, obj->state.pos, obj->radius()))
+        if(search::checkVisibility(state, player->state.pos, player->radius(), obj->state.pos, obj->radius()))
         {
             frame.push_back({obj->type(), obj->state});
         }
     }
 
-    std::cout << "Recorded " << frame.size() << " observations for player " << player->id << " at tick " << tick << std::endl;
+    //std::cout << "Recorded " << frame.size() << " observations for player " << player->id << " at tick " << tick << std::endl;
 }
 
 bool observablyEqual(const ObjectState & a, const ObjectState & b)
@@ -90,7 +90,7 @@ std::string checkObservations(GameState * state, Player * player, int tick)
             continue;
         }
 
-        if(search::checkVisibility(state, player->state.pos, obj->state.pos, obj->radius()))
+        if(search::checkVisibility(state, player->state.pos, player->radius(), obj->state.pos, obj->radius()))
         {
             actual.push_back({obj->type(), obj->state});
 
@@ -119,6 +119,10 @@ std::string checkObservations(GameState * state, Player * player, int tick)
     
     for(int i=0; i<frame.size(); i++)
     {
+        if(frame[i].type == GameObject::PLAYER)
+        {
+            continue;
+        }
         if(found.find(i) == found.end())
         {
             result = "A past you missed a " + GameObject::typeToString(frame[i].type);

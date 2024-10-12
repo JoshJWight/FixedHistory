@@ -29,7 +29,7 @@ GameObject::GameObject(int id, GameObject* ancestor)
 
 }
 
-float GameObject::radius()
+float GameObject::radius() const
 {
     return size.x / 2.0f;
 }
@@ -85,9 +85,4 @@ bool GameObject::isColliding(point_t point)
 
     //Generally you get here if the object has no collider
     return false;
-}
-
-void GameObject::bounceOutOf(GameObject& other)
-{
-    //TODO
 }
