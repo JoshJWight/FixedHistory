@@ -84,7 +84,8 @@ public:
         ENEMY,
         TIMEBOX,
         SWITCH,
-        DOOR
+        DOOR,
+        CLOSET
     };
 
     static std::string typeToString(ObjectType type)
@@ -103,6 +104,8 @@ public:
                 return "switch";
             case DOOR:
                 return "door";
+            case CLOSET:
+                return "closet";
             default:
                 return "undefined";
         }

@@ -9,7 +9,8 @@ GameController::GameController()
     , m_lastBreakpoint(0)
 {
     //m_gameState = loadGameState("levels/enemytest.txt");
-    m_gameState = loadGameState("levels/testlevel2.txt");
+    //m_gameState = loadGameState("levels/testlevel2.txt");
+    m_gameState = loadGameState("levels/closettest.txt");
 }
 
 void GameController::mainLoop()
@@ -222,7 +223,19 @@ void GameController::tickPlayer(Player* player)
     {
         if(m_controls.interact)
         {
-            m_shouldReverse = true;
+            GameObject * container = m_gameState->objects[player->state.attachedObjectId].get();
+            if(container->type() == GameObject::TIMEBOX)
+            {
+                m_shouldReverse = true;
+            }
+            else if(container->type() == GameObject::CLOSET)
+            {
+                Closet* closet = dynamic_cast<Closet*>(container);
+                closet->activeOccupant = nullptr;
+                player->nextState.boxOccupied = false;
+                player->nextState.attachedObjectId = -1;
+                player->nextState.visible = true;
+            }
         }
 
         //Player can't move or act while in a box
@@ -238,6 +251,19 @@ void GameController::tickPlayer(Player* player)
             {
                 m_shouldReverse = true;
                 m_boxToEnter = timeBox;
+                break;
+            }
+        }
+
+        for(Closet* closet: m_gameState->closets)
+        {
+            if(math_util::dist(player->state.pos, closet->state.pos) < (closet->size.x + Player::INTERACT_RADIUS)
+                && !closet->activeOccupant)
+            {
+                closet->activeOccupant = player;
+                player->nextState.boxOccupied = true;
+                player->nextState.attachedObjectId = closet->id;
+                player->nextState.visible = false;
                 break;
             }
         }
@@ -582,6 +608,58 @@ void GameController::tickTimeBox(TimeBox* timeBox)
     }
 }
 
+void GameController::tickCloset(Closet* closet)
+{
+    if(closet->activeOccupant)
+    {
+        closet->nextState.boxOccupied = true;
+        closet->nextState.attachedObjectId = closet->activeOccupant->id;
+
+        //If about to run into a point where someone else was in the box, kick the current occupant out
+        for(int i=1; i<Closet::OCCUPANCY_SPACING + 300; i++)
+        {
+            int timestepToCheck;
+            if(m_backwards)
+            {
+                timestepToCheck = m_currentTick - i;
+            }
+            else
+            {
+                timestepToCheck = m_currentTick + i;
+            }
+
+            if(timestepToCheck < 0 || timestepToCheck >= m_gameState->historyBuffers.back()[closet->id].size())
+            {
+                break;
+            }
+
+            ObjectState & state = m_gameState->historyBuffers.back()[closet->id][timestepToCheck];
+            if(state.boxOccupied && state.attachedObjectId != closet->activeOccupant->id)
+            {
+                if(i<Closet::OCCUPANCY_SPACING)
+                {
+                    m_shouldReverse = true;
+                }
+                else
+                {
+                    int secondsLeft = (i - Closet::OCCUPANCY_SPACING) / 60;
+                    m_statusString = "AUTO-EJECT IN " + std::to_string(secondsLeft);
+                    break;
+                }
+            }
+        }
+    } 
+    else if(m_currentTick >= m_gameState->historyBuffers.back()[closet->id].size())
+    {
+        closet->nextState.boxOccupied = false;
+        closet->nextState.attachedObjectId = -1;
+    }
+    else
+    {
+        closet->nextState = m_gameState->historyBuffers.back()[closet->id][m_currentTick];
+    }
+}
+
 void GameController::tickSwitch(Switch* sw)
 {
     if(sw->backwards != m_backwards)
@@ -653,6 +731,11 @@ void GameController::playTick()
     for(TimeBox* timeBox : m_gameState->timeBoxes)
     {
         tickTimeBox(timeBox);
+    }
+
+    for(Closet* closet : m_gameState->closets)
+    {
+        tickCloset(closet);
     }
 
     for(Switch* sw : m_gameState->switches)

@@ -141,6 +141,11 @@ std::shared_ptr<GameState> loadGameState(const std::string& filename)
             obj = std::make_shared<TimeBox>(id);
             state->timeBoxes.push_back(static_cast<TimeBox*>(obj.get()));
         }
+        else if (objType == "closet")
+        {
+            obj = std::make_shared<Closet>(id);
+            state->closets.push_back(static_cast<Closet*>(obj.get()));
+        }
         else
         {
             throw std::runtime_error("Unknown object type " + objType);

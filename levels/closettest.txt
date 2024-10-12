@@ -1,0 +1,17 @@
+12 11
+XXXXXXXXXXXX
+X..........X
+XXXXXXXX.XXX
+X....X.a.b.X
+X..c.X.e.f.X
+X....X.....X
+X....X.....X
+X..........X
+XX.d.X.....X
+XX...X..p..X
+XXXXXXXXXXXX
+player 0 p
+enemy 1 a e
+enemy 2 b f
+timebox 3 c
+closet 4 d

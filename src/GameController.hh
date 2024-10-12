@@ -48,6 +48,7 @@ private:
     void tickBullet(Bullet* bullet);
     void tickEnemy(Enemy* enemy);
     void tickTimeBox(TimeBox* timeBox);
+    void tickCloset(Closet* closet);
     void tickSwitch(Switch* sw);
     void tickDoor(Door* door);
     void playTick();
