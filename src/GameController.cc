@@ -8,7 +8,8 @@ GameController::GameController()
     , m_backwards(false)
     , m_lastBreakpoint(0)
 {
-    m_gameState = loadGameState("levels/enemytest.txt");
+    //m_gameState = loadGameState("levels/enemytest.txt");
+    m_gameState = loadGameState("levels/testlevel2.txt");
 }
 
 void GameController::mainLoop()
@@ -215,6 +216,8 @@ void GameController::pushTimeline()
 
 void GameController::tickPlayer(Player* player)
 {
+    player->nextState.willInteract = m_controls.interact;
+
     if(player->state.boxOccupied)
     {
         if(m_controls.interact)
@@ -222,10 +225,11 @@ void GameController::tickPlayer(Player* player)
             m_shouldReverse = true;
         }
 
-        //Player can't move or shoot while in a box
+        //Player can't move or act while in a box
         return;
     }
-    else if(m_controls.interact)
+    
+    if(player->state.willInteract)
     {
         for(TimeBox* timeBox : m_gameState->timeBoxes)
         {
@@ -234,23 +238,6 @@ void GameController::tickPlayer(Player* player)
             {
                 m_shouldReverse = true;
                 m_boxToEnter = timeBox;
-                break;
-            }
-        }
-
-        for(Switch* sw : m_gameState->switches)
-        {
-            if(math_util::dist(player->state.pos, sw->state.pos) < (sw->size.x + Player::INTERACT_RADIUS)
-                && sw->backwards == m_backwards)
-            {
-                if(sw->state.aiState == Switch::OFF)
-                {
-                    sw->nextState.aiState = Switch::ON;
-                }
-                else
-                {
-                    sw->nextState.aiState = Switch::OFF;
-                }
                 break;
             }
         }
@@ -603,7 +590,25 @@ void GameController::tickSwitch(Switch* sw)
         return;
     }
 
-    sw->nextState.animIdx = sw->state.aiState;
+    for(Player* player : m_gameState->players)
+    {
+        if(player->state.willInteract
+            && math_util::dist(player->state.pos, sw->state.pos) < (sw->size.x + Player::INTERACT_RADIUS)
+            && player->backwards == m_backwards)
+        {
+            if(sw->state.aiState == Switch::OFF)
+            {
+                sw->nextState.aiState = Switch::ON;
+            }
+            else
+            {
+                sw->nextState.aiState = Switch::OFF;
+            }
+            break;
+        }
+    }
+
+    sw->nextState.animIdx = sw->nextState.aiState;
 }
 
 void GameController::tickDoor(Door* door)

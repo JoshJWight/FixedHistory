@@ -28,6 +28,7 @@ struct ObjectState
         , aiState(0)
         , targetId(-1)
         , chargeTime(0)
+        , willInteract(false)
     {
     }
 
@@ -43,6 +44,7 @@ struct ObjectState
         , aiState(other.aiState)
         , targetId(other.targetId)
         , chargeTime(other.chargeTime)
+        , willInteract(other.willInteract)
     {
     }
 
@@ -66,6 +68,9 @@ struct ObjectState
     int targetId;
     point_t lastSeen;
     int chargeTime;
+
+    //Player actions
+    bool willInteract;
 };
 
 class GameObject
