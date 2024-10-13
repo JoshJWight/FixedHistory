@@ -4,7 +4,7 @@
 #include <algorithm>
 
 Graphics::Graphics(int windowWidth, int windowHeight)
-    :m_window(sf::VideoMode(windowWidth, windowHeight), "NemesisHeist"),
+    :m_window(sf::VideoMode(windowWidth, windowHeight), "Fixed History"),
      m_windowSize(windowWidth, windowHeight),
      m_cameraScale(windowWidth / 200.0)
 {

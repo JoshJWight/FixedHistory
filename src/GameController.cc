@@ -221,8 +221,9 @@ void GameController::tickPlayer(Player* player)
 
     if(player->state.boxOccupied)
     {
-        if(m_controls.interact)
+        if(player->state.willInteract)
         {
+            std::cout << "Exiting box" << std::endl;
             GameObject * container = m_gameState->objects[player->state.attachedObjectId].get();
             if(container->type() == GameObject::TIMEBOX)
             {
@@ -383,6 +384,11 @@ bool GameController::playerVisibleToEnemy(Player* player, Enemy* enemy)
 void GameController::navigateEnemy(Enemy* enemy, point_t target)
 {
     point_t moveToward = search::navigate(m_gameState.get(), enemy->state.pos, target);
+    //If already at destination, or navigation failed, don't move
+    if(moveToward == enemy->state.pos)
+    {
+        return;
+    }
     enemy->nextState.pos += math_util::normalize(moveToward - enemy->state.pos) * enemy->moveSpeed;
     enemy->nextState.angle_deg = math_util::rotateTowardsPoint(enemy->state.angle_deg, enemy->state.pos, moveToward, 5.0f);
 }
