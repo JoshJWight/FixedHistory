@@ -23,6 +23,9 @@ public:
     {
         ObjectType type;
         ObjectState state;
+        //Technically the observation doesn't need to be fulfilled by this object
+        //But using this for drawing observed objects in graphics
+        int id;
     };
     typedef std::vector<Observation> ObservationFrame;
 

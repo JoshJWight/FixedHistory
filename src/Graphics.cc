@@ -60,9 +60,6 @@ void Graphics::draw(GameState * state, int tick, point_t cameraCenter, const std
 
     m_window.clear();
 
-    //Giving the camera some radius helps if the player is near the edge of a tile
-    const float CAMERA_RADIUS = 10.0f;
-
     //Draw each tile of the level
     for(int x = 0; x < state->level->width; ++x)
     {
@@ -89,32 +86,7 @@ void Graphics::draw(GameState * state, int tick, point_t cameraCenter, const std
         }
     }
 
-    //Draw other stuff
-    for(auto it = state->objects.begin(); it != state->objects.end(); ++it)
-    {
-        std::shared_ptr<GameObject> obj = it->second;
-        if(!obj->activeAt(tick))
-        {
-            continue;
-        }
-        if(!obj->state.visible)
-        {
-            continue;
-        }
-        if(!search::checkVisibility(state, m_cameraWorldPos, CAMERA_RADIUS, obj->state.pos, obj->size.x / 2.0f))
-        {
-            continue;
-        }
-
-        sf::Sprite & sprite = obj->getSprite();
-
-        setSpriteScale(sprite, obj->size);
-
-        point_t cameraPos = worldToCamera(obj->state.pos);
-        sprite.setPosition(sf::Vector2f(cameraPos));
-        sprite.setRotation(obj->state.angle_deg * -1.0f);
-        m_window.draw(sprite);
-    }
+    drawObjects(state, tick);
 
     m_window.draw(m_reticleSprite);
 
@@ -130,6 +102,73 @@ void Graphics::draw(GameState * state, int tick, point_t cameraCenter, const std
     }
 
     m_window.display();
+}
+
+void Graphics::drawObj(GameObject* obj)
+{
+    sf::Sprite & sprite = obj->getSprite();
+
+    setSpriteScale(sprite, obj->size);
+
+    point_t cameraPos = worldToCamera(obj->state.pos);
+    sprite.setPosition(sf::Vector2f(cameraPos));
+    sprite.setRotation(obj->state.angle_deg * -1.0f);
+    m_window.draw(sprite);
+}
+void Graphics::drawObjects(GameState* state, int tick)
+{
+    std::map<int, GameObject*> drawnObjects;
+
+    //Draw objects directly visible to the camera
+    for(auto it = state->objects.begin(); it != state->objects.end(); ++it)
+    {
+        std::shared_ptr<GameObject> obj = it->second;
+        if(!obj->activeAt(tick))
+        {
+            continue;
+        }
+        if(!obj->state.visible)
+        {
+            continue;
+        }
+        if(!search::checkVisibility(state, m_cameraWorldPos, CAMERA_RADIUS, obj->state.pos, obj->size.x / 2.0f))
+        {
+            continue;
+        }
+        drawObj(obj.get());
+        drawnObjects[obj->id] = obj.get();
+    }
+
+    //Draw objects observed by recorded players
+    for(auto it = state->players.begin(); it != state->players.end(); ++it)
+    {
+        Player * player = *it;
+        if(!player->recorded)
+        {
+            continue;
+        }
+        if(!player->activeAt(tick))
+        {
+            continue;
+        }
+
+        if(player->state.visible)
+        {
+            drawObj(player);
+            drawnObjects[player->id] = player;
+        }
+
+        for(auto & obj : player->observations[tick])
+        {
+            if(drawnObjects.find(obj.id) != drawnObjects.end())
+            {
+                continue;
+            }
+            GameObject * objPtr = state->objects[obj.id].get();
+            drawObj(objPtr);
+            drawnObjects[obj.id] = objPtr;
+        }
+    }
 }
 
 point_t Graphics::getMousePos()

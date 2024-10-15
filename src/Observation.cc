@@ -38,7 +38,7 @@ void recordObservations(GameState * state, Player * player, int tick)
 
         if(search::checkVisibility(state, player->state.pos, player->radius(), obj->state.pos, obj->radius()))
         {
-            frame.push_back({obj->type(), obj->state});
+            frame.push_back({obj->type(), obj->state, obj->id});
         }
     }
 
