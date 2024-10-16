@@ -1,0 +1,8 @@
+5 5
+XXXXX
+Xp..X
+X.a.X
+X...X
+XXXXX
+player 0 p
+turnstile 1 a

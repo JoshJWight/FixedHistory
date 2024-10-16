@@ -1,26 +1,26 @@
-#ifndef __TIMEBOX_HH__
-#define __TIMEBOX_HH__
+#ifndef __TURNSTILE_HH__
+#define __TURNSTILE_HH__
 
 #include "GameObject.hh"
 
-class TimeBox: public GameObject
+class Turnstile: public GameObject
 {
 
 public:
     constexpr static int OCCUPANCY_SPACING = 60;
 
-    TimeBox(int id)
+    Turnstile(int id)
         : GameObject(id)
         , activeOccupant(nullptr)
     {
         colliderType = BOX;
         size = point_t(25, 25);
-        setupSprites({"box.png"});
+        setupSprites({"turnstile.png"});
     }
 
     ObjectType type() override
     {
-        return TIMEBOX;
+        return TURNSTILE;
     }
 
     GameObject* activeOccupant;

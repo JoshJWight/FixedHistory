@@ -10,7 +10,8 @@ GameController::GameController()
 {
     //m_gameState = loadGameState("levels/enemytest.txt");
     //m_gameState = loadGameState("levels/testlevel2.txt");
-    m_gameState = loadGameState("levels/closettest.txt");
+    //m_gameState = loadGameState("levels/closettest.txt");
+    m_gameState = loadGameState("levels/turnstiletest.txt");
 }
 
 void GameController::mainLoop()

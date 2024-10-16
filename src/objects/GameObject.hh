@@ -85,7 +85,8 @@ public:
         TIMEBOX,
         SWITCH,
         DOOR,
-        CLOSET
+        CLOSET,
+        TURNSTILE
     };
 
     static std::string typeToString(ObjectType type)
@@ -106,6 +107,8 @@ public:
                 return "door";
             case CLOSET:
                 return "closet";
+            case TURNSTILE:
+                return "turnstile";
             default:
                 return "undefined";
         }
