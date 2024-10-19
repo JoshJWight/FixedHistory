@@ -2,14 +2,15 @@
 #define __CLOSET_HH__
 
 #include "GameObject.hh"
+#include "Container.hh"
 
-class Closet : public GameObject
+class Closet : public Container
 {
 public:
     constexpr static int OCCUPANCY_SPACING = 60;
+
     Closet(int id)
-        : GameObject(id)
-        , activeOccupant(nullptr)
+        : Container(id, false, false)
     {
         colliderType = BOX;
         size = point_t(25, 25);
@@ -20,8 +21,6 @@ public:
     {
         return CLOSET;
     }
-
-    GameObject* activeOccupant;
 };
 
 #endif

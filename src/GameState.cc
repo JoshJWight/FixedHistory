@@ -139,17 +139,17 @@ std::shared_ptr<GameState> loadGameState(const std::string& filename)
         else if(objType == "timebox")
         {
             obj = std::make_shared<TimeBox>(id);
-            state->timeBoxes.push_back(static_cast<TimeBox*>(obj.get()));
+            state->containers.push_back(static_cast<TimeBox*>(obj.get()));
         }
         else if (objType == "closet")
         {
             obj = std::make_shared<Closet>(id);
-            state->closets.push_back(static_cast<Closet*>(obj.get()));
+            state->containers.push_back(static_cast<Closet*>(obj.get()));
         }
         else if (objType == "turnstile")
         {
             obj = std::make_shared<Turnstile>(id);
-            state->turnstiles.push_back(static_cast<Turnstile*>(obj.get()));
+            state->containers.push_back(static_cast<Turnstile*>(obj.get()));
         }
         else
         {

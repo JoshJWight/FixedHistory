@@ -2,16 +2,15 @@
 #define __TIMEBOX_HH__
 
 #include "GameObject.hh"
+#include "Container.hh"
 
-class TimeBox: public GameObject
+class TimeBox: public Container
 {
 
 public:
-    constexpr static int OCCUPANCY_SPACING = 60;
 
     TimeBox(int id)
-        : GameObject(id)
-        , activeOccupant(nullptr)
+        : Container(id, true, true)
     {
         colliderType = BOX;
         size = point_t(25, 25);
@@ -22,8 +21,6 @@ public:
     {
         return TIMEBOX;
     }
-
-    GameObject* activeOccupant;
 };
 
 #endif

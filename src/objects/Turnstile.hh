@@ -2,16 +2,15 @@
 #define __TURNSTILE_HH__
 
 #include "GameObject.hh"
+#include "Container.hh"
 
-class Turnstile: public GameObject
+class Turnstile: public Container
 {
 
 public:
-    constexpr static int OCCUPANCY_SPACING = 60;
 
     Turnstile(int id)
-        : GameObject(id)
-        , activeOccupant(nullptr)
+        : Container(id, true, false)
     {
         colliderType = BOX;
         size = point_t(25, 25);
@@ -22,8 +21,6 @@ public:
     {
         return TURNSTILE;
     }
-
-    GameObject* activeOccupant;
 };
 
 #endif

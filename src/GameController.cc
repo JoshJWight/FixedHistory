@@ -194,7 +194,7 @@ void GameController::pushTimeline()
     }
     else if(oldPlayer->state.boxOccupied)
     {
-        TimeBox* box = dynamic_cast<TimeBox*>(m_gameState->objects[oldPlayer->state.attachedObjectId].get());
+        Container* box = dynamic_cast<Container*>(m_gameState->objects[oldPlayer->state.attachedObjectId].get());
 
         newPlayer->state.boxOccupied = false;
         newPlayer->state.attachedObjectId = -1;
@@ -225,15 +225,16 @@ void GameController::tickPlayer(Player* player)
         if(player->state.willInteract)
         {
             std::cout << "Exiting box" << std::endl;
-            GameObject * container = m_gameState->objects[player->state.attachedObjectId].get();
-            if(container->type() == GameObject::TIMEBOX)
+            Container * container = dynamic_cast<Container*>(m_gameState->objects[player->state.attachedObjectId].get());
+            if(container->reverseOnExit)
             {
                 m_shouldReverse = true;
             }
-            else if(container->type() == GameObject::CLOSET)
+            else
             {
-                Closet* closet = dynamic_cast<Closet*>(container);
-                closet->activeOccupant = nullptr;
+                container->activeOccupant = nullptr;
+                container->nextState.boxOccupied = false;
+                container->nextState.attachedObjectId = -1;
                 player->nextState.boxOccupied = false;
                 player->nextState.attachedObjectId = -1;
                 player->nextState.visible = true;
@@ -246,27 +247,25 @@ void GameController::tickPlayer(Player* player)
     
     if(player->state.willInteract)
     {
-        for(TimeBox* timeBox : m_gameState->timeBoxes)
+        for(Container* container: m_gameState->containers)
         {
-            if(math_util::dist(player->state.pos, timeBox->state.pos) < (timeBox->size.x + Player::INTERACT_RADIUS)
-                && !timeBox->state.boxOccupied)
+            if(math_util::dist(player->state.pos, container->state.pos) < (container->size.x + Player::INTERACT_RADIUS)
+                && !container->state.boxOccupied)
             {
-                m_shouldReverse = true;
-                m_boxToEnter = timeBox;
-                break;
-            }
-        }
-
-        for(Closet* closet: m_gameState->closets)
-        {
-            if(math_util::dist(player->state.pos, closet->state.pos) < (closet->size.x + Player::INTERACT_RADIUS)
-                && !closet->activeOccupant)
-            {
-                closet->activeOccupant = player;
-                player->nextState.boxOccupied = true;
-                player->nextState.attachedObjectId = closet->id;
-                player->nextState.visible = false;
-                break;
+                if(container->reverseOnEnter)
+                {
+                    m_shouldReverse = true;
+                    m_boxToEnter = container;
+                    break;
+                }
+                else
+                {
+                    container->activeOccupant = player;
+                    player->nextState.boxOccupied = true;
+                    player->nextState.attachedObjectId = container->id;
+                    player->nextState.visible = false;
+                    break;
+                }
             }
         }
     }
@@ -563,15 +562,16 @@ void GameController::tickEnemy(Enemy* enemy)
     }
 }
 
-void GameController::tickTimeBox(TimeBox* timeBox)
+
+void GameController::tickContainer(Container* container)
 {
-    if(timeBox->activeOccupant)
+    if(container->activeOccupant)
     {
-        timeBox->nextState.boxOccupied = true;
-        timeBox->nextState.attachedObjectId = timeBox->activeOccupant->id;
+        container->nextState.boxOccupied = true;
+        container->nextState.attachedObjectId = container->activeOccupant->id;
 
         //If about to run into a point where someone else was in the box, kick the current occupant out
-        for(int i=1; i<TimeBox::OCCUPANCY_SPACING + 300; i++)
+        for(int i=1; i<Container::OCCUPANCY_SPACING + 300; i++)
         {
             int timestepToCheck;
             if(m_backwards)
@@ -583,87 +583,48 @@ void GameController::tickTimeBox(TimeBox* timeBox)
                 timestepToCheck = m_currentTick + i;
             }
 
-            if(timestepToCheck < 0 || timestepToCheck >= m_gameState->historyBuffers.back()[timeBox->id].size())
+            if(timestepToCheck < 0 || timestepToCheck >= m_gameState->historyBuffers.back()[container->id].size())
             {
                 break;
             }
 
-            ObjectState & state = m_gameState->historyBuffers.back()[timeBox->id][timestepToCheck];
-            if(state.boxOccupied && state.attachedObjectId != timeBox->activeOccupant->id)
+            ObjectState & state = m_gameState->historyBuffers.back()[container->id][timestepToCheck];
+            if(state.boxOccupied && state.attachedObjectId != container->activeOccupant->id)
             {
-                if(i<TimeBox::OCCUPANCY_SPACING)
+                if(i<Container::OCCUPANCY_SPACING)
                 {
-                    m_shouldReverse = true;
+                    if(container->reverseOnExit)
+                    {
+                        m_shouldReverse = true;
+                    }
+                    else
+                    {
+                        container->activeOccupant->nextState.boxOccupied = false;
+                        container->activeOccupant->nextState.attachedObjectId = -1;
+                        container->activeOccupant->nextState.visible = true;
+                        container->activeOccupant = nullptr;
+
+                        container->nextState.boxOccupied = false;
+                        container->nextState.attachedObjectId = -1;
+                    }
                 }
                 else
                 {
-                    int secondsLeft = (i - TimeBox::OCCUPANCY_SPACING) / 60;
+                    int secondsLeft = (i - Container::OCCUPANCY_SPACING) / 60;
                     m_statusString = "AUTO-EJECT IN " + std::to_string(secondsLeft);
-                    break;
                 }
-            }
-        }
-    } 
-    else if(m_currentTick >= m_gameState->historyBuffers.back()[timeBox->id].size())
-    {
-        timeBox->nextState.boxOccupied = false;
-        timeBox->nextState.attachedObjectId = -1;
-    }
-    else
-    {
-        timeBox->nextState = m_gameState->historyBuffers.back()[timeBox->id][m_currentTick];
-    }
-}
-
-void GameController::tickCloset(Closet* closet)
-{
-    if(closet->activeOccupant)
-    {
-        closet->nextState.boxOccupied = true;
-        closet->nextState.attachedObjectId = closet->activeOccupant->id;
-
-        //If about to run into a point where someone else was in the box, kick the current occupant out
-        for(int i=1; i<Closet::OCCUPANCY_SPACING + 300; i++)
-        {
-            int timestepToCheck;
-            if(m_backwards)
-            {
-                timestepToCheck = m_currentTick - i;
-            }
-            else
-            {
-                timestepToCheck = m_currentTick + i;
-            }
-
-            if(timestepToCheck < 0 || timestepToCheck >= m_gameState->historyBuffers.back()[closet->id].size())
-            {
                 break;
             }
-
-            ObjectState & state = m_gameState->historyBuffers.back()[closet->id][timestepToCheck];
-            if(state.boxOccupied && state.attachedObjectId != closet->activeOccupant->id)
-            {
-                if(i<Closet::OCCUPANCY_SPACING)
-                {
-                    m_shouldReverse = true;
-                }
-                else
-                {
-                    int secondsLeft = (i - Closet::OCCUPANCY_SPACING) / 60;
-                    m_statusString = "AUTO-EJECT IN " + std::to_string(secondsLeft);
-                    break;
-                }
-            }
         }
     } 
-    else if(m_currentTick >= m_gameState->historyBuffers.back()[closet->id].size())
+    else if(m_currentTick >= m_gameState->historyBuffers.back()[container->id].size())
     {
-        closet->nextState.boxOccupied = false;
-        closet->nextState.attachedObjectId = -1;
+        container->nextState.boxOccupied = false;
+        container->nextState.attachedObjectId = -1;
     }
     else
     {
-        closet->nextState = m_gameState->historyBuffers.back()[closet->id][m_currentTick];
+        container->nextState = m_gameState->historyBuffers.back()[container->id][m_currentTick];
     }
 }
 
@@ -735,14 +696,9 @@ void GameController::playTick()
         tickEnemy(enemy);
     }
 
-    for(TimeBox* timeBox : m_gameState->timeBoxes)
+    for(Container* container : m_gameState->containers)
     {
-        tickTimeBox(timeBox);
-    }
-
-    for(Closet* closet : m_gameState->closets)
-    {
-        tickCloset(closet);
+        tickContainer(container);
     }
 
     for(Switch* sw : m_gameState->switches)

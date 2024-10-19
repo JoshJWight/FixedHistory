@@ -5,6 +5,9 @@
 #include <objects/TimeBox.hh>
 #include <objects/Switch.hh>
 #include <objects/Door.hh>
+#include <objects/Closet.hh>
+#include <objects/Turnstile.hh>
+#include <objects/Container.hh>
 #include "Graphics.hh"
 #include "TextureBank.hh"
 #include "Level.hh"
@@ -47,8 +50,7 @@ private:
     void tickPlayer(Player* player);
     void tickBullet(Bullet* bullet);
     void tickEnemy(Enemy* enemy);
-    void tickTimeBox(TimeBox* timeBox);
-    void tickCloset(Closet* closet);
+    void tickContainer(Container* container);
     void tickSwitch(Switch* sw);
     void tickDoor(Door* door);
     void playTick();
@@ -73,5 +75,5 @@ private:
 
     //Flags only valid for the current tick
     bool m_shouldReverse;
-    TimeBox* m_boxToEnter;
+    Container* m_boxToEnter;
 };
