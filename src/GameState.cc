@@ -151,6 +151,22 @@ std::shared_ptr<GameState> loadGameState(const std::string& filename)
             obj = std::make_shared<Turnstile>(id);
             state->containers.push_back(static_cast<Turnstile*>(obj.get()));
         }
+        else if (objType == "spikes")
+        {
+            if(tokens.size() < 5)
+            {
+                throw std::runtime_error("Not enough tokens for spikes");
+            }
+            int downDuration = std::stoi(tokens[3]);
+            int upDuration = std::stoi(tokens[4]);
+            int cycleOffset = 0;
+            if(tokens.size() > 5)
+            {
+                cycleOffset = std::stoi(tokens[5]);
+            }
+            obj = std::make_shared<Spikes>(id, downDuration, upDuration, cycleOffset);
+            state->spikes.push_back(static_cast<Spikes*>(obj.get()));
+        }
         else
         {
             throw std::runtime_error("Unknown object type " + objType);

@@ -8,10 +8,7 @@ GameController::GameController()
     , m_backwards(false)
     , m_lastBreakpoint(0)
 {
-    //m_gameState = loadGameState("levels/enemytest.txt");
-    //m_gameState = loadGameState("levels/testlevel2.txt");
-    //m_gameState = loadGameState("levels/closettest.txt");
-    m_gameState = loadGameState("levels/turnstiletest.txt");
+    m_gameState = loadGameState("levels/turnstiles_n_spikes.txt");
 }
 
 void GameController::mainLoop()
@@ -683,6 +680,45 @@ void GameController::tickDoor(Door* door)
     door->nextState.animIdx = door->nextState.aiState;
 }
 
+void GameController::tickSpikes(Spikes* spikes)
+{
+    if(!spikes->activeAt(m_currentTick))
+    {
+        return;
+    }
+
+    if(spikes->backwards != m_backwards)
+    {
+        spikes->nextState = m_gameState->historyBuffers.back()[spikes->id][m_currentTick];
+        return;
+    }
+
+    int pointInCycle = (m_currentTick + spikes->cycleOffset) % (spikes->downDuration + spikes->upDuration);
+    if(pointInCycle < spikes->downDuration)
+    {
+        if(spikes->downDuration - pointInCycle < Spikes::WARNING_DURATION)
+        {
+            spikes->nextState.aiState = Spikes::WARNING;
+        }
+        else
+        {
+            spikes->nextState.aiState = Spikes::DOWN;
+        }
+    }
+    else
+    {
+        if(spikes->upDuration - (pointInCycle - spikes->downDuration) < Spikes::WARNING_DURATION)
+        {
+            spikes->nextState.aiState = Spikes::WARNING;
+        }
+        else
+        {
+            spikes->nextState.aiState = Spikes::UP;
+        }
+    }
+    spikes->nextState.animIdx = spikes->nextState.aiState;
+}
+
 void GameController::playTick()
 {
     tickPlayer(m_gameState->players.back());
@@ -709,6 +745,11 @@ void GameController::playTick()
     for(Door* door : m_gameState->doors)
     {
         tickDoor(door);
+    }
+
+    for(Spikes* spikes : m_gameState->spikes)
+    {
+        tickSpikes(spikes);
     }
 
     //Apply next states to current states

@@ -86,7 +86,8 @@ public:
         SWITCH,
         DOOR,
         CLOSET,
-        TURNSTILE
+        TURNSTILE,
+        SPIKES
     };
 
     static std::string typeToString(ObjectType type)
@@ -109,6 +110,8 @@ public:
                 return "closet";
             case TURNSTILE:
                 return "turnstile";
+            case SPIKES:
+                return "spikes";
             default:
                 return "undefined";
         }

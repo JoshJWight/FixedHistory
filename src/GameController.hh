@@ -8,6 +8,7 @@
 #include <objects/Closet.hh>
 #include <objects/Turnstile.hh>
 #include <objects/Container.hh>
+#include <objects/Spikes.hh>
 #include "Graphics.hh"
 #include "TextureBank.hh"
 #include "Level.hh"
@@ -53,6 +54,7 @@ private:
     void tickContainer(Container* container);
     void tickSwitch(Switch* sw);
     void tickDoor(Door* door);
+    void tickSpikes(Spikes* spikes);
     void playTick();
 
     void tick(TickType type);

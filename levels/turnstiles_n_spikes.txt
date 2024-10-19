@@ -1,0 +1,22 @@
+6 13
+XXXXXX
+X....X
+X..b.X
+X....X
+XXgXXX
+XXfXXX
+XXeXXX
+XXdXXX
+XXcXXX
+X....X
+X..a.X
+Xp...X
+XXXXXX
+player 0 p
+turnstile 1 a
+turnstile 2 b
+spikes 3 c 120 120 40
+spikes 4 d 120 120 80
+spikes 5 e 120 120 120
+spikes 6 f 120 120 160
+spikes 7 g 120 120 200

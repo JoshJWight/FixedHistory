@@ -11,6 +11,7 @@
 #include "objects/Closet.hh"
 #include "objects/Turnstile.hh"
 #include "objects/Container.hh"
+#include "objects/Spikes.hh"
 #include <objects/GameObject.hh>
 
 struct HistoryBuffer
@@ -50,6 +51,7 @@ struct GameState {
     std::vector<Switch*> switches;
     std::vector<Door*> doors;
     std::vector<Container*> containers;
+    std::vector<Spikes*> spikes;
 
     GameState()
         : level(nullptr)
