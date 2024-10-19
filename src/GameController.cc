@@ -54,7 +54,7 @@ bool GameController::checkParadoxes()
 {
     //Note: m_currentTick is still the tick we just finished doing
 
-    //Death of any player
+    //Player being hit by a bullet
     for(Player* player : m_gameState->players)
     {
         if(!player->activeAt(m_currentTick))
@@ -68,10 +68,33 @@ bool GameController::checkParadoxes()
             {
                 if(player->id == m_gameState->players.back()->id)
                 {
-                    m_statusString = "YOU DIED";
+                    m_statusString = "YOU GOT SHOT";
                 }
                 else{
-                    m_statusString = "A PAST YOU DIED";
+                    m_statusString = "A PAST YOU GOT SHOT";
+                }
+                return true;
+            }
+        }
+    }
+    //Player standing on spikes
+    for(Player* player : m_gameState->players)
+    {
+        if(!player->activeAt(m_currentTick))
+        {
+            continue;
+        }
+
+        for(Spikes* spikes : m_gameState->spikes)
+        {
+            if(spikes->activeAt(m_currentTick) && spikes->state.aiState == Spikes::UP && player->isColliding(*spikes))
+            {
+                if(player->id == m_gameState->players.back()->id)
+                {
+                    m_statusString = "YOU GOT SPIKED";
+                }
+                else{
+                    m_statusString = "A PAST YOU GOT SPIKED";
                 }
                 return true;
             }
