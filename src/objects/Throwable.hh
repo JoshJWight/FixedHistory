@@ -16,8 +16,8 @@ public:
     Throwable(int id)
         : GameObject(id)
         , throwSpeed(5.0f)
-        , drag(0.1f)
-        , bounciness(0.5f)
+        , drag(0.03f)
+        , bounciness(0.80f)
         , deadly(false)
     {
     }
