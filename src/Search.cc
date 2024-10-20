@@ -200,7 +200,7 @@ float bounceOffWall(GameState * state, const point_t & startPoint, const point_t
     float incomingAngle = math_util::angleBetween(startPoint, obstructedPoint);
     float normalAngle = math_util::angleBetween(obstructedTilePos, startTilePos);
 
-    float outgoingAngle = 2 * normalAngle - incomingAngle;
+    float outgoingAngle = 2 * normalAngle - incomingAngle + 180;
     while(outgoingAngle < -180)
     {
         outgoingAngle += 360;

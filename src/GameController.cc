@@ -849,6 +849,11 @@ void GameController::playTick()
         tickSpikes(spikes);
     }
 
+    for(Throwable* throwable : m_gameState->throwables)
+    {
+        tickThrowable(throwable);
+    }
+
     //Apply next states to current states
     for(auto pair : m_gameState->objects)
     {
