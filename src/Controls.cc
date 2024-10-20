@@ -21,6 +21,9 @@ void Controls::tick()
 
     fire = sf::Mouse::isButtonPressed(sf::Mouse::Left);
     interact = sf::Keyboard::isKeyPressed(sf::Keyboard::F) && !m_lastStateMap[sf::Keyboard::F];
+    bool rightMouse = sf::Mouse::isButtonPressed(sf::Mouse::Right);
+    throw_ = rightMouse && !m_rightMouseLastState;
+    m_rightMouseLastState = rightMouse;
 
     rewind = sf::Keyboard::isKeyPressed(sf::Keyboard::LShift);
     reverse = sf::Keyboard::isKeyPressed(sf::Keyboard::E) && !m_lastStateMap[sf::Keyboard::E];

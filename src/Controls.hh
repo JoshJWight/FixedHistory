@@ -20,6 +20,7 @@ public:
 
     bool fire;
     bool interact;
+    bool throw_; //throw is a keyword in C++
 
     bool rewind;
     bool reverse;
@@ -27,6 +28,8 @@ public:
 private:
     std::map<sf::Keyboard::Key, bool> m_lastStateMap;
     std::vector<sf::Keyboard::Key> m_actOnPressKeys;
+
+    bool m_rightMouseLastState;
 };
 
 #endif

@@ -55,6 +55,7 @@ private:
     void tickSwitch(Switch* sw);
     void tickDoor(Door* door);
     void tickSpikes(Spikes* spikes);
+    void tickThrowable(Throwable* throwable);
     void playTick();
 
     void tick(TickType type);

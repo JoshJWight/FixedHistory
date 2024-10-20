@@ -8,7 +8,7 @@ GameController::GameController()
     , m_backwards(false)
     , m_lastBreakpoint(0)
 {
-    m_gameState = loadGameState("levels/turnstiles_n_spikes.txt");
+    m_gameState = loadGameState("levels/throwabletest.txt");
 }
 
 void GameController::mainLoop()
@@ -239,6 +239,7 @@ void GameController::pushTimeline()
 void GameController::tickPlayer(Player* player)
 {
     player->nextState.willInteract = m_controls.interact;
+    player->nextState.willThrow = m_controls.throw_;
 
     if(player->state.boxOccupied)
     {
@@ -740,6 +741,79 @@ void GameController::tickSpikes(Spikes* spikes)
         }
     }
     spikes->nextState.animIdx = spikes->nextState.aiState;
+}
+
+void GameController::tickThrowable(Throwable* throwable)
+{
+    if(!throwable->activeAt(m_currentTick))
+    {
+        return;
+    }
+
+    if(throwable->backwards != m_backwards)
+    {
+        //TODO we may want to have backwards throwables be usable in the future
+        throwable->nextState = m_gameState->historyBuffers.back()[throwable->id][m_currentTick];
+        return;
+    }
+
+    if(throwable->state.aiState == Throwable::STILL)
+    {
+        for(Player* player : m_gameState->players)
+        {
+            if(player->state.willThrow
+                && math_util::dist(player->state.pos, throwable->state.pos) < (throwable->size.x + Player::INTERACT_RADIUS)
+                && player->backwards == m_backwards
+                && !player->state.holdingObject)
+            {
+                throwable->nextState.aiState = Throwable::HELD;
+                throwable->nextState.attachedObjectId = player->id;
+                player->nextState.heldObjectId = throwable->id;
+                player->nextState.holdingObject = true;
+                break;
+            }
+        }
+    }
+    else if(throwable->state.aiState == Throwable::THROWN)
+    {
+        point_t nextPos = math_util::moveInDirection(throwable->state.pos, throwable->state.angle_deg, throwable->state.speed);
+        if(m_gameState->level->tileAt(nextPos) == Level::WALL)
+        {
+            float bounceAngle = search::bounceOffWall(m_gameState.get(), throwable->state.pos, nextPos);
+            throwable->nextState.angle_deg = bounceAngle;
+            throwable->nextState.speed *= throwable->bounciness;
+            throwable->nextState.pos = math_util::moveInDirection(throwable->state.pos, bounceAngle, throwable->nextState.speed);
+        }
+        else
+        {
+            throwable->nextState.pos = nextPos;
+        }
+        throwable->nextState.speed -= throwable->drag;
+
+        if(throwable->nextState.speed < 0.0f)
+        {
+            throwable->nextState.aiState = Throwable::STILL;
+            throwable->nextState.speed = 0.0f;
+        }
+    }
+    else if(throwable->state.aiState == Throwable::HELD)
+    {
+        Player * holder = dynamic_cast<Player*>(m_gameState->objects[throwable->state.attachedObjectId].get());
+        throwable->nextState.pos = math_util::moveInDirection(holder->state.pos, holder->state.angle_deg - 30, holder->size.x);
+        throwable->nextState.angle_deg = holder->state.angle_deg;
+        if(holder->state.willThrow)
+        {
+            throwable->nextState.aiState = Throwable::THROWN;
+            throwable->nextState.attachedObjectId = -1;
+            holder->nextState.heldObjectId = -1;
+            holder->nextState.holdingObject = false;
+            throwable->nextState.speed = throwable->throwSpeed;
+        }
+    }
+    else
+    {
+        throw std::runtime_error("Unknown throwable state");
+    }
 }
 
 void GameController::playTick()

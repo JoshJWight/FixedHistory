@@ -167,6 +167,11 @@ std::shared_ptr<GameState> loadGameState(const std::string& filename)
             obj = std::make_shared<Spikes>(id, downDuration, upDuration, cycleOffset);
             state->spikes.push_back(static_cast<Spikes*>(obj.get()));
         }
+        else if (objType == "objective")
+        {
+            obj = std::make_shared<Objective>(id);
+            state->throwables.push_back(static_cast<Objective*>(obj.get()));
+        }
         else
         {
             throw std::runtime_error("Unknown object type " + objType);

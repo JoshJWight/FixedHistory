@@ -1,6 +1,6 @@
 6 13
 XXXXXX
-X....X
+Xh...X
 X..b.X
 X....X
 XXgXXX
@@ -20,3 +20,4 @@ spikes 4 d 120 120 80
 spikes 5 e 120 120 120
 spikes 6 f 120 120 160
 spikes 7 g 120 120 200
+objective 8 h

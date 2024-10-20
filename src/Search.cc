@@ -186,4 +186,31 @@ point_t navigate(GameState * state, const point_t & start, const point_t & end) 
 
 }
 
+float bounceOffWall(GameState * state, const point_t & startPoint, const point_t & obstructedPoint)
+{
+    point_t startTilePos = state->level->nodeAt(startPoint)->pos;
+    point_t obstructedTilePos = state->level->nodeAt(obstructedPoint)->pos;
+
+    if(startTilePos == obstructedTilePos)
+    {
+        std::cout << "Bounce off wall: start and obstructed points are in the same tile!" << std::endl;
+        return math_util::angleBetween(startPoint, obstructedPoint);
+    }
+
+    float incomingAngle = math_util::angleBetween(startPoint, obstructedPoint);
+    float normalAngle = math_util::angleBetween(obstructedTilePos, startTilePos);
+
+    float outgoingAngle = 2 * normalAngle - incomingAngle;
+    while(outgoingAngle < -180)
+    {
+        outgoingAngle += 360;
+    }
+    while(outgoingAngle > 180)
+    {
+        outgoingAngle -= 360;
+    }
+
+    return outgoingAngle;
+}
+
 }

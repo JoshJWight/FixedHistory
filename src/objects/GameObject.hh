@@ -29,6 +29,10 @@ struct ObjectState
         , targetId(-1)
         , chargeTime(0)
         , willInteract(false)
+        , willThrow(false)
+        , holdingObject(false)
+        , heldObjectId(-1)
+        , speed(0)
     {
     }
 
@@ -45,6 +49,10 @@ struct ObjectState
         , targetId(other.targetId)
         , chargeTime(other.chargeTime)
         , willInteract(other.willInteract)
+        , willThrow(other.willThrow)
+        , holdingObject(other.holdingObject)
+        , heldObjectId(other.heldObjectId)
+        , speed(other.speed)
     {
     }
 
@@ -71,6 +79,14 @@ struct ObjectState
 
     //Player actions
     bool willInteract;
+    bool willThrow;
+
+    //Separate ID for held object since the player can hold an item and go in a box at the same time.
+    bool holdingObject;
+    int heldObjectId;
+
+    //Used for throwables
+    float speed;
 };
 
 class GameObject
@@ -87,7 +103,8 @@ public:
         DOOR,
         CLOSET,
         TURNSTILE,
-        SPIKES
+        SPIKES,
+        OBJECTIVE
     };
 
     static std::string typeToString(ObjectType type)
@@ -112,6 +129,8 @@ public:
                 return "turnstile";
             case SPIKES:
                 return "spikes";
+            case OBJECTIVE:
+                return "objective";
             default:
                 return "undefined";
         }
