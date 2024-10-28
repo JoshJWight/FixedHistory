@@ -130,6 +130,8 @@ void GameController::checkBulletUndo()
         return;
     }
 
+    //TODO: if multiple bullets are created on the same tick, need to deal with all of them
+    //tbh every object should get an originTimeline so we can check everything
     bool undo = m_gameState->bullets.back()->originTimeline == m_currentTimeline;
     if(m_backwards)
     {
@@ -224,6 +226,42 @@ void GameController::pushTimeline()
         box->activeOccupant = nullptr;
     }
 
+    if(oldPlayer->state.holdingObject)
+    {
+        std::cout << "Holding object when timeline was pushed" << std::endl;
+        Throwable* oldHeldObject;
+        std::shared_ptr<Throwable> newHeldObject;
+
+        if(m_gameState->objects[oldPlayer->state.heldObjectId]->type() == GameObject::OBJECTIVE)
+        {
+            oldHeldObject = dynamic_cast<Objective*>(m_gameState->objects[oldPlayer->state.heldObjectId].get());
+            newHeldObject = std::make_shared<Objective>(m_gameState->nextID(), dynamic_cast<Objective*>(m_gameState->objects[oldPlayer->state.heldObjectId].get()));
+        }
+        else
+        {
+            throw std::runtime_error("Unknown object type held by player");
+        }
+        newPlayer->state.heldObjectId = newHeldObject->id;
+        //newHeldObject->state.pos = newPlayer->state.pos;
+        newHeldObject->state.visible = newPlayer->state.visible;
+        newHeldObject->state.attachedObjectId = newPlayer->id;
+        if(m_backwards)
+        {
+            oldHeldObject->ending = m_currentTick;
+            oldHeldObject->hasEnding = true;
+            newHeldObject->ending = m_currentTick;
+            newHeldObject->hasEnding = true;
+        }
+        else
+        {
+            oldHeldObject->beginning = m_currentTick;
+            newHeldObject->beginning = m_currentTick;
+        }
+        m_gameState->objects[newHeldObject->id] = newHeldObject;
+        m_gameState->historyBuffers.back().buffer[newHeldObject->id] = std::vector<ObjectState>(m_currentTick+1);
+        m_gameState->historyBuffers.back().buffer[newHeldObject->id][m_currentTick] = newHeldObject->state;
+        m_gameState->throwables.push_back(newHeldObject.get());
+    }
 
     //Create a new history buffer copying the last one
     m_gameState->historyBuffers.push_back(HistoryBuffer(m_gameState->historyBuffers.back(), m_currentTick));
@@ -259,6 +297,12 @@ void GameController::tickPlayer(Player* player)
                 player->nextState.boxOccupied = false;
                 player->nextState.attachedObjectId = -1;
                 player->nextState.visible = true;
+
+                if(player->state.holdingObject)
+                {
+                    Throwable* throwable = dynamic_cast<Throwable*>(m_gameState->objects[player->state.heldObjectId].get());
+                    throwable->nextState.visible = true;
+                }
             }
         }
 
@@ -285,6 +329,12 @@ void GameController::tickPlayer(Player* player)
                     player->nextState.boxOccupied = true;
                     player->nextState.attachedObjectId = container->id;
                     player->nextState.visible = false;
+
+                    if(player->state.holdingObject)
+                    {
+                        Throwable* throwable = dynamic_cast<Throwable*>(m_gameState->objects[player->state.heldObjectId].get());
+                        throwable->nextState.visible = false;
+                    }
                     break;
                 }
             }
@@ -620,6 +670,12 @@ void GameController::tickContainer(Container* container)
                     }
                     else
                     {
+                        if(container->activeOccupant->state.holdingObject)
+                        {
+                            Throwable* throwable = dynamic_cast<Throwable*>(m_gameState->objects[container->activeOccupant->state.heldObjectId].get());
+                            throwable->nextState.visible = true;
+                        }
+
                         container->activeOccupant->nextState.boxOccupied = false;
                         container->activeOccupant->nextState.attachedObjectId = -1;
                         container->activeOccupant->nextState.visible = true;

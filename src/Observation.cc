@@ -20,6 +20,12 @@ void recordObservations(GameState * state, Player * player, int tick)
     Player::ObservationFrame & frame = player->observations[tick];
     frame.clear();
 
+    //Player can't see anything if they're in a box
+    if(player->state.boxOccupied)
+    {
+        return;
+    }
+
     for(auto & objpair : state->objects)
     {
         GameObject * obj = objpair.second.get();
@@ -72,6 +78,11 @@ void printObservations(int playerID, const Player::ObservationFrame & frame, Pla
 
 std::string checkObservations(GameState * state, Player * player, int tick)
 {
+    if(player->state.boxOccupied)
+    {
+        return "";
+    }
+
     std::string result = "";
     if(player->observations.size() <= tick)
     {

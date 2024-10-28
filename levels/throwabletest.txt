@@ -1,10 +1,18 @@
-7 7
+7 12
 XXXXXXX
 X....XX
 XXX...X
 X...o.X
 X..X..X
 XX..p.X
+X.a...X
+X.....X
+X..b..X
+X.....X
+X...c.X
 XXXXXXX
 player 0 p
 objective 1 o
+timebox 2 a
+closet 3 b
+turnstile 4 c

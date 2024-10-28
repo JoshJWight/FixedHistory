@@ -22,6 +22,15 @@ public:
     {
     }
 
+    Throwable(int id, Throwable* ancestor)
+        : GameObject(id, ancestor)
+        , throwSpeed(ancestor->throwSpeed)
+        , drag(ancestor->drag)
+        , bounciness(ancestor->bounciness)
+        , deadly(ancestor->deadly)
+    {
+    }
+
     //Initial speed when thrown
     const float throwSpeed;
     //Speed lost per tick

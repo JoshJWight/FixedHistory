@@ -15,6 +15,11 @@ public:
         setupSprites({"trophy.png"});
     }
 
+    Objective(int id, Objective* ancestor)
+        : Throwable(id, ancestor)
+    {
+    }
+
     ObjectType type() override
     {
         return OBJECTIVE;
