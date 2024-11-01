@@ -191,9 +191,19 @@ public:
 
     bool backwards;
 
+    //First tick where this object appears
     int beginning;
+    //Has this object reached an ending in the current continuity?
     bool hasEnding;
+    //Last tick where this object appears
     int ending;
+
+    //Timeline where this object first appeared
+    int initialTimeline;
+    //Has this object reached an ending/beginning in the current continuity?
+    bool hasFinalTimeline;
+    //Timeline where this object's end state was established
+    int finalTimeline;
 
     bool recorded;    
 };

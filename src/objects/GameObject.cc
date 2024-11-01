@@ -9,6 +9,9 @@ GameObject::GameObject(int id)
     , beginning(0)
     , hasEnding(false)
     , ending(0)
+    , initialTimeline(0)
+    , hasFinalTimeline(false)
+    , finalTimeline(0)
     , recorded(false)
 {
 
@@ -24,6 +27,9 @@ GameObject::GameObject(int id, GameObject* ancestor)
     , beginning(0)
     , hasEnding(false)
     , ending(0)
+    , initialTimeline(0)
+    , hasFinalTimeline(false)
+    , finalTimeline(0)
     , recorded(false)
 {
 

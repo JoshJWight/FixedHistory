@@ -40,7 +40,6 @@ private:
 
     void addObject(std::shared_ptr<GameObject> obj);
 
-    void checkBulletUndo();
     void restoreState(int tick);
     void popTimeline();
     void pushTimeline();

@@ -123,36 +123,10 @@ bool GameController::checkParadoxes()
     return false;
 }
 
-void GameController::checkBulletUndo()
-{
-    if(m_gameState->bullets.empty())
-    {
-        return;
-    }
-
-    //TODO: if multiple bullets are created on the same tick, need to deal with all of them
-    //tbh every object should get an originTimeline so we can check everything
-    bool undo = m_gameState->bullets.back()->originTimeline == m_currentTimeline;
-    if(m_backwards)
-    {
-        undo &= m_gameState->bullets.back()->ending < m_currentTick;
-    }
-    else
-    {
-        undo &= m_gameState->bullets.back()->beginning > m_currentTick;
-    }
-
-    if(undo)
-    {
-        m_gameState->objects.erase(m_gameState->bullets.back()->id);
-        m_gameState->bullets.pop_back();
-    }
-}
-
 void GameController::restoreState(int tick)
 {
-    checkBulletUndo();
     m_gameState->restoreState(tick);
+    m_gameState->doRewindCleanup(tick, m_currentTimeline);
 }
 
 void GameController::popTimeline()
@@ -169,10 +143,12 @@ void GameController::popTimeline()
     if(m_backwards)
     {
         m_gameState->players.back()->beginning = 0;
+        m_gameState->players.back()->hasFinalTimeline = false;
     }
     else
     {
         m_gameState->players.back()->hasEnding = false;
+        m_gameState->players.back()->hasFinalTimeline = false;
     }
 
     m_gameState->historyBuffers.pop_back();
@@ -190,6 +166,10 @@ void GameController::pushTimeline()
     std::shared_ptr<Player> newPlayer(new Player(m_gameState->nextID(), oldPlayer));
     std::cout << "Creating new player with ID " << newPlayer->id << std::endl;
     oldPlayer->recorded = true;
+
+    oldPlayer->hasFinalTimeline = true;
+    oldPlayer->finalTimeline = m_currentTimeline - 1;
+    newPlayer->initialTimeline = m_currentTimeline;
     if(m_backwards)
     {
         oldPlayer->hasEnding = true;
@@ -245,6 +225,10 @@ void GameController::pushTimeline()
         //newHeldObject->state.pos = newPlayer->state.pos;
         newHeldObject->state.visible = newPlayer->state.visible;
         newHeldObject->state.attachedObjectId = newPlayer->id;
+
+        oldHeldObject->hasFinalTimeline = true;
+        oldHeldObject->finalTimeline = m_currentTimeline - 1;
+        newHeldObject->initialTimeline = m_currentTimeline;
         if(m_backwards)
         {
             oldHeldObject->ending = m_currentTick;
@@ -379,19 +363,17 @@ void GameController::tickPlayer(Player* player)
         bullet->state.pos = bulletPos;
         bullet->velocity = direction * Bullet::SPEED;
         bullet->state.angle_deg = math_util::angleBetween(player->state.pos, mouseWorldPos);
-        bullet->originTimeline = m_currentTimeline;
+        bullet->initialTimeline = m_currentTimeline;
         bullet->backwards = player->backwards;
-        bullet->hasEnding = true;
         bullet->nextState = bullet->state;
         if(player->backwards)
         {
             bullet->ending = m_currentTick;
-            bullet->beginning = m_currentTick - Bullet::LIFETIME;
+            bullet->hasEnding = true;
         }
         else
         {
             bullet->beginning = m_currentTick;
-            bullet->ending = m_currentTick + Bullet::LIFETIME;
         }
 
         player->nextState.cooldown = player->fireCooldown;
@@ -422,6 +404,9 @@ void GameController::tickBullet(Bullet* bullet)
 
     if(m_gameState->level->tileAt(bullet->state.pos) == Level::WALL)
     {
+
+        bullet->finalTimeline = m_currentTimeline;
+        bullet->hasFinalTimeline = true;
         if(bullet->backwards)
         {
             bullet->beginning = m_currentTick;
@@ -429,6 +414,7 @@ void GameController::tickBullet(Bullet* bullet)
         else
         {
             bullet->ending = m_currentTick;
+            bullet->hasEnding = true;
         }
     }
 }
@@ -568,19 +554,17 @@ void GameController::tickEnemy(Enemy* enemy)
                 bullet->state.pos = bulletPos;
                 bullet->velocity = direction * Bullet::SPEED / 4.0f; //Enemy bullets are slower
                 bullet->state.angle_deg = math_util::angleBetween(enemy->state.pos, target->state.pos);
-                bullet->originTimeline = m_currentTimeline;
+                bullet->initialTimeline = m_currentTimeline;
                 bullet->backwards = enemy->backwards;
-                bullet->hasEnding = true;
                 bullet->nextState = bullet->state;
                 if(enemy->backwards)
                 {
                     bullet->ending = m_currentTick;
-                    bullet->beginning = m_currentTick - Bullet::LIFETIME;
+                    bullet->hasEnding = true;
                 }
                 else
                 {
                     bullet->beginning = m_currentTick;
-                    bullet->ending = m_currentTick + Bullet::LIFETIME;
                 }
 
                 m_gameState->bullets.push_back(bullet.get());
@@ -914,7 +898,7 @@ void GameController::playTick()
     for(auto pair : m_gameState->objects)
     {
         std::shared_ptr<GameObject> obj = pair.second;
-        if(m_currentTick < obj->beginning || (obj->hasEnding && m_currentTick > obj->ending))
+        if(!obj->activeAt(m_currentTick))
         {
             continue;
         }
