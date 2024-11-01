@@ -841,7 +841,7 @@ void GameController::tickThrowable(Throwable* throwable)
         Player * holder = dynamic_cast<Player*>(m_gameState->objects[throwable->state.attachedObjectId].get());
         throwable->nextState.pos = math_util::moveInDirection(holder->state.pos, holder->state.angle_deg - 30, holder->size.x);
         throwable->nextState.angle_deg = holder->state.angle_deg;
-        if(holder->state.willThrow)
+        if(holder->state.willThrow && !holder->state.boxOccupied)
         {
             throwable->nextState.aiState = Throwable::THROWN;
             throwable->nextState.attachedObjectId = -1;
