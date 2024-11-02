@@ -117,9 +117,14 @@ void Graphics::drawObj(GameObject* obj)
 }
 void Graphics::drawObjects(GameState* state, int tick)
 {
-    std::map<int, GameObject*> drawnObjects;
+    auto compare = [](GameObject* a, GameObject* b)
+    {
+        return a->drawPriority() > b->drawPriority();
+    };
+    std::priority_queue<GameObject*, std::vector<GameObject*>, decltype(compare)> drawQueue(compare);
+    std::map<int, GameObject*> toDraw;
 
-    //Draw objects directly visible to the camera
+    //Find objects directly visible to the camera
     for(auto it = state->objects.begin(); it != state->objects.end(); ++it)
     {
         std::shared_ptr<GameObject> obj = it->second;
@@ -135,11 +140,11 @@ void Graphics::drawObjects(GameState* state, int tick)
         {
             continue;
         }
-        drawObj(obj.get());
-        drawnObjects[obj->id] = obj.get();
+        toDraw[obj->id] = obj.get();
+        drawQueue.push(obj.get());
     }
 
-    //Draw objects observed by recorded players
+    //Find objects observed by recorded players
     for(auto it = state->players.begin(); it != state->players.end(); ++it)
     {
         Player * player = *it;
@@ -154,20 +159,27 @@ void Graphics::drawObjects(GameState* state, int tick)
 
         if(player->state.visible)
         {
-            drawObj(player);
-            drawnObjects[player->id] = player;
+            toDraw[player->id] = player;
+            drawQueue.push(player);
         }
 
         for(auto & obj : player->observations[tick])
         {
-            if(drawnObjects.find(obj.id) != drawnObjects.end())
+            if(toDraw.find(obj.id) != toDraw.end())
             {
                 continue;
             }
             GameObject * objPtr = state->objects[obj.id].get();
-            drawObj(objPtr);
-            drawnObjects[obj.id] = objPtr;
+            toDraw[obj.id] = objPtr;
+            drawQueue.push(objPtr);
         }
+    }
+
+    while(!drawQueue.empty())
+    {
+        GameObject * obj = drawQueue.top();
+        drawQueue.pop();
+        drawObj(obj);
     }
 }
 

@@ -92,3 +92,33 @@ bool GameObject::isColliding(point_t point)
     //Generally you get here if the object has no collider
     return false;
 }
+
+
+int GameObject::drawPriority()
+{
+    switch(type())
+    {
+        case PLAYER:
+            return 10;
+        case ENEMY:
+            return 10;
+        case BULLET:
+            return 20;
+        case SWITCH:
+            return 5;
+        case TIMEBOX:
+            return 0;
+        case CLOSET:
+            return 0;
+        case TURNSTILE:
+            return 0;
+        case DOOR:
+            return 5;
+        case SPIKES:
+            return 5;
+        case OBJECTIVE:
+            return 10;
+        default:
+            return 0;
+    }
+}

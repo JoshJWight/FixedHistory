@@ -180,6 +180,8 @@ public:
         return UNDEFINED;
     }
 
+    int drawPriority();
+
     ColliderType colliderType;
 
     int id;
@@ -205,7 +207,7 @@ public:
     //Timeline where this object's end state was established
     int finalTimeline;
 
-    bool recorded;    
+    bool recorded;
 };
 
 #endif

@@ -210,6 +210,15 @@ struct GameState {
         {
             deleteObject(id);
         }
+
+
+        //Special case stuff
+        //If the active player is in a box, set the active occupant to the player
+        if(players.back()->state.boxOccupied)
+        {
+            Container* box = dynamic_cast<Container*>(objects[players.back()->state.attachedObjectId].get());
+            box->activeOccupant = players.back();
+        }
     }
 };
 
