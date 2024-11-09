@@ -14,6 +14,7 @@
 #include "objects/Spikes.hh"
 #include "objects/Throwable.hh"
 #include "objects/Objective.hh"
+#include "objects/Knife.hh"
 #include <objects/GameObject.hh>
 
 struct HistoryBuffer
@@ -105,6 +106,7 @@ struct GameState {
                 std::remove_if(spikes.begin(), spikes.end(), [id](Spikes* s){return s->id == id;});
                 break;
             case GameObject::OBJECTIVE:
+            case GameObject::KNIFE:
                 std::remove_if(throwables.begin(), throwables.end(), [id](Throwable* t){return t->id == id;});
                 break;
             default:

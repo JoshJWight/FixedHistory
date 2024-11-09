@@ -32,13 +32,13 @@ public:
     }
 
     //Initial speed when thrown
-    const float throwSpeed;
+    float throwSpeed;
     //Speed lost per tick
-    const float drag;
+    float drag;
     //Fraction of speed retained on bouncing off a wall or obstruction
-    const float bounciness;
+    float bounciness;
 
-    const bool deadly;
+    bool deadly;
 };
 
 #endif

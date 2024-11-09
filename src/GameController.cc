@@ -1,6 +1,6 @@
 #include "GameController.hh"
 
-GameController::GameController()
+GameController::GameController(const std::string & levelPath)
     : m_graphics(800, 600)
     , m_currentTick(-1)//Start at -1 so that the first tick is 0
     , m_currentTimeline(0)
@@ -8,7 +8,7 @@ GameController::GameController()
     , m_backwards(false)
     , m_lastBreakpoint(0)
 {
-    m_gameState = loadGameState("levels/throwabletest.txt");
+    m_gameState = loadGameState(levelPath);
 }
 
 void GameController::mainLoop()
@@ -473,6 +473,18 @@ void GameController::tickEnemy(Enemy* enemy)
         }
 
         if(enemy->state.aiState != Enemy::AI_DEAD && enemy->isColliding(*bullet))
+        {
+            enemy->nextState.aiState = Enemy::AI_DEAD;
+        }
+    }
+    for(Throwable* throwable: m_gameState->throwables)
+    {
+        if(!throwable->activeAt(m_currentTick))
+        {
+            continue;
+        }
+
+        if(throwable->deadly && throwable->state.aiState == Throwable::THROWN && enemy->state.aiState != Enemy::AI_DEAD && enemy->isColliding(*throwable))
         {
             enemy->nextState.aiState = Enemy::AI_DEAD;
         }

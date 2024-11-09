@@ -104,7 +104,8 @@ public:
         CLOSET,
         TURNSTILE,
         SPIKES,
-        OBJECTIVE
+        OBJECTIVE,
+        KNIFE
     };
 
     static std::string typeToString(ObjectType type)
@@ -131,6 +132,8 @@ public:
                 return "spikes";
             case OBJECTIVE:
                 return "objective";
+            case KNIFE:
+                return "knife";
             default:
                 return "undefined";
         }

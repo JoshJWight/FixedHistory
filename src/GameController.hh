@@ -26,7 +26,7 @@
 class  GameController
 {
 public:
-    GameController();
+    GameController(const std::string & levelPath);
     void mainLoop();
 private:
     enum TickType

@@ -1,0 +1,14 @@
+8 8
+XXXXXXXX
+Xa....bX
+X......X
+Xd....cX
+X..XXXXX
+X...o.pX
+X...k..X
+XXXXXXXX
+player 0 p
+knife 1 k
+enemy 2 a b c d
+enemy 3 c d a b
+objective 4 o
