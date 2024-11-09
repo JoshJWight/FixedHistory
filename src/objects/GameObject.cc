@@ -118,6 +118,10 @@ int GameObject::drawPriority()
             return 5;
         case OBJECTIVE:
             return 10;
+        case KNIFE:
+            return 10;
+        case EXIT:
+            return 0;
         default:
             return 0;
     }

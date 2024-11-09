@@ -177,6 +177,11 @@ std::shared_ptr<GameState> loadGameState(const std::string& filename)
             obj = std::make_shared<Knife>(id);
             state->throwables.push_back(static_cast<Knife*>(obj.get()));
         }
+        else if (objType == "exit")
+        {
+            obj = std::make_shared<Exit>(id);
+            state->exits.push_back(static_cast<Exit*>(obj.get()));
+        }
         else
         {
             throw std::runtime_error("Unknown object type " + objType);

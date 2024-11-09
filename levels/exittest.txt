@@ -1,0 +1,10 @@
+6 6
+XXXXXX
+X.e..X
+X....X
+X...pX
+X.o..X
+XXXXXX
+player 0 p
+exit 1 e
+objective 2 o

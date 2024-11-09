@@ -36,6 +36,7 @@ void GameController::mainLoop()
         {
             m_statusString = "";
             paradox = checkParadoxes();
+            paradox |= checkWin();
             if(!paradox)
             {
                 type = ADVANCE;
@@ -120,6 +121,27 @@ bool GameController::checkParadoxes()
     }
 
     //If we got here, no paradoxes
+    return false;
+}
+
+bool GameController::checkWin()
+{
+    Player* player = m_gameState->players.back();
+
+    if(!player->state.holdingObject || m_gameState->objects[player->state.heldObjectId]->type() != GameObject::OBJECTIVE)
+    {
+        return false;
+    }
+
+    for(Exit* exit : m_gameState->exits)
+    {
+        if(exit->activeAt(m_currentTick) && player->isColliding(*exit))
+        {
+            m_statusString = "YOU WIN";
+            return true;
+        }
+    }
+
     return false;
 }
 

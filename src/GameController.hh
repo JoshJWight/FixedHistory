@@ -37,6 +37,7 @@ private:
     };
 
     bool checkParadoxes();
+    bool checkWin();
 
     void addObject(std::shared_ptr<GameObject> obj);
 

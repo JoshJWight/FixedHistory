@@ -15,6 +15,7 @@
 #include "objects/Throwable.hh"
 #include "objects/Objective.hh"
 #include "objects/Knife.hh"
+#include "objects/Exit.hh"
 #include <objects/GameObject.hh>
 
 struct HistoryBuffer
@@ -56,6 +57,7 @@ struct GameState {
     std::vector<Container*> containers;
     std::vector<Spikes*> spikes;
     std::vector<Throwable*> throwables;
+    std::vector<Exit*> exits;
     int m_lastID;
 
     GameState()
@@ -108,6 +110,9 @@ struct GameState {
             case GameObject::OBJECTIVE:
             case GameObject::KNIFE:
                 std::remove_if(throwables.begin(), throwables.end(), [id](Throwable* t){return t->id == id;});
+                break;
+            case GameObject::EXIT:
+                std::remove_if(exits.begin(), exits.end(), [id](Exit* e){return e->id == id;});
                 break;
             default:
                 throw std::runtime_error("Object type " + GameObject::typeToString(objects[id]->type()) + " not handled in deleteObject");
