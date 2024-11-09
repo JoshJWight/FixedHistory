@@ -14,7 +14,9 @@ public:
         setupSprites({"knife.png"});
 
         deadly = true;
-        bounciness = 0.1f;
+        drag = 0.02f;
+        throwSpeed = 6.0f;
+        bounciness = 0.70f;
     }
 
     ObjectType type() override

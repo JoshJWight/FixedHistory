@@ -816,7 +816,8 @@ void GameController::tickThrowable(Throwable* throwable)
             if(player->state.willThrow
                 && math_util::dist(player->state.pos, throwable->state.pos) < (throwable->size.x + Player::INTERACT_RADIUS)
                 && player->backwards == m_backwards
-                && !player->state.holdingObject)
+                && !player->state.holdingObject
+                && !(player->nextState.holdingObject && player->nextState.heldObjectId != throwable->id))
             {
                 throwable->nextState.aiState = Throwable::HELD;
                 throwable->nextState.attachedObjectId = player->id;
@@ -846,6 +847,16 @@ void GameController::tickThrowable(Throwable* throwable)
         {
             throwable->nextState.aiState = Throwable::STILL;
             throwable->nextState.speed = 0.0f;
+        }
+
+        for(Enemy* enemy : m_gameState->enemies)
+        {
+            if(enemy->activeAt(m_currentTick) && enemy->state.aiState != Enemy::AI_DEAD && enemy->isColliding(*throwable))
+            {
+                throwable->nextState.aiState = Throwable::STILL;
+                throwable->nextState.speed = 0.0f;
+                break;
+            }
         }
     }
     else if(throwable->state.aiState == Throwable::HELD)

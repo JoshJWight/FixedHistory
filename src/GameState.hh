@@ -110,6 +110,7 @@ struct GameState {
                 std::remove_if(throwables.begin(), throwables.end(), [id](Throwable* t){return t->id == id;});
                 break;
             default:
+                throw std::runtime_error("Object type " + GameObject::typeToString(objects[id]->type()) + " not handled in deleteObject");
                 break;
         }
         objects.erase(id);
