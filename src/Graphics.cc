@@ -15,6 +15,7 @@ Graphics::Graphics(int windowWidth, int windowHeight)
 
     m_floorSprite.setTexture(TextureBank::get("floor.png"));
     m_wallSprite.setTexture(TextureBank::get("wall.png"));
+    m_hiddenEnemySprite.setTexture(TextureBank::get("hiddenenemy.png"));
 
     m_window.setMouseCursorVisible(false);
 
@@ -115,6 +116,17 @@ void Graphics::drawObj(GameObject* obj)
     sprite.setRotation(obj->state.angle_deg * -1.0f);
     m_window.draw(sprite);
 }
+
+void Graphics::drawObjAs(GameObject* obj, sf::Sprite & sprite)
+{
+    setSpriteScale(sprite, obj->size);
+
+    point_t cameraPos = worldToCamera(obj->state.pos);
+    sprite.setPosition(sf::Vector2f(cameraPos));
+    sprite.setRotation(obj->state.angle_deg * -1.0f);
+    m_window.draw(sprite);
+}
+
 void Graphics::drawObjects(GameState* state, int tick)
 {
     auto compare = [](GameObject* a, GameObject* b)
@@ -122,6 +134,15 @@ void Graphics::drawObjects(GameState* state, int tick)
         return a->drawPriority() > b->drawPriority();
     };
     std::priority_queue<GameObject*, std::vector<GameObject*>, decltype(compare)> drawQueue(compare);
+    for(auto it = state->objects.begin(); it != state->objects.end(); ++it)
+    {
+        GameObject * obj = it->second.get();
+        if(obj->activeAt(tick))
+        {
+            drawQueue.push(obj);
+        }
+    }
+
     std::map<int, GameObject*> toDraw;
 
     //Find objects directly visible to the camera
@@ -141,7 +162,6 @@ void Graphics::drawObjects(GameState* state, int tick)
             continue;
         }
         toDraw[obj->id] = obj.get();
-        drawQueue.push(obj.get());
     }
 
     //Find objects observed by recorded players
@@ -160,7 +180,6 @@ void Graphics::drawObjects(GameState* state, int tick)
         if(player->state.visible)
         {
             toDraw[player->id] = player;
-            drawQueue.push(player);
         }
 
         for(auto & obj : player->observations[tick])
@@ -171,7 +190,6 @@ void Graphics::drawObjects(GameState* state, int tick)
             }
             GameObject * objPtr = state->objects[obj.id].get();
             toDraw[obj.id] = objPtr;
-            drawQueue.push(objPtr);
         }
     }
 
@@ -179,7 +197,14 @@ void Graphics::drawObjects(GameState* state, int tick)
     {
         GameObject * obj = drawQueue.top();
         drawQueue.pop();
-        drawObj(obj);
+        if(toDraw.find(obj->id) != toDraw.end())
+        {
+            drawObj(obj);
+        }
+        else if(obj->type() == GameObject::ENEMY)
+        {
+            drawObjAs(obj, m_hiddenEnemySprite);
+        }
     }
 }
 

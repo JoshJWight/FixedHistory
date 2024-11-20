@@ -22,6 +22,7 @@ private:
     const float CAMERA_RADIUS = 10.0f;
 
     void drawObj(GameObject* obj);
+    void drawObjAs(GameObject* obj, sf::Sprite & sprite);
     void drawObjects(GameState* state, int tick);
 
     void setSpriteScale(sf::Sprite & sprite, point_t worldSize);
@@ -41,6 +42,8 @@ private:
 
     sf::Sprite m_wallSprite;
     sf::Sprite m_floorSprite;
+
+    sf::Sprite m_hiddenEnemySprite;
  
     sf::Text m_tickCounter;
     sf::Text m_statusText;
