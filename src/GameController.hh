@@ -26,7 +26,7 @@
 class  GameController
 {
 public:
-    GameController(const std::string & levelPath);
+    GameController(const std::string & levelPath, Graphics * graphics);
     void mainLoop();
 private:
     enum TickType
@@ -60,7 +60,7 @@ private:
 
     void tick(TickType type);
 
-    Graphics m_graphics;
+    Graphics * m_graphics;
     Controls m_controls;
 
     std::shared_ptr<GameState> m_gameState;

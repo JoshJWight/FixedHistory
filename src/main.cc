@@ -2,14 +2,20 @@
 
 int main(int argc, char** argv)
 {
-    std::string level = "levels/knifetest.txt";
-
-    if(argc > 1)
+    if(argc < 2)
     {
-        level = "levels/" + std::string(argv[1]) + ".txt";
+        std::cout << "Usage: " << argv[0] << " <level1> <level2> <level3> etc" << std::endl;
+        return 1;
     }
 
-    GameController gc(level);
-    gc.mainLoop();
+    Graphics graphics(1920, 1080);
+
+    for(int i = 1; i < argc; i++)
+    {
+        std::string level = "levels/" + std::string(argv[i]) + ".txt";
+        GameController gc(level, &graphics);
+        gc.mainLoop();
+    }
+
     return 0;
 }

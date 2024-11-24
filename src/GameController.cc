@@ -1,7 +1,7 @@
 #include "GameController.hh"
 
-GameController::GameController(const std::string & levelPath)
-    : m_graphics(1920, 1080)
+GameController::GameController(const std::string & levelPath, Graphics * graphics)
+    : m_graphics(graphics)
     , m_currentTick(-1)//Start at -1 so that the first tick is 0
     , m_currentTimeline(0)
     , m_shouldReverse(false)
@@ -18,6 +18,8 @@ void GameController::mainLoop()
     std::chrono::duration<int, std::milli> frameDuration(msPerFrame);
 
     bool paradox = false;
+    bool win = false;
+    int winTimer = 0;
 
     while(true)
     {
@@ -31,13 +33,15 @@ void GameController::mainLoop()
             m_statusString = "";
             type = REWIND;
             paradox = false;
+            win = false;
+            winTimer = 0;
         }
-        else if(!paradox)
+        else if(!paradox && !win)
         {
             m_statusString = "";
             paradox = checkParadoxes();
-            paradox |= checkWin();
-            if(!paradox)
+            win = checkWin();
+            if(!paradox && !win)
             {
                 type = ADVANCE;
             }
@@ -45,7 +49,16 @@ void GameController::mainLoop()
 
         tick(type);
         point_t cameraCenter = m_gameState->players.back()->state.pos;
-        m_graphics.draw(m_gameState.get(), m_currentTick, cameraCenter, m_statusString);
+        m_graphics->draw(m_gameState.get(), m_currentTick, cameraCenter, m_statusString);
+
+        if(win)
+        {
+            winTimer++;
+            if(winTimer > 200)
+            {
+                break;
+            }
+        }
 
         std::this_thread::sleep_until(frameStart + frameDuration);
     }
@@ -376,7 +389,7 @@ void GameController::tickPlayer(Player* player)
         player->nextState.pos = player->state.pos;
     }
 
-    point_t mouseWorldPos = m_graphics.getMousePos();
+    point_t mouseWorldPos = m_graphics->getMousePos();
     if(m_controls.fire && player->state.cooldown == 0)
     {
         point_t direction = math_util::normalize(mouseWorldPos - player->state.pos);
@@ -980,7 +993,7 @@ void GameController::tick(TickType type)
     m_shouldReverse = false;
     m_boxToEnter = nullptr;
 
-    point_t mouseWorldPos = m_graphics.getMousePos();
+    point_t mouseWorldPos = m_graphics->getMousePos();
     if(m_backwards)
     {
         if(type == REWIND)
