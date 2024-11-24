@@ -6,7 +6,7 @@
 Graphics::Graphics(int windowWidth, int windowHeight)
     :m_window(sf::VideoMode(windowWidth, windowHeight), "Fixed History"),
      m_windowSize(windowWidth, windowHeight),
-     m_cameraScale(windowWidth / 200.0)
+     m_cameraScale(windowWidth / 500.0)
 {
     m_reticleSprite.setTexture(TextureBank::get("reticle.png"));
     m_reticleSprite.setOrigin(sf::Vector2f(m_reticleSprite.getTexture()->getSize() / (unsigned int)2));
@@ -61,17 +61,20 @@ void Graphics::draw(GameState * state, int tick, point_t cameraCenter, const std
 
     m_window.clear();
 
+    search::VisibilityGrid visibilityGrid = search::createVisibilityGrid(state, m_cameraWorldPos);
+
     //Draw each tile of the level
     for(int x = 0; x < state->level->width; ++x)
     {
         for(int y = 0; y < state->level->height; ++y)
         {
-            point_t worldPos = state->level->tiles[x][y].node.pos;
-            
-            if(!search::checkVisibility(state, m_cameraWorldPos, CAMERA_RADIUS, worldPos, state->level->scale * 0.499f))
+            if(!visibilityGrid[x][y])
             {
                 continue;
             }
+
+            point_t worldPos = state->level->tiles[x][y].node.pos;
+            
             if(state->level->tiles[x][y].type == Level::WALL)
             {
                 m_wallSprite.setPosition(worldToCamera(worldPos));
@@ -87,7 +90,7 @@ void Graphics::draw(GameState * state, int tick, point_t cameraCenter, const std
         }
     }
 
-    drawObjects(state, tick);
+    drawObjects(state, tick, visibilityGrid);
 
     m_window.draw(m_reticleSprite);
 
@@ -127,7 +130,7 @@ void Graphics::drawObjAs(GameObject* obj, sf::Sprite & sprite)
     m_window.draw(sprite);
 }
 
-void Graphics::drawObjects(GameState* state, int tick)
+void Graphics::drawObjects(GameState* state, int tick, const search::VisibilityGrid & visibilityGrid)
 {
     auto compare = [](GameObject* a, GameObject* b)
     {
@@ -157,7 +160,8 @@ void Graphics::drawObjects(GameState* state, int tick)
         {
             continue;
         }
-        if(!search::checkVisibility(state, m_cameraWorldPos, CAMERA_RADIUS, obj->state.pos, obj->size.x / 2.0f))
+        point_t levelCoords = state->level->toLevelCoords(obj->state.pos);
+        if(!visibilityGrid[levelCoords.x][levelCoords.y])
         {
             continue;
         }

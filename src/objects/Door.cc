@@ -5,7 +5,7 @@ Door::Door(int id)
     : GameObject(id)
 {
     colliderType = BOX;
-    size = point_t(25, 25);
+    size = point_t(20, 20);
     setupSprites({"Closed.png", "Open.png"});
 }
 

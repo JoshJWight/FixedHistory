@@ -2,6 +2,91 @@
 
 namespace search{
 
+VisibilityGrid createVisibilityGrid(GameState * state, point_t center)
+{
+    //Initialize grid to false
+    VisibilityGrid grid(state->level->width, std::vector<bool>(state->level->height, false));
+
+    VisibilityGrid levelGrid = VisibilityGrid(state->level->width, std::vector<bool>(state->level->height, false));
+    for(int x = 0; x < state->level->width; x++)
+    {
+        for(int y = 0; y < state->level->height; y++)
+        {
+            levelGrid[x][y] = state->level->tiles[x][y].type == Level::WALL;
+        }
+    }
+    for(auto pair: state->objects)
+    {
+        GameObject * obj = pair.second.get();
+        if(obj->isObstruction())
+        {
+            point_t levelCoords = state->level->toLevelCoords(obj->state.pos);
+            levelGrid[levelCoords.x][levelCoords.y] = true;
+        }
+    }
+
+    const int N_RAYCASTS = 100;
+    const float DISTANCE_LIMIT = 10000;
+
+    for(int i = 0; i < N_RAYCASTS; i++)
+    {
+        float angle = i * 2 * M_PI / N_RAYCASTS;
+        point_t delta = point_t(cos(angle), sin(angle));
+        point_t current = center;
+        int n = 0;
+        while(math_util::dist(center, current) < DISTANCE_LIMIT)
+        {
+            n++;
+            current += delta;
+            point_t levelCoords = state->level->toLevelCoords(current);
+            if(levelCoords.x < 0 || levelCoords.x >= state->level->width || levelCoords.y < 0 || levelCoords.y >= state->level->height)
+            {
+                std::cout << "Raycast out of bounds!" << std::endl;
+                break;
+            }
+            grid[levelCoords.x][levelCoords.y] = true;
+            if(levelGrid[levelCoords.x][levelCoords.y])
+            {
+                //Hit obstruction/wall
+                break;
+            }
+        }
+    }
+
+    //Set any wall adjacent or diagonal to a visible floor tile to visible
+    for(int x = 0; x < state->level->width; x++)
+    {
+        for(int y = 0; y < state->level->height; y++)
+        {
+            if(grid[x][y] && !levelGrid[x][y])
+            {
+                for(int dx = -1; dx <= 1; dx++)
+                {
+                    for(int dy = -1; dy <= 1; dy++)
+                    {
+                        if(dx == 0 && dy == 0)
+                        {
+                            continue;
+                        }
+                        int nx = x + dx;
+                        int ny = y + dy;
+                        if(nx < 0 || nx >= state->level->width || ny < 0 || ny >= state->level->height)
+                        {
+                            continue;
+                        }
+                        if(levelGrid[nx][ny])
+                        {
+                            grid[nx][ny] = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return grid;
+}
+
 bool checkVisibility(GameState * state, point_t start, point_t dest)
 {
     const Level::NavNode* startNode = state->level->nodeAt(start);

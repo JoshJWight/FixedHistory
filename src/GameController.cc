@@ -1,7 +1,7 @@
 #include "GameController.hh"
 
 GameController::GameController(const std::string & levelPath)
-    : m_graphics(800, 600)
+    : m_graphics(1920, 1080)
     , m_currentTick(-1)//Start at -1 so that the first tick is 0
     , m_currentTimeline(0)
     , m_shouldReverse(false)

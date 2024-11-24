@@ -70,8 +70,10 @@ std::shared_ptr<GameState> loadGameState(const std::string& filename)
 
         if(tokens.size() < 3)
         {
-            throw std::runtime_error("Invalid line, not enough tokens: " + line);
+            std::cout << "Not enough tokens in this line, skipping" << std::endl;
+            continue;
         }
+
         std::string objType = tokens[0];
         int id = std::stoi(tokens[1]);
         std::string location = tokens[2];

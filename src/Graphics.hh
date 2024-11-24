@@ -23,7 +23,7 @@ private:
 
     void drawObj(GameObject* obj);
     void drawObjAs(GameObject* obj, sf::Sprite & sprite);
-    void drawObjects(GameState* state, int tick);
+    void drawObjects(GameState* state, int tick, const search::VisibilityGrid & visibilityGrid);
 
     void setSpriteScale(sf::Sprite & sprite, point_t worldSize);
 

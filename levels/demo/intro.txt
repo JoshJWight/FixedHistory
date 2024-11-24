@@ -1,0 +1,25 @@
+20 14
+XXXXXXXXXXXXXXXXXXXX
+X...XXXXXXXa......bX
+X.k................X
+X...XXXXXXXd......cX
+XX.XX.....XXXXXXX.XX
+XX.XXXXXXXXXXXXXX.XX
+XXe.....fXX....XX.XX
+XXXXXXXX.XX....XX.XX
+X......X.XX....XX.XX
+XXXXXXXX.XXXXXXXXzXX
+X...Xg....hXXX.....X
+X.m......t.XXX...s.X
+X...Xj....iXXX.p...X
+XXXXXXXXXXXXXXXXXXXX
+player 0 p
+switch 1 s off
+door 2 z 1
+enemy 3 a d c b
+knife 4 k
+enemy 5 e f
+enemy 6 g h i j
+enemy 7 i j g h
+objective 8 t
+exit 9 m

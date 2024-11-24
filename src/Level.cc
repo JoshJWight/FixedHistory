@@ -127,3 +127,8 @@ const Level::NavNode* Level::nodeAt(const point_t & pos) const
     }
     return &tiles[x][y].node;
 }
+
+point_t Level::toLevelCoords(const point_t & worldPos) const
+{
+    return point_t(floor((worldPos.x - bottomLeft.x) / scale), floor((worldPos.y - bottomLeft.y) / scale));
+}

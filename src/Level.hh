@@ -62,6 +62,8 @@ public:
 
     const NavNode* nodeAt(const point_t & pos) const;
 
+    point_t toLevelCoords(const point_t & worldPos) const;
+
     point_t bottomLeft;
     size_t width;
     size_t height;

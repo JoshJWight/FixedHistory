@@ -7,6 +7,10 @@
 
 namespace search {
 
+typedef std::vector<std::vector<bool>> VisibilityGrid;
+
+VisibilityGrid createVisibilityGrid(GameState * state, point_t center);
+
 bool checkVisibility(GameState * state, point_t start, point_t dest);
 
 bool checkVisibility(GameState * state, point_t start, point_t dest_center, float dest_radius);
