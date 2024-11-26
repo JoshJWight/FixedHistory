@@ -4,6 +4,9 @@
 #include <sstream>
 #include <string>
 
+const float SCALE = 20.0f;
+const point_t BOTTOM_LEFT(0, 0);
+
 point_t getLocation(const std::vector<std::string>& tileLines, const std::string & location, float scale, point_t bottomLeft)
 {
     for(int x = 0; x < tileLines[0].size(); x++)
@@ -18,6 +21,144 @@ point_t getLocation(const std::vector<std::string>& tileLines, const std::string
     }
     std::cout << "Could not find location " << location << std::endl;
     return point_t(0, 0);
+}
+
+std::vector<point_t> getLocations(const std::vector<std::string>& tileLines, const std::string & location, float scale, point_t bottomLeft)
+{
+    std::vector<point_t> locations;
+    for(int x = 0; x < tileLines[0].size(); x++)
+    {
+        for(int y=0; y < tileLines.size(); y++)
+        {
+            if(tileLines[y][x] == location[0])
+            {
+                locations.push_back(point_t((x + 0.5) * scale + bottomLeft.x, (tileLines.size() - y - 0.5) * scale + bottomLeft.y));
+            }
+        }
+    }
+    if(locations.size() == 0)
+    {
+        std::cout << "Could not find location " << location << std::endl;
+    }
+    return locations;
+}
+
+void constructObject(GameState * state, int id, const std::string & objType, point_t position, const std::vector<std::string>& tokens, const std::vector<std::string> & tileLines)
+{
+    std::shared_ptr<GameObject> obj;
+    if(objType == "player")
+    {
+        obj = std::make_shared<Player>(id);
+        state->players.push_back(static_cast<Player*>(obj.get()));
+    }
+    else if(objType == "enemy")
+    {
+        std::shared_ptr<Enemy> enemy = std::make_shared<Enemy>(id);
+        enemy->patrolPoints.push_back(position);
+        for(int i=3; i<tokens.size(); i++)
+        {
+            std::string patrolPoint = tokens[i];
+            enemy->patrolPoints.push_back(getLocation(tileLines, patrolPoint, SCALE, BOTTOM_LEFT));
+        }
+
+        state->enemies.push_back(enemy.get());
+        obj = enemy;
+    }
+    else if(objType == "switch")
+    {
+        std::shared_ptr<Switch> sw = std::make_shared<Switch>(id);
+
+        if(tokens.size() < 4)
+        {
+            throw std::runtime_error("Not enough tokens for switch");
+        }
+        std::string startingState = tokens[3];
+        if(startingState == "on")
+        {
+            sw->state.aiState = Switch::ON;
+        }
+        else if(startingState == "off")
+        {
+            sw->state.aiState = Switch::OFF;
+        }
+        else
+        {
+            throw std::runtime_error("Unknown switch state " + startingState);
+        }
+
+        state->switches.push_back(sw.get());
+        obj = sw;
+    }
+    else if(objType == "door")
+    {
+        std::shared_ptr<Door> door = std::make_shared<Door>(id);
+        for(int i=3; i<tokens.size(); i++)
+        {
+            int switchID = std::stoi(tokens[i]);
+            
+            std::cout << "Switch ID: " << switchID << std::endl;
+            door->addSwitch(state->getObject<Switch>(switchID));
+        }
+        state->doors.push_back(door.get());
+        obj = door;
+    }
+    else if(objType == "timebox")
+    {
+        obj = std::make_shared<TimeBox>(id);
+        state->containers.push_back(static_cast<TimeBox*>(obj.get()));
+    }
+    else if (objType == "closet")
+    {
+        obj = std::make_shared<Closet>(id);
+        state->containers.push_back(static_cast<Closet*>(obj.get()));
+    }
+    else if (objType == "turnstile")
+    {
+        obj = std::make_shared<Turnstile>(id);
+        state->containers.push_back(static_cast<Turnstile*>(obj.get()));
+    }
+    else if (objType == "spikes")
+    {
+        int downDuration = 0;
+        if(tokens.size() > 3)
+        {
+            downDuration = std::stoi(tokens[3]);
+        }
+        int upDuration = 1;
+        if(tokens.size() > 4)
+        {
+            upDuration = std::stoi(tokens[4]);
+        }
+        int cycleOffset = 0;
+        if(tokens.size() > 5)
+        {
+            cycleOffset = std::stoi(tokens[5]);
+        }
+        obj = std::make_shared<Spikes>(id, downDuration, upDuration, cycleOffset);
+        state->spikes.push_back(static_cast<Spikes*>(obj.get()));
+    }
+    else if (objType == "objective")
+    {
+        obj = std::make_shared<Objective>(id);
+        state->throwables.push_back(static_cast<Objective*>(obj.get()));
+    }
+    else if (objType == "knife")
+    {
+        obj = std::make_shared<Knife>(id);
+        state->throwables.push_back(static_cast<Knife*>(obj.get()));
+    }
+    else if (objType == "exit")
+    {
+        obj = std::make_shared<Exit>(id);
+        state->exits.push_back(static_cast<Exit*>(obj.get()));
+    }
+    else
+    {
+        throw std::runtime_error("Unknown object type " + objType);
+    }
+
+    obj->state.pos = position;
+    state->addObject(obj);
 }
 
 std::shared_ptr<GameState> loadGameState(const std::string& filename)
@@ -47,10 +188,9 @@ std::shared_ptr<GameState> loadGameState(const std::string& filename)
         tileLines.push_back(line);
     }
 
-    point_t bottomLeft(0, 0);
-    float scale = 20.0f;
+    
 
-    state->level = std::make_shared<Level>(width, height, bottomLeft, scale);
+    state->level = std::make_shared<Level>(width, height, BOTTOM_LEFT, SCALE);
     state->level->setFromLines(tileLines);
 
     while(!file.eof())
@@ -79,118 +219,19 @@ std::shared_ptr<GameState> loadGameState(const std::string& filename)
         std::string location = tokens[2];
         std::cout << "Object type: " << objType << " ID: " << id << " Location: " << location << std::endl;
 
-        point_t position = getLocation(tileLines, location, scale, bottomLeft);
-
-        std::shared_ptr<GameObject> obj;
-        if(objType == "player")
+        if(id == -1)
         {
-            obj = std::make_shared<Player>(id);
-            state->players.push_back(static_cast<Player*>(obj.get()));
-        }
-        else if(objType == "enemy")
-        {
-            std::shared_ptr<Enemy> enemy = std::make_shared<Enemy>(id);
-            enemy->patrolPoints.push_back(position);
-            for(int i=3; i<tokens.size(); i++)
+            std::vector<point_t> positions = getLocations(tileLines, location, SCALE, BOTTOM_LEFT);
+            for(point_t position : positions)
             {
-                std::string patrolPoint = tokens[i];
-                enemy->patrolPoints.push_back(getLocation(tileLines, patrolPoint, scale, bottomLeft));
+                constructObject(state.get(), state->nextID(), objType, position, tokens, tileLines);
             }
-
-            state->enemies.push_back(enemy.get());
-            obj = enemy;
-        }
-        else if(objType == "switch")
-        {
-            std::shared_ptr<Switch> sw = std::make_shared<Switch>(id);
-
-            if(tokens.size() < 4)
-            {
-                throw std::runtime_error("Not enough tokens for switch");
-            }
-            std::string startingState = tokens[3];
-            if(startingState == "on")
-            {
-                sw->state.aiState = Switch::ON;
-            }
-            else if(startingState == "off")
-            {
-                sw->state.aiState = Switch::OFF;
-            }
-            else
-            {
-                throw std::runtime_error("Unknown switch state " + startingState);
-            }
-
-            state->switches.push_back(sw.get());
-            obj = sw;
-        }
-        else if(objType == "door")
-        {
-            std::shared_ptr<Door> door = std::make_shared<Door>(id);
-            for(int i=3; i<tokens.size(); i++)
-            {
-                int switchID = std::stoi(tokens[i]);
-                
-                std::cout << "Switch ID: " << switchID << std::endl;
-                door->addSwitch(state->getObject<Switch>(switchID));
-            }
-            state->doors.push_back(door.get());
-            obj = door;
-        }
-        else if(objType == "timebox")
-        {
-            obj = std::make_shared<TimeBox>(id);
-            state->containers.push_back(static_cast<TimeBox*>(obj.get()));
-        }
-        else if (objType == "closet")
-        {
-            obj = std::make_shared<Closet>(id);
-            state->containers.push_back(static_cast<Closet*>(obj.get()));
-        }
-        else if (objType == "turnstile")
-        {
-            obj = std::make_shared<Turnstile>(id);
-            state->containers.push_back(static_cast<Turnstile*>(obj.get()));
-        }
-        else if (objType == "spikes")
-        {
-            if(tokens.size() < 5)
-            {
-                throw std::runtime_error("Not enough tokens for spikes, should be: spikes id location downduration upduration cycleoffset");
-            }
-            int downDuration = std::stoi(tokens[3]);
-            int upDuration = std::stoi(tokens[4]);
-            int cycleOffset = 0;
-            if(tokens.size() > 5)
-            {
-                cycleOffset = std::stoi(tokens[5]);
-            }
-            obj = std::make_shared<Spikes>(id, downDuration, upDuration, cycleOffset);
-            state->spikes.push_back(static_cast<Spikes*>(obj.get()));
-        }
-        else if (objType == "objective")
-        {
-            obj = std::make_shared<Objective>(id);
-            state->throwables.push_back(static_cast<Objective*>(obj.get()));
-        }
-        else if (objType == "knife")
-        {
-            obj = std::make_shared<Knife>(id);
-            state->throwables.push_back(static_cast<Knife*>(obj.get()));
-        }
-        else if (objType == "exit")
-        {
-            obj = std::make_shared<Exit>(id);
-            state->exits.push_back(static_cast<Exit*>(obj.get()));
         }
         else
         {
-            throw std::runtime_error("Unknown object type " + objType);
+            point_t position = getLocation(tileLines, location, SCALE, BOTTOM_LEFT);
+            constructObject(state.get(), id, objType, position, tokens, tileLines);
         }
-
-        obj->state.pos = position;
-        state->addObject(obj);
     }
 
     return state;
