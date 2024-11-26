@@ -14,7 +14,12 @@ int main(int argc, char** argv)
     {
         std::string level = "levels/" + std::string(argv[i]) + ".txt";
         GameController gc(level, &graphics);
-        gc.mainLoop();
+        bool rc = gc.mainLoop();
+        if(!rc)
+        {
+            //Restart level
+            i--;
+        }
     }
 
     return 0;

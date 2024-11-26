@@ -7,23 +7,7 @@ VisibilityGrid createVisibilityGrid(GameState * state, point_t center)
     //Initialize grid to false
     VisibilityGrid grid(state->level->width, std::vector<bool>(state->level->height, false));
 
-    VisibilityGrid levelGrid = VisibilityGrid(state->level->width, std::vector<bool>(state->level->height, false));
-    for(int x = 0; x < state->level->width; x++)
-    {
-        for(int y = 0; y < state->level->height; y++)
-        {
-            levelGrid[x][y] = state->level->tiles[x][y].type == Level::WALL;
-        }
-    }
-    for(auto pair: state->objects)
-    {
-        GameObject * obj = pair.second.get();
-        if(obj->isObstruction())
-        {
-            point_t levelCoords = state->level->toLevelCoords(obj->state.pos);
-            levelGrid[levelCoords.x][levelCoords.y] = true;
-        }
-    }
+    VisibilityGrid & levelGrid = state->obstructionGrid;
 
     const int N_RAYCASTS = 100;
     const float DISTANCE_LIMIT = 10000;
@@ -85,6 +69,38 @@ VisibilityGrid createVisibilityGrid(GameState * state, point_t center)
     }
 
     return grid;
+}
+
+VisibilityGrid createObstructionGrid(GameState * state)
+{
+    VisibilityGrid grid(state->level->width, std::vector<bool>(state->level->height, false));
+    for(int x = 0; x < state->level->width; x++)
+    {
+        for(int y = 0; y < state->level->height; y++)
+        {
+            grid[x][y] = state->level->tiles[x][y].type == Level::WALL;
+        }
+    }
+    for(auto pair: state->objects)
+    {
+        GameObject * obj = pair.second.get();
+        if(obj->isObstruction())
+        {
+            point_t levelCoords = state->level->toLevelCoords(obj->state.pos);
+            grid[levelCoords.x][levelCoords.y] = true;
+        }
+    }
+    return grid;
+}
+
+bool checkObstruction(GameState * state, point_t pos)
+{
+    point_t levelCoords = state->level->toLevelCoords(pos);
+    if(levelCoords.x < 0 || levelCoords.x >= state->level->width || levelCoords.y < 0 || levelCoords.y >= state->level->height)
+    {
+        return true;
+    }
+    return state->obstructionGrid[levelCoords.x][levelCoords.y];
 }
 
 bool checkVisibility(GameState * state, point_t start, point_t dest)

@@ -27,7 +27,8 @@ class  GameController
 {
 public:
     GameController(const std::string & levelPath, Graphics * graphics);
-    void mainLoop();
+    //False means restart level, true means go to next level
+    bool mainLoop();
 private:
     enum TickType
     {

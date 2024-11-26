@@ -5,6 +5,7 @@ Controls::Controls()
 {
     m_actOnPressKeys.push_back(sf::Keyboard::E);
     m_actOnPressKeys.push_back(sf::Keyboard::F);
+    m_actOnPressKeys.push_back(sf::Keyboard::R);
 
     for(auto key : m_actOnPressKeys)
     {
@@ -27,7 +28,7 @@ void Controls::tick()
 
     rewind = sf::Keyboard::isKeyPressed(sf::Keyboard::LShift);
     reverse = sf::Keyboard::isKeyPressed(sf::Keyboard::E) && !m_lastStateMap[sf::Keyboard::E];
-
+    restart = sf::Keyboard::isKeyPressed(sf::Keyboard::R) && !m_lastStateMap[sf::Keyboard::R];
 
     for(auto key : m_actOnPressKeys)
     {

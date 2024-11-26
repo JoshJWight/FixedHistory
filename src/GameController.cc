@@ -9,9 +9,10 @@ GameController::GameController(const std::string & levelPath, Graphics * graphic
     , m_lastBreakpoint(0)
 {
     m_gameState = loadGameState(levelPath);
+    m_gameState->obstructionGrid = search::createObstructionGrid(m_gameState.get());
 }
 
-void GameController::mainLoop()
+bool GameController::mainLoop()
 {
     //~60 FPS
     int msPerFrame = 16;
@@ -26,6 +27,11 @@ void GameController::mainLoop()
         auto frameStart = std::chrono::system_clock::now();
 
         m_controls.tick();
+
+        if(m_controls.restart)
+        {
+            return false;
+        }
 
         TickType type = PAUSE;
         if(m_controls.rewind)
@@ -56,12 +62,14 @@ void GameController::mainLoop()
             winTimer++;
             if(winTimer > 200)
             {
-                break;
+                return true;
             }
         }
 
         std::this_thread::sleep_until(frameStart + frameDuration);
     }
+
+    return true;
 }
 
 bool GameController::checkParadoxes()
@@ -383,8 +391,8 @@ void GameController::tickPlayer(Player* player)
         player->nextState.pos.x += player->moveSpeed;
     }
 
-    //No walking through walls
-    if(m_gameState->level->tileAt(player->state.pos) != Level::WALL && m_gameState->level->tileAt(player->nextState.pos) == Level::WALL)
+    //No walking through walls or obstructions
+    if(search::checkObstruction(m_gameState.get(), player->nextState.pos) && !search::checkObstruction(m_gameState.get(), player->state.pos))
     {
         player->nextState.pos = player->state.pos;
     }
@@ -865,7 +873,7 @@ void GameController::tickThrowable(Throwable* throwable)
     else if(throwable->state.aiState == Throwable::THROWN)
     {
         point_t nextPos = math_util::moveInDirection(throwable->state.pos, throwable->state.angle_deg, throwable->state.speed);
-        if(m_gameState->level->tileAt(nextPos) == Level::WALL)
+        if(search::checkObstruction(m_gameState.get(), nextPos))
         {
             float bounceAngle = search::bounceOffWall(m_gameState.get(), throwable->state.pos, nextPos);
             throwable->nextState.angle_deg = bounceAngle;
@@ -1066,4 +1074,6 @@ void GameController::tick(TickType type)
         pushTimeline();
     }
     m_shouldReverse = false;
+
+    m_gameState->obstructionGrid = search::createObstructionGrid(m_gameState.get());
 }

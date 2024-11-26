@@ -61,7 +61,7 @@ void Graphics::draw(GameState * state, int tick, point_t cameraCenter, const std
 
     m_window.clear();
 
-    search::VisibilityGrid visibilityGrid = search::createVisibilityGrid(state, m_cameraWorldPos);
+    VisibilityGrid visibilityGrid = search::createVisibilityGrid(state, m_cameraWorldPos);
 
     //Draw each tile of the level
     for(int x = 0; x < state->level->width; ++x)
@@ -130,7 +130,7 @@ void Graphics::drawObjAs(GameObject* obj, sf::Sprite & sprite)
     m_window.draw(sprite);
 }
 
-void Graphics::drawObjects(GameState* state, int tick, const search::VisibilityGrid & visibilityGrid)
+void Graphics::drawObjects(GameState* state, int tick, const VisibilityGrid & visibilityGrid)
 {
     auto compare = [](GameObject* a, GameObject* b)
     {

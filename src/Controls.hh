@@ -25,6 +25,8 @@ public:
     bool rewind;
     bool reverse;
 
+    bool restart;
+
 private:
     std::map<sf::Keyboard::Key, bool> m_lastStateMap;
     std::vector<sf::Keyboard::Key> m_actOnPressKeys;

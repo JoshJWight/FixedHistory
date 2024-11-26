@@ -44,6 +44,8 @@ struct HistoryBuffer
     int breakpoint;
 };
 
+typedef std::vector<std::vector<bool>> VisibilityGrid;
+
 struct GameState {
     std::shared_ptr<Level> level;
     std::map<int, std::shared_ptr<GameObject>> objects;
@@ -59,6 +61,8 @@ struct GameState {
     std::vector<Throwable*> throwables;
     std::vector<Exit*> exits;
     int m_lastID;
+
+    VisibilityGrid obstructionGrid;
 
     GameState()
         : level(nullptr)
