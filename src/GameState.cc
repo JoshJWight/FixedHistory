@@ -70,8 +70,8 @@ std::shared_ptr<GameState> loadGameState(const std::string& filename)
 
         if(tokens.size() < 3)
         {
-            std::cout << "Not enough tokens in this line, skipping" << std::endl;
-            continue;
+            std::cout << "Not enough tokens in this line, ending parsing" << std::endl;
+            return state;
         }
 
         std::string objType = tokens[0];
@@ -157,7 +157,7 @@ std::shared_ptr<GameState> loadGameState(const std::string& filename)
         {
             if(tokens.size() < 5)
             {
-                throw std::runtime_error("Not enough tokens for spikes");
+                throw std::runtime_error("Not enough tokens for spikes, should be: spikes id location downduration upduration cycleoffset");
             }
             int downDuration = std::stoi(tokens[3]);
             int upDuration = std::stoi(tokens[4]);

@@ -236,7 +236,7 @@ void GameController::pushTimeline()
         newPlayer->state.boxOccupied = false;
         newPlayer->state.attachedObjectId = -1;
         newPlayer->state.visible = true;
-        newPlayer->state.pos = math_util::moveInDirection(oldPlayer->state.pos, box->state.angle_deg, box->size.x);
+        //newPlayer->state.pos = math_util::moveInDirection(oldPlayer->state.pos, box->state.angle_deg, box->size.x);
 
         box->activeOccupant = nullptr;
     }
@@ -818,7 +818,7 @@ void GameController::tickSpikes(Spikes* spikes)
     }
     else
     {
-        if(spikes->upDuration - (pointInCycle - spikes->downDuration) < Spikes::WARNING_DURATION)
+        if(spikes->downDuration > 0 && (spikes->upDuration - (pointInCycle - spikes->downDuration) < Spikes::WARNING_DURATION))
         {
             spikes->nextState.aiState = Spikes::WARNING;
         }
