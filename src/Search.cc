@@ -9,7 +9,7 @@ VisibilityGrid createVisibilityGrid(GameState * state, point_t center)
 
     VisibilityGrid & levelGrid = state->obstructionGrid;
 
-    const int N_RAYCASTS = 100;
+    const int N_RAYCASTS = 1000;
     const float DISTANCE_LIMIT = 10000;
 
     for(int i = 0; i < N_RAYCASTS; i++)
