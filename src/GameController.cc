@@ -14,6 +14,10 @@ GameController::GameController(const std::string & levelPath, Graphics * graphic
 
 bool GameController::mainLoop()
 {
+    size_t tickCounter = 0;
+
+    int playbackSpeed = 1;
+
     //~60 FPS
     int msPerFrame = 16;
     std::chrono::duration<int, std::milli> frameDuration(msPerFrame);
@@ -25,9 +29,11 @@ bool GameController::mainLoop()
     bool rewinding = false;
     int timeRewinding = 0;
 
+    auto lastDraw = std::chrono::system_clock::now();
+
     while(true)
     {
-        auto frameStart = std::chrono::system_clock::now();
+        tickCounter++;
 
         m_controls.tick();
 
@@ -42,10 +48,6 @@ bool GameController::mainLoop()
         {
             rewinding = true;
         }
-        else if(!rewinding)
-        {
-            timeRewinding = 0;
-        }
 
         if(rewinding)
         {
@@ -54,11 +56,14 @@ bool GameController::mainLoop()
             paradox = false;
             win = false;
             winTimer = 0;
+            playbackSpeed = 3;
 
             timeRewinding++;
-            if(timeRewinding > 50)
+            if(timeRewinding > 150 && !m_controls.rewind)
             {
                 rewinding = false;
+                timeRewinding = 0;
+                playbackSpeed = 1;
             }
         }
         else if(!paradox && !win)
@@ -69,22 +74,21 @@ bool GameController::mainLoop()
             if(!paradox && !win)
             {
                 type = ADVANCE;
+
+                if(m_gameState->players.back()->state.boxOccupied)
+                {
+                    playbackSpeed = 2;
+                }
+                else
+                {
+                    playbackSpeed = 1;
+                }
             }
         }
 
-        
-        int n_iters = 1;
-        if(type == REWIND)
-        {
-            n_iters = 3;
-        }
+        tick(type);
 
-        for(int i = 0; i < n_iters; i++)
-        {
-            tick(type);
-        }
         point_t cameraCenter = m_gameState->players.back()->state.pos;
-        m_graphics->draw(m_gameState.get(), m_currentTick, cameraCenter, m_statusString);
 
         if(win)
         {
@@ -95,7 +99,12 @@ bool GameController::mainLoop()
             }
         }
 
-        std::this_thread::sleep_until(frameStart + frameDuration);
+        if(tickCounter % playbackSpeed == 0)
+        {
+            m_graphics->draw(m_gameState.get(), m_currentTick, cameraCenter, m_statusString);
+            std::this_thread::sleep_until(lastDraw + frameDuration);
+            lastDraw = std::chrono::system_clock::now();
+        }
     }
 
     return true;
