@@ -21,6 +21,9 @@ private:
     //Giving the camera some radius helps if the player is near the edge of a tile
     const float CAMERA_RADIUS = 10.0f;
 
+    const sf::Color GREYED_OUT = sf::Color(100, 100, 100, 255);
+    const sf::Color NORMAL_COLOR = sf::Color(255, 255, 255, 255);
+
     void drawObj(GameObject* obj);
     void drawObjAs(GameObject* obj, sf::Sprite & sprite);
     void drawObjects(GameState* state, int tick, const VisibilityGrid & visibilityGrid);

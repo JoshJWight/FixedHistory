@@ -485,6 +485,17 @@ bool GameController::playerVisibleToEnemy(Player* player, Enemy* enemy)
 void GameController::navigateEnemy(Enemy* enemy, point_t target)
 {
     point_t moveToward = search::navigate(m_gameState.get(), enemy->state.pos, target);
+
+    for(Enemy * enemy2 : m_gameState->enemies)
+    {
+        if(enemy2 != enemy 
+           && enemy2->state.aiState != Enemy::AI_DEAD 
+           && math_util::dist(enemy->state.pos, enemy2->state.pos) < enemy->radius() * 2)
+        {
+            moveToward += math_util::normalize(enemy->state.pos - enemy2->state.pos) * (m_gameState->level->scale / 5);
+        }
+    }
+
     //If already at destination, or navigation failed, don't move
     if(moveToward == enemy->state.pos)
     {
@@ -492,6 +503,11 @@ void GameController::navigateEnemy(Enemy* enemy, point_t target)
     }
     enemy->nextState.pos += math_util::normalize(moveToward - enemy->state.pos) * enemy->moveSpeed;
     enemy->nextState.angle_deg = math_util::rotateTowardsPoint(enemy->state.angle_deg, enemy->state.pos, moveToward, 5.0f);
+
+    if(search::checkObstruction(m_gameState.get(), enemy->nextState.pos) && !search::checkObstruction(m_gameState.get(), enemy->state.pos))
+    {
+        enemy->nextState.pos = enemy->state.pos;
+    }
 }
 
 void GameController::tickEnemy(Enemy* enemy)
@@ -540,7 +556,7 @@ void GameController::tickEnemy(Enemy* enemy)
 
     if(enemy->state.aiState == Enemy::AI_PATROL)
     {
-        if(math_util::dist(enemy->state.pos, enemy->patrolPoints[enemy->state.patrolIdx]) <= enemy->moveSpeed)
+        if(math_util::dist(enemy->state.pos, enemy->patrolPoints[enemy->state.patrolIdx]) <= m_gameState->level->scale / 3)
         {
             enemy->nextState.patrolIdx = (enemy->state.patrolIdx + 1) % enemy->patrolPoints.size();
         }

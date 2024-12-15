@@ -68,21 +68,35 @@ void Graphics::draw(GameState * state, int tick, point_t cameraCenter, const std
     {
         for(int y = 0; y < state->level->height; ++y)
         {
-            if(!visibilityGrid[x][y])
-            {
-                continue;
-            }
-
             point_t worldPos = state->level->tiles[x][y].node.pos;
             
             if(state->level->tiles[x][y].type == Level::WALL)
             {
+                if(visibilityGrid[x][y])
+                {
+                    m_wallSprite.setColor(NORMAL_COLOR);
+                }
+                else
+                {
+                    m_wallSprite.setColor(GREYED_OUT);
+                }
+
                 m_wallSprite.setPosition(worldToCamera(worldPos));
                 setSpriteScale(m_wallSprite, point_t(1, 1) * state->level->scale);
                 m_window.draw(m_wallSprite);
             }
             else
             {
+                if(visibilityGrid[x][y])
+                {
+                    m_floorSprite.setColor(NORMAL_COLOR);
+                }
+                else
+                {
+                    m_floorSprite.setColor(GREYED_OUT);
+                }
+
+
                 m_floorSprite.setPosition(worldToCamera(worldPos));
                 setSpriteScale(m_floorSprite, point_t(1, 1) * state->level->scale);
                 m_window.draw(m_floorSprite);
