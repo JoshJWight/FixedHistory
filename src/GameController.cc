@@ -403,6 +403,7 @@ void GameController::tickPlayer(Player* player)
         point_t direction = math_util::normalize(mouseWorldPos - player->state.pos);
         point_t bulletPos = player->state.pos + direction * player->size.x;
         std::shared_ptr<Bullet> bullet(new Bullet(m_gameState->nextID()));
+        bullet->creatorId = player->id;
         bullet->state.pos = bulletPos;
         bullet->velocity = direction * Bullet::SPEED;
         bullet->state.angle_deg = math_util::angleBetween(player->state.pos, mouseWorldPos);
@@ -514,6 +515,10 @@ void GameController::tickEnemy(Enemy* enemy)
         {
             continue;
         }
+        if(m_gameState->objects[bullet->creatorId]->type() != GameObject::PLAYER)
+        {
+            continue;
+        }
 
         if(enemy->state.aiState != Enemy::AI_DEAD && enemy->isColliding(*bullet))
         {
@@ -606,6 +611,7 @@ void GameController::tickEnemy(Enemy* enemy)
                 point_t direction = math_util::normalize(target->state.pos - enemy->state.pos);
                 point_t bulletPos = enemy->state.pos + direction * enemy->size.x;
                 std::shared_ptr<Bullet> bullet(new Bullet(m_gameState->nextID()));
+                bullet->creatorId = enemy->id;
                 bullet->state.pos = bulletPos;
                 bullet->velocity = direction * Bullet::SPEED / 4.0f; //Enemy bullets are slower
                 bullet->state.angle_deg = math_util::angleBetween(enemy->state.pos, target->state.pos);
