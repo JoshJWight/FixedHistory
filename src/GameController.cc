@@ -22,6 +22,9 @@ bool GameController::mainLoop()
     bool win = false;
     int winTimer = 0;
 
+    bool rewinding = false;
+    int timeRewinding = 0;
+
     while(true)
     {
         auto frameStart = std::chrono::system_clock::now();
@@ -34,13 +37,29 @@ bool GameController::mainLoop()
         }
 
         TickType type = PAUSE;
+
         if(m_controls.rewind)
+        {
+            rewinding = true;
+        }
+        else if(!rewinding)
+        {
+            timeRewinding = 0;
+        }
+
+        if(rewinding)
         {
             m_statusString = "";
             type = REWIND;
             paradox = false;
             win = false;
             winTimer = 0;
+
+            timeRewinding++;
+            if(timeRewinding > 50)
+            {
+                rewinding = false;
+            }
         }
         else if(!paradox && !win)
         {
@@ -53,7 +72,17 @@ bool GameController::mainLoop()
             }
         }
 
-        tick(type);
+        
+        int n_iters = 1;
+        if(type == REWIND)
+        {
+            n_iters = 3;
+        }
+
+        for(int i = 0; i < n_iters; i++)
+        {
+            tick(type);
+        }
         point_t cameraCenter = m_gameState->players.back()->state.pos;
         m_graphics->draw(m_gameState.get(), m_currentTick, cameraCenter, m_statusString);
 

@@ -18,6 +18,8 @@
 #include "objects/Exit.hh"
 #include <objects/GameObject.hh>
 
+#include <vector>
+
 struct HistoryBuffer
 {
     HistoryBuffer()
@@ -86,37 +88,38 @@ struct GameState {
 
     void deleteObject(int id)
     {
+        std::cout << "Deleting " << GameObject::typeToString(objects[id]->type()) << " with ID " << id << std::endl;
         switch(objects[id]->type())
         {
             case GameObject::PLAYER:
-                std::remove_if(players.begin(), players.end(), [id](Player* p){return p->id == id;});
+                std::erase_if(players, [id](Player* p){return p->id == id;});
                 break;
             case GameObject::BULLET:
-                std::remove_if(bullets.begin(), bullets.end(), [id](Bullet* b){return b->id == id;});
+                std::erase_if(bullets, [id](Bullet* b){return b->id == id;});
                 break;
             case GameObject::ENEMY:
-                std::remove_if(enemies.begin(), enemies.end(), [id](Enemy* e){return e->id == id;});
+                std::erase_if(enemies, [id](Enemy* e){return e->id == id;});
                 break;
             case GameObject::SWITCH:
-                std::remove_if(switches.begin(), switches.end(), [id](Switch* s){return s->id == id;});
+                std::erase_if(switches, [id](Switch* s){return s->id == id;});
                 break;
             case GameObject::DOOR:
-                std::remove_if(doors.begin(), doors.end(), [id](Door* d){return d->id == id;});
+                std::erase_if(doors, [id](Door* d){return d->id == id;});
                 break;
             case GameObject::TIMEBOX:
             case GameObject::CLOSET:
             case GameObject::TURNSTILE:
-                std::remove_if(containers.begin(), containers.end(), [id](Container* c){return c->id == id;});
+                std::erase_if(containers, [id](Container* c){return c->id == id;});
                 break;
             case GameObject::SPIKES:
-                std::remove_if(spikes.begin(), spikes.end(), [id](Spikes* s){return s->id == id;});
+                std::erase_if(spikes, [id](Spikes* s){return s->id == id;});
                 break;
             case GameObject::OBJECTIVE:
             case GameObject::KNIFE:
-                std::remove_if(throwables.begin(), throwables.end(), [id](Throwable* t){return t->id == id;});
+                std::erase_if(throwables, [id](Throwable* t){return t->id == id;});
                 break;
             case GameObject::EXIT:
-                std::remove_if(exits.begin(), exits.end(), [id](Exit* e){return e->id == id;});
+                std::erase_if(exits, [id](Exit* e){return e->id == id;});
                 break;
             default:
                 throw std::runtime_error("Object type " + GameObject::typeToString(objects[id]->type()) + " not handled in deleteObject");
