@@ -12,6 +12,13 @@ public:
 
     Bullet(int id);
 
+    Bullet(int id, Bullet* ancestor)
+        : GameObject(id, ancestor)
+        , velocity(ancestor->velocity)
+        , creatorId(ancestor->creatorId)
+    {
+    }
+
     ObjectType type() override
     {
         return BULLET;

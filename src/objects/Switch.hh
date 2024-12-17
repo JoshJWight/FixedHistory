@@ -20,6 +20,11 @@ public:
         setupSprites({"switchon.png", "switchoff.png"});
     }
 
+    Switch(int id, Switch* ancestor)
+        : GameObject(id, ancestor)
+    {
+    }
+
     ObjectType type() override
     {
         return SWITCH;

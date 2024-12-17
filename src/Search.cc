@@ -81,7 +81,7 @@ VisibilityGrid createObstructionGrid(GameState * state)
             grid[x][y] = state->level->tiles[x][y].type == Level::WALL;
         }
     }
-    for(auto pair: state->objects)
+    for(auto pair: state->objects())
     {
         GameObject * obj = pair.second.get();
         if(obj->isObstruction())
@@ -136,7 +136,7 @@ bool checkVisibility(GameState * state, point_t start, point_t dest)
             return true;
         }
         //TODO the performance of this seems bad, improve later
-        for(const auto & objpair: state->objects)
+        for(const auto & objpair: state->objects())
         {
             if(objpair.second->isObstruction() && objpair.second->isColliding(current))
             {

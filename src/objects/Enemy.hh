@@ -21,6 +21,13 @@ public:
 
     Enemy(int id);
 
+    Enemy(int id, Enemy* ancestor)
+        : GameObject(id, ancestor)
+        , moveSpeed(ancestor->moveSpeed)
+        , patrolPoints(ancestor->patrolPoints)
+    {
+    }
+
     ObjectType type() override
     {
         return ENEMY;

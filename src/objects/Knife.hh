@@ -19,6 +19,11 @@ public:
         bounciness = 0.70f;
     }
 
+    Knife(int id, Knife* ancestor)
+        : Throwable(id, ancestor)
+    {
+    }
+
     ObjectType type() override
     {
         return KNIFE;

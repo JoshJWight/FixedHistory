@@ -17,6 +17,11 @@ public:
         setupSprites({"box.png"});
     }
 
+    TimeBox(int id, TimeBox* ancestor)
+        : Container(id, ancestor)
+    {
+    }
+
     ObjectType type() override
     {
         return TIMEBOX;

@@ -71,8 +71,6 @@ private:
 
     bool m_backwards;
 
-    int m_lastBreakpoint;
-
     //Text shown in the middle of the screen
     std::string m_statusString;
 

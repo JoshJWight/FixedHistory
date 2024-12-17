@@ -17,6 +17,11 @@ public:
         setupSprites({"turnstile.png"});
     }
 
+    Turnstile(int id, Turnstile* ancestor)
+        : Container(id, ancestor)
+    {
+    }
+
     ObjectType type() override
     {
         return TURNSTILE;

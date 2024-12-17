@@ -114,7 +114,7 @@ void Graphics::draw(GameState * state, int tick, point_t cameraCenter, const std
     if(statusString!="")
     {
         m_statusText.setString(statusString);
-        int charSize = std::max(10.0, 200 / std::sqrt(statusString.size()));
+        int charSize = std::max(10.0, 200 / std::sqrt((double)statusString.size()));
         m_statusText.setCharacterSize(charSize);
         m_window.draw(m_statusText);
     }
@@ -151,7 +151,7 @@ void Graphics::drawObjects(GameState* state, int tick, const VisibilityGrid & vi
         return a->drawPriority() > b->drawPriority();
     };
     std::priority_queue<GameObject*, std::vector<GameObject*>, decltype(compare)> drawQueue(compare);
-    for(auto it = state->objects.begin(); it != state->objects.end(); ++it)
+    for(auto it = state->objects().begin(); it != state->objects().end(); ++it)
     {
         GameObject * obj = it->second.get();
         if(obj->activeAt(tick))
@@ -163,7 +163,7 @@ void Graphics::drawObjects(GameState* state, int tick, const VisibilityGrid & vi
     std::map<int, GameObject*> toDraw;
 
     //Find objects directly visible to the camera
-    for(auto it = state->objects.begin(); it != state->objects.end(); ++it)
+    for(auto it = state->objects().begin(); it != state->objects().end(); ++it)
     {
         std::shared_ptr<GameObject> obj = it->second;
         if(!obj->activeAt(tick))
@@ -183,7 +183,7 @@ void Graphics::drawObjects(GameState* state, int tick, const VisibilityGrid & vi
     }
 
     //Find objects observed by recorded players
-    for(auto it = state->players.begin(); it != state->players.end(); ++it)
+    for(auto it = state->players().begin(); it != state->players().end(); ++it)
     {
         Player * player = *it;
         if(!player->recorded)
@@ -206,7 +206,7 @@ void Graphics::drawObjects(GameState* state, int tick, const VisibilityGrid & vi
             {
                 continue;
             }
-            GameObject * objPtr = state->objects[obj.id].get();
+            GameObject * objPtr = state->objects()[obj.id].get();
             toDraw[obj.id] = objPtr;
         }
     }

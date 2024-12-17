@@ -15,6 +15,12 @@ public:
 
     Door(int id);
 
+    Door(int id, Door* ancestor)
+        : GameObject(id, ancestor)
+        , m_connectedSwitches(ancestor->m_connectedSwitches)
+    {
+    }
+
     void toggle();
     void addSwitch(Switch* sw);
     const std::vector<Switch*>& getConnectedSwitches() const;

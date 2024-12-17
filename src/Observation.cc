@@ -26,7 +26,7 @@ void recordObservations(GameState * state, Player * player, int tick)
         return;
     }
 
-    for(auto & objpair : state->objects)
+    for(auto & objpair : state->objects())
     {
         GameObject * obj = objpair.second.get();
         if(!obj->activeAt(tick))
@@ -93,7 +93,7 @@ std::string checkObservations(GameState * state, Player * player, int tick)
     Player::ObservationFrame actual;
 
     std::map<int, bool> found;
-    for(auto & objpair : state->objects)
+    for(auto & objpair : state->objects())
     {
         GameObject * obj = objpair.second.get();
         if(!obj->activeAt(tick))

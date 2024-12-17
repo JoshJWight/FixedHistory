@@ -14,6 +14,11 @@ public:
         setupSprites({"exit.png"});
     }
 
+    Exit(int id, Exit* ancestor)
+        : GameObject(id, ancestor)
+    {
+    }
+
     ObjectType type() override
     {
         return EXIT;

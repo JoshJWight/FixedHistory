@@ -26,6 +26,14 @@ public:
         setupSprites({"spikes_down.png", "spikes_warning.png", "spikes_up.png"});
     }
 
+    Spikes(int id, Spikes* ancestor)
+        : GameObject(id, ancestor)
+        , downDuration(ancestor->downDuration)
+        , upDuration(ancestor->upDuration)
+        , cycleOffset(ancestor->cycleOffset)
+    {
+    }
+
     ObjectType type() override
     {
         return SPIKES;

@@ -17,6 +17,11 @@ public:
         setupSprites({"closet.png"});
     }
 
+    Closet(int id, Closet* ancestor)
+        : Container(id, ancestor)
+    {
+    }
+
     ObjectType type() override
     {
         return CLOSET;
