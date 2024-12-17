@@ -715,7 +715,7 @@ void GameController::tickEnemy(Enemy* enemy)
     }
     else
     {
-        throw std::runtime_error("Unknown AI state");
+        throw std::runtime_error("Unknown AI state " + std::to_string(enemy->state.aiState) + " for enemy " + std::to_string(enemy->id));
     }
 }
 

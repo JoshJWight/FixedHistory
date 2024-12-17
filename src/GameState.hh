@@ -157,7 +157,7 @@ typedef std::vector<std::vector<bool>> VisibilityGrid;
 struct GameState {
     std::shared_ptr<Level> level;
     std::vector<Timeline> timelines;
-    std::map<int, std::shared_ptr<GameObject>> objects() { return timelines.back().objects; }
+    std::map<int, std::shared_ptr<GameObject>> & objects() { return timelines.back().objects; }
 
     std::vector<Player*> & players() { return timelines.back().players; }
     Player * currentPlayer() { return timelines.back().players.back(); }
