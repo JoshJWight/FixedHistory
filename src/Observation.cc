@@ -86,7 +86,8 @@ std::string checkObservations(GameState * state, Player * player, int tick)
     std::string result = "";
     if(player->observations.size() <= tick)
     {
-        throw std::runtime_error("Tried to check observations for a tick that hasn't been recorded!");
+        throw std::runtime_error("Tried to check observations player " + std::to_string(player->id) + 
+            " at tick " + std::to_string(tick) + " but observation buffer was only " + std::to_string(player->observations.size()) + " long");
     }
 
     const Player::ObservationFrame & frame = player->observations[tick];

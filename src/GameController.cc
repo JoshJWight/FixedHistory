@@ -6,6 +6,7 @@ GameController::GameController(const std::string & levelPath, Graphics * graphic
     , m_currentTimeline(0)
     , m_shouldReverse(false)
     , m_backwards(false)
+    , m_boxToEnter(-1)
 {
     m_gameState = loadGameState(levelPath);
     m_gameState->obstructionGrid = search::createObstructionGrid(m_gameState.get());
@@ -230,7 +231,7 @@ void GameController::pushTimeline()
     //m_backwards now refers to the timeline we're pushing to
     m_backwards = !m_backwards;
     m_currentTimeline++;
-    m_gameState->timelines.push_back(Timeline(m_gameState->timelines.back(), m_currentTick, m_backwards));
+    m_gameState->timelines.emplace_back(m_gameState->timelines.back(), m_currentTick, m_backwards);
 
     //Create a new player entity
     Player* oldPlayer = m_gameState->currentPlayer();
@@ -256,13 +257,14 @@ void GameController::pushTimeline()
     m_gameState->objects()[newPlayer->id] = newPlayer;
     m_gameState->players().push_back(newPlayer.get());
 
-    if(m_boxToEnter)
+    if(m_boxToEnter > -1)
     {
-        m_boxToEnter->activeOccupant = newPlayer->id;
+        Container* box = dynamic_cast<Container*>(m_gameState->objects()[m_boxToEnter].get());
+        box->activeOccupant = newPlayer->id;
 
         newPlayer->state.boxOccupied = true;
-        newPlayer->state.attachedObjectId = m_boxToEnter->id;
-        newPlayer->state.pos = m_boxToEnter->state.pos;
+        newPlayer->state.attachedObjectId = box->id;
+        newPlayer->state.pos = box->state.pos;
         newPlayer->state.visible = false;
     }
     else if(oldPlayer->state.boxOccupied)
@@ -372,7 +374,7 @@ void GameController::tickPlayer(Player* player)
                 if(container->reverseOnEnter)
                 {
                     m_shouldReverse = true;
-                    m_boxToEnter = container;
+                    m_boxToEnter = container->id;
                     break;
                 }
                 else
@@ -1047,7 +1049,7 @@ void GameController::tick(TickType type)
 
     //Reset per-tick flags
     m_shouldReverse = false;
-    m_boxToEnter = nullptr;
+    m_boxToEnter = -1;
 
     point_t mouseWorldPos = m_graphics->getMousePos();
     if(m_backwards)

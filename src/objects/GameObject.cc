@@ -30,7 +30,7 @@ GameObject::GameObject(int id, GameObject* ancestor)
     , initialTimeline(0)
     , hasFinalTimeline(false)
     , finalTimeline(0)
-    , recorded(false)
+    , recorded(ancestor->recorded)
 {
 
 }

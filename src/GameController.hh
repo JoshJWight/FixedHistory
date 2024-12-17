@@ -77,5 +77,5 @@ private:
 
     //Flags only valid for the current tick
     bool m_shouldReverse;
-    Container* m_boxToEnter;
+    int m_boxToEnter;
 };
