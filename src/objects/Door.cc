@@ -11,10 +11,10 @@ Door::Door(int id)
 
 void Door::addSwitch(Switch* sw)
 {
-    m_connectedSwitches.push_back(sw);
+    m_connectedSwitches.push_back(sw->id);
 }
 
-const std::vector<Switch*>& Door::getConnectedSwitches() const
+const std::vector<int>& Door::getConnectedSwitches() const
 {
     return m_connectedSwitches;
 }

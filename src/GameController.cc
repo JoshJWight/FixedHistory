@@ -248,11 +248,13 @@ void GameController::pushTimeline()
         oldPlayer->ending = m_currentTick;
         newPlayer->hasEnding = true;
         newPlayer->ending = m_currentTick;
+        newPlayer->beginning = 0;
     }
     else
     {
         oldPlayer->beginning = m_currentTick;
         newPlayer->beginning = m_currentTick;
+        newPlayer->hasEnding = false;
     }
     m_gameState->objects()[newPlayer->id] = newPlayer;
     m_gameState->players().push_back(newPlayer.get());
@@ -308,11 +310,13 @@ void GameController::pushTimeline()
             oldHeldObject->hasEnding = true;
             newHeldObject->ending = m_currentTick;
             newHeldObject->hasEnding = true;
+            newHeldObject->beginning = 0;
         }
         else
         {
             oldHeldObject->beginning = m_currentTick;
             newHeldObject->beginning = m_currentTick;
+            newHeldObject->hasEnding = false;
         }
         m_gameState->objects()[newHeldObject->id] = newHeldObject;
         m_gameState->historyBuffer().buffer[newHeldObject->id] = std::vector<ObjectState>(m_currentTick+1);
@@ -837,8 +841,9 @@ void GameController::tickDoor(Door* door)
     }
 
     int onSwitches = 0;
-    for(Switch* sw : door->getConnectedSwitches())
+    for(int swId : door->getConnectedSwitches())
     {
+        Switch* sw = dynamic_cast<Switch*>(m_gameState->objects()[swId].get());
         if(sw->state.aiState == Switch::ON)
         {
             onSwitches++;

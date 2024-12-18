@@ -23,7 +23,7 @@ public:
 
     void toggle();
     void addSwitch(Switch* sw);
-    const std::vector<Switch*>& getConnectedSwitches() const;
+    const std::vector<int>& getConnectedSwitches() const;
 
     bool isObstruction() override
     {
@@ -36,7 +36,7 @@ public:
     }
 
 private:
-    std::vector<Switch*> m_connectedSwitches;
+    std::vector<int> m_connectedSwitches;
 };
 
 #endif
