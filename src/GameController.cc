@@ -212,6 +212,8 @@ void GameController::restoreState(int tick)
 
 void GameController::popTimeline()
 {
+    std::cout << "Popping timeline on tick " << m_currentTick << std::endl;
+
     if(m_gameState->timelines.size() == 1)
     {
         throw std::runtime_error("Cannot pop the last timeline");
@@ -228,6 +230,8 @@ void GameController::popTimeline()
     
 void GameController::pushTimeline()
 {
+    std::cout << "Pushing timeline on tick " << m_currentTick << std::endl;
+
     //m_backwards now refers to the timeline we're pushing to
     m_backwards = !m_backwards;
     m_currentTimeline++;
@@ -236,6 +240,7 @@ void GameController::pushTimeline()
     //Create a new player entity
     Player* oldPlayer = m_gameState->currentPlayer();
     std::shared_ptr<Player> newPlayer(new Player(m_gameState->nextID(), oldPlayer));
+    newPlayer->backwards = m_backwards;
     std::cout << "Creating new player with ID " << newPlayer->id << std::endl;
     oldPlayer->recorded = true;
 
@@ -292,10 +297,16 @@ void GameController::pushTimeline()
             oldHeldObject = dynamic_cast<Objective*>(m_gameState->objects()[oldPlayer->state.heldObjectId].get());
             newHeldObject = std::make_shared<Objective>(m_gameState->nextID(), dynamic_cast<Objective*>(m_gameState->objects()[oldPlayer->state.heldObjectId].get()));
         }
+        else if(m_gameState->objects()[oldPlayer->state.heldObjectId]->type() == GameObject::KNIFE)
+        {
+            oldHeldObject = dynamic_cast<Knife*>(m_gameState->objects()[oldPlayer->state.heldObjectId].get());
+            newHeldObject = std::make_shared<Knife>(m_gameState->nextID(), dynamic_cast<Knife*>(m_gameState->objects()[oldPlayer->state.heldObjectId].get()));
+        }
         else
         {
             throw std::runtime_error("Unknown object type held by player");
         }
+        newHeldObject->backwards = newPlayer->backwards;
         newPlayer->state.heldObjectId = newHeldObject->id;
         //newHeldObject->state.pos = newPlayer->state.pos;
         newHeldObject->state.visible = newPlayer->state.visible;
@@ -1027,9 +1038,13 @@ void GameController::playTick()
         if(!obj->recorded)
         {
             obj->applyNextState();
-            if(m_currentTick >= m_gameState->historyBuffer()[obj->id].size())
+            if(m_currentTick == m_gameState->historyBuffer()[obj->id].size())
             {  
                 m_gameState->historyBuffer()[obj->id].push_back(obj->state);
+            }
+            else if(m_currentTick > m_gameState->historyBuffer()[obj->id].size())
+            {
+                throw std::runtime_error("It is tick " + std::to_string(m_currentTick) + " but object " + std::to_string(obj->id) + " has history buffer size " + std::to_string(m_gameState->historyBuffer()[obj->id].size()));
             }
             else
             {
@@ -1041,6 +1056,8 @@ void GameController::playTick()
             obj->state = m_gameState->historyBuffer()[obj->id][m_currentTick];
         }
     }
+    //Creating it both here and elsewhere because we want it to be right before recoring observations
+    m_gameState->obstructionGrid = search::createObstructionGrid(m_gameState.get());
     observation::recordObservations(m_gameState.get(), m_gameState->currentPlayer(), m_currentTick);
 }
 

@@ -57,16 +57,8 @@ struct Timeline
             std::shared_ptr<Player> newPlayer = std::make_shared<Player>(p->id, p);
             players.push_back(newPlayer.get());
             objects[newPlayer->id] = newPlayer;
-
-            for(const auto & observationFrame : p->observations)
-            {
-                Player::ObservationFrame newFrame;
-                for(const auto & observation : observationFrame)
-                {
-                    newFrame.push_back(observation);
-                }
-                newPlayer->observations.push_back(newFrame);
-            }
+            
+            newPlayer->observations = p->observations;
         }
         for(Bullet* b : other.bullets)
         {

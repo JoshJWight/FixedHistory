@@ -61,19 +61,22 @@ bool observablyEqual(const ObjectState & a, const ObjectState & b)
     return result;
 }
 
-void printObservations(int playerID, const Player::ObservationFrame & frame, Player::ObservationFrame & objects)
+void printObservations(int playerID, const Player::ObservationFrame & frame, Player::ObservationFrame & objects, int tick)
 {
-    std::cout << "Failed observation check by player " << playerID << std::endl;
+    std::cout << "Failed observation check by player " << playerID << " on tick " << tick << std::endl;
     std::cout << "Expected:" << std::endl;
     for(auto & obj : frame)
     {
-        std::cout << GameObject::typeToString(obj.type) << " at " << obj.state.pos.x << ", " << obj.state.pos.y << std::endl;
+        std::cout << GameObject::typeToString(obj.type) << " at " << obj.state.pos.x << ", " << obj.state.pos.y 
+            << " (originally id " << obj.id << ")" << std::endl;
     }
     std::cout << "Actual:" << std::endl;
     for(auto & obj : objects)
     {
-        std::cout << GameObject::typeToString(obj.type) << " at " << obj.state.pos.x << ", " << obj.state.pos.y << std::endl;
+        std::cout << GameObject::typeToString(obj.type) << " at " << obj.state.pos.x << ", " << obj.state.pos.y 
+            << " (id " << obj.id << ")" << std::endl;
     }
+    std::cout << std::endl;
 }
 
 std::string checkObservations(GameState * state, Player * player, int tick)
@@ -112,7 +115,7 @@ std::string checkObservations(GameState * state, Player * player, int tick)
 
         if(search::checkVisibility(state, player->state.pos, player->radius(), obj->state.pos, obj->radius()))
         {
-            actual.push_back({obj->type(), obj->state});
+            actual.push_back({obj->type(), obj->state, obj->id});
 
             bool matched = false;
             for(int i=0; i<frame.size(); i++)
@@ -151,7 +154,7 @@ std::string checkObservations(GameState * state, Player * player, int tick)
 
     if(result != "")
     {
-        printObservations(player->id, frame, actual);
+        printObservations(player->id, frame, actual, tick);
     }
 
     return result;
