@@ -19,6 +19,11 @@ public:
     {
     }
 
+    bool isTransient() override
+    {
+        return true;
+    }
+
     ObjectType type() override
     {
         return BULLET;

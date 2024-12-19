@@ -198,8 +198,8 @@ struct GameState {
 
     void deleteObject(int id)
     {
-        std::cout << "Deleting " << GameObject::typeToString(objects()[id]->type()) << " with ID " << id << std::endl;
-        switch(objects()[id]->type())
+        std::cout << "Deleting " << GameObject::typeToString(objects().at(id)->type()) << " with ID " << id << std::endl;
+        switch(objects().at(id)->type())
         {
             case GameObject::PLAYER:
                 std::erase_if(players(), [id](Player* p){return p->id == id;});
@@ -232,7 +232,7 @@ struct GameState {
                 std::erase_if(exits(), [id](Exit* e){return e->id == id;});
                 break;
             default:
-                throw std::runtime_error("Object type " + GameObject::typeToString(objects()[id]->type()) + " not handled in deleteObject");
+                throw std::runtime_error("Object type " + GameObject::typeToString(objects().at(id)->type()) + " not handled in deleteObject");
                 break;
         }
         objects().erase(id);
@@ -341,7 +341,7 @@ struct GameState {
         //If the active player is in a box, set the active occupant to the player
         if(currentPlayer()->state.boxOccupied)
         {
-            Container* box = dynamic_cast<Container*>(objects()[currentPlayer()->state.attachedObjectId].get());
+            Container* box = dynamic_cast<Container*>(objects().at(currentPlayer()->state.attachedObjectId).get());
             box->activeOccupant = currentPlayer()->id;
         }
     }

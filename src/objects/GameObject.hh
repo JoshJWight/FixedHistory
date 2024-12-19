@@ -182,6 +182,11 @@ public:
         return false;
     }
 
+    virtual bool isTransient()
+    {
+        return false;
+    }
+
     virtual ObjectType type(){
         return UNDEFINED;
     }

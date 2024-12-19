@@ -202,11 +202,18 @@ void Graphics::drawObjects(GameState* state, int tick, const VisibilityGrid & vi
 
         for(auto & obj : player->observations[tick])
         {
+            //The object observed this timeline didn't match the originally observed object's ID
+            //Mostly happens to bullets that get removed and recreated
+            if(state->objects().find(obj.id) == state->objects().end())
+            {
+                continue;
+            }
+
             if(toDraw.find(obj.id) != toDraw.end())
             {
                 continue;
             }
-            GameObject * objPtr = state->objects()[obj.id].get();
+            GameObject * objPtr = state->objects().at(obj.id).get();
             toDraw[obj.id] = objPtr;
         }
     }

@@ -187,7 +187,7 @@ bool GameController::checkWin()
 {
     Player* player = m_gameState->currentPlayer();
 
-    if(!player->state.holdingObject || m_gameState->objects()[player->state.heldObjectId]->type() != GameObject::OBJECTIVE)
+    if(!player->state.holdingObject || m_gameState->objects().at(player->state.heldObjectId)->type() != GameObject::OBJECTIVE)
     {
         return false;
     }
@@ -266,7 +266,7 @@ void GameController::pushTimeline()
 
     if(m_boxToEnter > -1)
     {
-        Container* box = dynamic_cast<Container*>(m_gameState->objects()[m_boxToEnter].get());
+        Container* box = dynamic_cast<Container*>(m_gameState->objects().at(m_boxToEnter).get());
         box->activeOccupant = newPlayer->id;
 
         newPlayer->state.boxOccupied = true;
@@ -276,7 +276,7 @@ void GameController::pushTimeline()
     }
     else if(oldPlayer->state.boxOccupied)
     {
-        Container* box = dynamic_cast<Container*>(m_gameState->objects()[oldPlayer->state.attachedObjectId].get());
+        Container* box = dynamic_cast<Container*>(m_gameState->objects().at(oldPlayer->state.attachedObjectId).get());
 
         newPlayer->state.boxOccupied = false;
         newPlayer->state.attachedObjectId = -1;
@@ -292,15 +292,15 @@ void GameController::pushTimeline()
         Throwable* oldHeldObject;
         std::shared_ptr<Throwable> newHeldObject;
 
-        if(m_gameState->objects()[oldPlayer->state.heldObjectId]->type() == GameObject::OBJECTIVE)
+        if(m_gameState->objects().at(oldPlayer->state.heldObjectId)->type() == GameObject::OBJECTIVE)
         {
-            oldHeldObject = dynamic_cast<Objective*>(m_gameState->objects()[oldPlayer->state.heldObjectId].get());
-            newHeldObject = std::make_shared<Objective>(m_gameState->nextID(), dynamic_cast<Objective*>(m_gameState->objects()[oldPlayer->state.heldObjectId].get()));
+            oldHeldObject = dynamic_cast<Objective*>(m_gameState->objects().at(oldPlayer->state.heldObjectId).get());
+            newHeldObject = std::make_shared<Objective>(m_gameState->nextID(), dynamic_cast<Objective*>(m_gameState->objects().at(oldPlayer->state.heldObjectId).get()));
         }
-        else if(m_gameState->objects()[oldPlayer->state.heldObjectId]->type() == GameObject::KNIFE)
+        else if(m_gameState->objects().at(oldPlayer->state.heldObjectId)->type() == GameObject::KNIFE)
         {
-            oldHeldObject = dynamic_cast<Knife*>(m_gameState->objects()[oldPlayer->state.heldObjectId].get());
-            newHeldObject = std::make_shared<Knife>(m_gameState->nextID(), dynamic_cast<Knife*>(m_gameState->objects()[oldPlayer->state.heldObjectId].get()));
+            oldHeldObject = dynamic_cast<Knife*>(m_gameState->objects().at(oldPlayer->state.heldObjectId).get());
+            newHeldObject = std::make_shared<Knife>(m_gameState->nextID(), dynamic_cast<Knife*>(m_gameState->objects().at(oldPlayer->state.heldObjectId).get()));
         }
         else
         {
@@ -341,6 +341,32 @@ void GameController::pushTimeline()
 
     newPlayer->observations.resize(m_currentTick+1);
     observation::recordObservations(m_gameState.get(), newPlayer.get(), m_currentTick);
+
+    //Delete all transient objects whose origin is "after" the breakpoint
+    std::vector<int> toDelete;
+    for(auto pair : m_gameState->objects())
+    {
+        GameObject* obj = pair.second.get();
+        if(m_backwards)
+        {
+            if(obj->isTransient() && obj->backwards && obj->hasEnding && obj->ending < m_currentTick)
+            {
+                toDelete.push_back(obj->id);
+            }
+        }
+        else
+        {
+            if(obj->isTransient() && !obj->backwards && obj->beginning > m_currentTick)
+            {
+                toDelete.push_back(obj->id);
+            }
+        }
+    }
+    for(int id : toDelete)
+    {
+        m_gameState->deleteObject(id);
+    }
+
 }
 
 void GameController::tickPlayer(Player* player)
@@ -353,7 +379,7 @@ void GameController::tickPlayer(Player* player)
         if(player->state.willInteract)
         {
             std::cout << "Exiting box" << std::endl;
-            Container * container = dynamic_cast<Container*>(m_gameState->objects()[player->state.attachedObjectId].get());
+            Container * container = dynamic_cast<Container*>(m_gameState->objects().at(player->state.attachedObjectId).get());
             if(container->reverseOnExit)
             {
                 m_shouldReverse = true;
@@ -369,7 +395,7 @@ void GameController::tickPlayer(Player* player)
 
                 if(player->state.holdingObject)
                 {
-                    Throwable* throwable = dynamic_cast<Throwable*>(m_gameState->objects()[player->state.heldObjectId].get());
+                    Throwable* throwable = dynamic_cast<Throwable*>(m_gameState->objects().at(player->state.heldObjectId).get());
                     throwable->nextState.visible = true;
                 }
             }
@@ -401,7 +427,7 @@ void GameController::tickPlayer(Player* player)
 
                     if(player->state.holdingObject)
                     {
-                        Throwable* throwable = dynamic_cast<Throwable*>(m_gameState->objects()[player->state.heldObjectId].get());
+                        Throwable* throwable = dynamic_cast<Throwable*>(m_gameState->objects().at(player->state.heldObjectId).get());
                         throwable->nextState.visible = false;
                     }
                     break;
@@ -573,7 +599,7 @@ void GameController::tickEnemy(Enemy* enemy)
         {
             continue;
         }
-        if(m_gameState->objects()[bullet->creatorId]->type() != GameObject::PLAYER)
+        if(m_gameState->objects().at(bullet->creatorId)->type() != GameObject::PLAYER)
         {
             continue;
         }
@@ -619,7 +645,7 @@ void GameController::tickEnemy(Enemy* enemy)
     }
     else if(enemy->state.aiState == Enemy::AI_CHASE)
     {
-        Player* target = dynamic_cast<Player*>(m_gameState->objects()[enemy->state.targetId].get());
+        Player* target = dynamic_cast<Player*>(m_gameState->objects().at(enemy->state.targetId).get());
         if(!target->activeAt(m_currentTick))
         {
             enemy->nextState.aiState = Enemy::AI_PATROL;
@@ -652,7 +678,7 @@ void GameController::tickEnemy(Enemy* enemy)
     }
     else if(enemy->state.aiState == Enemy::AI_ATTACK)
     {
-        Player* target = dynamic_cast<Player*>(m_gameState->objects()[enemy->state.targetId].get());
+        Player* target = dynamic_cast<Player*>(m_gameState->objects().at(enemy->state.targetId).get());
         if(!target->activeAt(m_currentTick))
         {
             enemy->nextState.aiState = Enemy::AI_PATROL;
@@ -692,6 +718,8 @@ void GameController::tickEnemy(Enemy* enemy)
                 m_gameState->historyBuffer().buffer[bullet->id][m_currentTick] = bullet->state;
 
                 enemy->nextState.chargeTime = 0;
+
+                std::cout << "Enemy " << enemy->id << " fired bullet " << bullet->id << std::endl;
             }
             //Continue an attack in progress as long as we can see the target
             else if(enemy->state.chargeTime > 0)
@@ -773,10 +801,10 @@ void GameController::tickContainer(Container* container)
                     }
                     else
                     {
-                        GameObject* occupant = m_gameState->objects()[container->activeOccupant].get();
+                        GameObject* occupant = m_gameState->objects().at(container->activeOccupant).get();
                         if(occupant->state.holdingObject)
                         {
-                            Throwable* throwable = dynamic_cast<Throwable*>(m_gameState->objects()[occupant->state.heldObjectId].get());
+                            Throwable* throwable = dynamic_cast<Throwable*>(m_gameState->objects().at(occupant->state.heldObjectId).get());
                             throwable->nextState.visible = true;
                         }
 
@@ -854,7 +882,7 @@ void GameController::tickDoor(Door* door)
     int onSwitches = 0;
     for(int swId : door->getConnectedSwitches())
     {
-        Switch* sw = dynamic_cast<Switch*>(m_gameState->objects()[swId].get());
+        Switch* sw = dynamic_cast<Switch*>(m_gameState->objects().at(swId).get());
         if(sw->state.aiState == Switch::ON)
         {
             onSwitches++;
@@ -970,7 +998,7 @@ void GameController::tickThrowable(Throwable* throwable)
     }
     else if(throwable->state.aiState == Throwable::HELD)
     {
-        Player * holder = dynamic_cast<Player*>(m_gameState->objects()[throwable->state.attachedObjectId].get());
+        Player * holder = dynamic_cast<Player*>(m_gameState->objects().at(throwable->state.attachedObjectId).get());
         throwable->nextState.pos = math_util::moveInDirection(holder->state.pos, holder->state.angle_deg - 30, holder->size.x);
         throwable->nextState.angle_deg = holder->state.angle_deg;
         if(holder->state.willThrow && !holder->state.boxOccupied)
