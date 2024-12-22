@@ -9,27 +9,31 @@ VisibilityGrid createVisibilityGrid(GameState * state, point_t center)
 
     VisibilityGrid & levelGrid = state->obstructionGrid;
 
-    const int N_RAYCASTS = 1000;
-    const float DISTANCE_LIMIT = 10000;
+    const int N_RAYCASTS = 360;
+    const float DISTANCE_LIMIT = 100;
+    const float DELTA_SIZE = 0.2f;
+
+    //From here on out we work in level coordinates
+    point_t center_level = state->level->toLevelCoords(center);
 
     for(int i = 0; i < N_RAYCASTS; i++)
     {
         float angle = i * 2 * M_PI / N_RAYCASTS;
-        point_t delta = point_t(cos(angle), sin(angle));
-        point_t current = center;
+
+        point_t delta = point_t(DELTA_SIZE * cos(angle), DELTA_SIZE * sin(angle));
+        point_t current = center_level;
         int n = 0;
-        while(math_util::dist(center, current) < DISTANCE_LIMIT)
+        while(math_util::dist(center_level, current) < DISTANCE_LIMIT)
         {
             n++;
             current += delta;
-            point_t levelCoords = state->level->toLevelCoords(current);
-            if(levelCoords.x < 0 || levelCoords.x >= state->level->width || levelCoords.y < 0 || levelCoords.y >= state->level->height)
+            if(current.x < 0 || current.x >= state->level->width || current.y < 0 || current.y >= state->level->height)
             {
                 std::cout << "Raycast out of bounds!" << std::endl;
                 break;
             }
-            grid[levelCoords.x][levelCoords.y] = true;
-            if(levelGrid[levelCoords.x][levelCoords.y])
+            grid[(size_t)current.x][(size_t)current.y] = true;
+            if(levelGrid[(size_t)current.x][(size_t)current.y])
             {
                 //Hit obstruction/wall
                 break;
