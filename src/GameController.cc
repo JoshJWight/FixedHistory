@@ -1,7 +1,9 @@
 #include "GameController.hh"
 
-GameController::GameController(const std::string & levelPath, Graphics * graphics)
+GameController::GameController(const std::string & levelPath, Graphics * graphics, DemoReader * demoReader, DemoWriter * demoWriter)
     : m_graphics(graphics)
+    , m_demoReader(demoReader)
+    , m_demoWriter(demoWriter)
     , m_currentTick(-1)//Start at -1 so that the first tick is 0
     , m_currentTimeline(0)
     , m_shouldReverse(false)
@@ -35,7 +37,32 @@ bool GameController::mainLoop()
     {
         tickCounter++;
 
-        m_controls.tick();
+        if(m_demoReader != nullptr)
+        {
+            DemoFrame frame;
+            if(m_demoReader->getNextFrame(frame))
+            {
+                m_controls.tick(frame.controls);
+                m_gameState->mousePos = point_t(frame.mouseX, frame.mouseY);
+            }
+            else
+            {
+                m_demoReader = nullptr;
+            }
+        }
+        else
+        {
+            m_controls.tick();
+            m_gameState->mousePos = m_graphics->getMousePos();
+            if(m_demoWriter != nullptr)
+            {
+                DemoFrame frame;
+                frame.controls = m_controls.encode();
+                frame.mouseX = m_gameState->mousePos.x;
+                frame.mouseY = m_gameState->mousePos.y;
+                m_demoWriter->writeFrame(frame);
+            }
+        }
 
         if(m_controls.restart)
         {
@@ -1101,7 +1128,7 @@ void GameController::tick(TickType type)
     m_shouldReverse = false;
     m_boxToEnter = -1;
 
-    point_t mouseWorldPos = m_graphics->getMousePos();
+    
     if(m_backwards)
     {
         if(type == REWIND)

@@ -12,6 +12,9 @@ public:
     Controls();
 
     void tick();
+    void tick(short encoded);
+
+    short encode();
 
     bool up;
     bool down;

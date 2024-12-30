@@ -106,6 +106,7 @@ void Graphics::draw(GameState * state, int tick, point_t cameraCenter, const std
 
     drawObjects(state, tick, visibilityGrid);
 
+    m_reticleSprite.setPosition(worldToCamera(state->mousePos));
     m_window.draw(m_reticleSprite);
 
     m_tickCounter.setString(std::to_string(tick));
@@ -236,8 +237,6 @@ void Graphics::drawObjects(GameState* state, int tick, const VisibilityGrid & vi
 point_t Graphics::getMousePos()
 {
     sf::Vector2f mouseCameraPos(sf::Mouse::getPosition(m_window));
-    //TODO move this
-    m_reticleSprite.setPosition(mouseCameraPos);
 
     return cameraToWorld(mouseCameraPos);
 }

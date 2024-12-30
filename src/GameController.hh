@@ -26,7 +26,7 @@
 class  GameController
 {
 public:
-    GameController(const std::string & levelPath, Graphics * graphics);
+    GameController(const std::string & levelPath, Graphics * graphics, DemoReader * demoReader, DemoWriter * demoWriter);
     //False means restart level, true means go to next level
     bool mainLoop();
 private:
@@ -63,6 +63,8 @@ private:
 
     Graphics * m_graphics;
     Controls m_controls;
+    DemoReader * m_demoReader;
+    DemoWriter * m_demoWriter;
 
     std::shared_ptr<GameState> m_gameState;
 

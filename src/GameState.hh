@@ -176,6 +176,9 @@ struct GameState {
 
     VisibilityGrid obstructionGrid;
 
+    //This is in world coordinates
+    point_t mousePos;
+
     GameState()
         : level(nullptr)
         , m_lastID(0)

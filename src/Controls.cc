@@ -35,3 +35,79 @@ void Controls::tick()
         m_lastStateMap[key] = sf::Keyboard::isKeyPressed(key);
     }
 }
+
+void Controls::tick(short encoded)
+{
+    up = encoded & 1 << 0;
+    down = encoded & 1 << 1;
+    left = encoded & 1 << 2;
+    right = encoded & 1 << 3;
+    fire = encoded & 1 << 4;
+    interact = (encoded & 1 << 5) && !m_lastStateMap[sf::Keyboard::F];
+    m_lastStateMap[sf::Keyboard::F] = encoded & 1 << 5;
+    throw_ = (encoded & 1 << 6) && !m_rightMouseLastState;
+    m_rightMouseLastState = encoded & 1 << 6;
+    rewind = encoded & 1 << 7;
+    reverse = (encoded & 1 << 8) && !m_lastStateMap[sf::Keyboard::E];
+    m_lastStateMap[sf::Keyboard::E] = encoded & 1 << 8;
+    restart = (encoded & 1 << 9) && !m_lastStateMap[sf::Keyboard::R];
+    m_lastStateMap[sf::Keyboard::R] = encoded & 1 << 9;
+}
+
+short Controls::encode()
+{
+    short encoded = 0;
+
+    //Up
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+    {
+        encoded |= 1 << 0;
+    }
+    //Down
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+    {
+        encoded |= 1 << 1;
+    }
+    //Left
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+    {
+        encoded |= 1 << 2;
+    }
+    //Right
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+    {
+        encoded |= 1 << 3;
+    }
+    //Fire
+    if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
+    {
+        encoded |= 1 << 4;
+    }
+    //Interact
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::F))
+    {
+        encoded |= 1 << 5;
+    }
+    //Throw
+    if(sf::Mouse::isButtonPressed(sf::Mouse::Right))
+    {
+        encoded |= 1 << 6;
+    }
+    //Rewind
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
+    {
+        encoded |= 1 << 7;
+    }
+    //Reverse
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::E))
+    {
+        encoded |= 1 << 8;
+    }
+    //Restart
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::R))
+    {
+        encoded |= 1 << 9;
+    }
+
+    return encoded;
+}
