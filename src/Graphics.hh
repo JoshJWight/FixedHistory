@@ -1,3 +1,6 @@
+#ifndef __GRAPHICS_HH__
+#define __GRAPHICS_HH__
+
 #include "GameObject.hh"
 #include "Level.hh"
 #include "TextureBank.hh"
@@ -51,3 +54,5 @@ private:
     sf::Text m_tickCounter;
     sf::Text m_statusText;
 };
+
+#endif

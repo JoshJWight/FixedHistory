@@ -1,3 +1,6 @@
+#ifndef DEMO_HH
+#define DEMO_HH
+
 #include <fstream>
 
 struct DemoFrame
@@ -31,3 +34,5 @@ private:
     std::ofstream m_file;
 
 };
+
+#endif

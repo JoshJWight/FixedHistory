@@ -16,6 +16,7 @@
 #include "GameState.hh"
 #include "Search.hh"
 #include "Observation.hh"
+#include "Demo.hh"
 #include <vector>
 #include <iostream>
 #include <chrono>

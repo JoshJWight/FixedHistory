@@ -492,16 +492,15 @@ void GameController::tickPlayer(Player* player)
         player->nextState.pos = player->state.pos;
     }
 
-    point_t mouseWorldPos = m_graphics->getMousePos();
     if(m_controls.fire && player->state.cooldown == 0)
     {
-        point_t direction = math_util::normalize(mouseWorldPos - player->state.pos);
+        point_t direction = math_util::normalize(m_gameState->mousePos - player->state.pos);
         point_t bulletPos = player->state.pos + direction * player->size.x;
         std::shared_ptr<Bullet> bullet(new Bullet(m_gameState->nextID()));
         bullet->creatorId = player->id;
         bullet->state.pos = bulletPos;
         bullet->velocity = direction * Bullet::SPEED;
-        bullet->state.angle_deg = math_util::angleBetween(player->state.pos, mouseWorldPos);
+        bullet->state.angle_deg = math_util::angleBetween(player->state.pos, m_gameState->mousePos);
         bullet->initialTimeline = m_currentTimeline;
         bullet->backwards = player->backwards;
         bullet->nextState = bullet->state;
@@ -523,7 +522,7 @@ void GameController::tickPlayer(Player* player)
         m_gameState->historyBuffer().buffer[bullet->id][m_currentTick] = bullet->state;
     }
 
-    player->nextState.angle_deg = math_util::rotateTowardsPoint(player->state.angle_deg, player->state.pos, mouseWorldPos, 5.0f);
+    player->nextState.angle_deg = math_util::rotateTowardsPoint(player->state.angle_deg, player->state.pos, m_gameState->mousePos, 5.0f);
 }
 
 void GameController::tickBullet(Bullet* bullet)
