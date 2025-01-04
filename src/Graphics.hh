@@ -16,7 +16,7 @@ class Graphics
 public:
     Graphics(int windowWidth, int windowHeight);
 
-    void draw(GameState* state, int tick, point_t cameraCenter, const std::string& statusString);
+    void draw(GameState* state, point_t cameraCenter, const std::string& statusString);
 
     point_t getMousePos();
 
@@ -29,7 +29,7 @@ private:
 
     void drawObj(GameObject* obj);
     void drawObjAs(GameObject* obj, sf::Sprite & sprite);
-    void drawObjects(GameState* state, int tick, const VisibilityGrid & visibilityGrid);
+    void drawObjects(GameState* state, const VisibilityGrid & visibilityGrid);
 
     void setSpriteScale(sf::Sprite & sprite, point_t worldSize);
 

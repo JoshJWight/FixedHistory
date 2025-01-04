@@ -4,10 +4,7 @@ GameController::GameController(const std::string & levelPath, Graphics * graphic
     : m_graphics(graphics)
     , m_demoReader(demoReader)
     , m_demoWriter(demoWriter)
-    , m_currentTick(-1)//Start at -1 so that the first tick is 0
-    , m_currentTimeline(0)
     , m_shouldReverse(false)
-    , m_backwards(false)
     , m_boxToEnter(-1)
 {
     m_gameState = loadGameState(levelPath);
@@ -128,7 +125,7 @@ bool GameController::mainLoop()
 
         if(tickCounter % playbackSpeed == 0)
         {
-            m_graphics->draw(m_gameState.get(), m_currentTick, cameraCenter, m_statusString);
+            m_graphics->draw(m_gameState.get(), cameraCenter, m_statusString);
             std::this_thread::sleep_until(lastDraw + frameDuration);
             lastDraw = std::chrono::system_clock::now();
         }
@@ -139,19 +136,19 @@ bool GameController::mainLoop()
 
 bool GameController::checkParadoxes()
 {
-    //Note: m_currentTick is still the tick we just finished doing
+    //Note: current tick is still the tick we just finished doing
 
     //Player being hit by a bullet
     for(Player* player : m_gameState->players())
     {
-        if(!player->activeAt(m_currentTick))
+        if(!player->activeAt(m_gameState->tick))
         {
             continue;
         }
 
         for(Bullet* bullet : m_gameState->bullets())
         {
-            if(bullet->activeAt(m_currentTick) && player->isColliding(*bullet))
+            if(bullet->activeAt(m_gameState->tick) && player->isColliding(*bullet))
             {
                 if(player->id == m_gameState->currentPlayer()->id)
                 {
@@ -167,14 +164,14 @@ bool GameController::checkParadoxes()
     //Player standing on spikes
     for(Player* player : m_gameState->players())
     {
-        if(!player->activeAt(m_currentTick))
+        if(!player->activeAt(m_gameState->tick))
         {
             continue;
         }
 
         for(Spikes* spikes : m_gameState->spikes())
         {
-            if(spikes->activeAt(m_currentTick) && spikes->state.aiState == Spikes::UP && player->isColliding(*spikes))
+            if(spikes->activeAt(m_gameState->tick) && spikes->state.aiState == Spikes::UP && player->isColliding(*spikes))
             {
                 if(player->id == m_gameState->currentPlayer()->id)
                 {
@@ -191,13 +188,13 @@ bool GameController::checkParadoxes()
     //Violation of observations
     for(Player* player : m_gameState->players())
     {
-        if(!player->activeAt(m_currentTick))
+        if(!player->activeAt(m_gameState->tick))
         {
             continue;
         }
         if(player->recorded)
         {
-            std::string result = observation::checkObservations(m_gameState.get(), player, m_currentTick);
+            std::string result = observation::checkObservations(m_gameState.get(), player, m_gameState->tick);
             if(result != "")
             {
                 m_statusString = result;
@@ -221,7 +218,7 @@ bool GameController::checkWin()
 
     for(Exit* exit : m_gameState->exits())
     {
-        if(exit->activeAt(m_currentTick) && player->isColliding(*exit))
+        if(exit->activeAt(m_gameState->tick) && player->isColliding(*exit))
         {
             m_statusString = "YOU WIN";
             return true;
@@ -231,61 +228,55 @@ bool GameController::checkWin()
     return false;
 }
 
-void GameController::restoreState(int tick)
+void GameController::restoreState()
 {
-    m_gameState->restoreState(tick);
-    m_gameState->doRewindCleanup(tick, m_currentTimeline);
+    m_gameState->restoreState();
+    m_gameState->doRewindCleanup();
 }
 
 void GameController::popTimeline()
 {
-    std::cout << "Popping timeline on tick " << m_currentTick << std::endl;
+    std::cout << "Popping timeline on tick " << m_gameState->tick << std::endl;
 
     if(m_gameState->timelines.size() == 1)
     {
         throw std::runtime_error("Cannot pop the last timeline");
     }
 
-    //m_backwards now refers to the timeline we're popping to
-    m_backwards = !m_backwards;
-    m_currentTimeline--;
     //Simply blow away the current timeline, which will return us to how things were before the push
     m_gameState->timelines.pop_back();
 
-    restoreState(m_currentTick);
+    restoreState();
 }
     
 void GameController::pushTimeline()
 {
-    std::cout << "Pushing timeline on tick " << m_currentTick << std::endl;
+    std::cout << "Pushing timeline on tick " << m_gameState->tick << std::endl;
 
-    //m_backwards now refers to the timeline we're pushing to
-    m_backwards = !m_backwards;
-    m_currentTimeline++;
-    m_gameState->timelines.emplace_back(m_gameState->timelines.back(), m_currentTick, m_backwards);
+    m_gameState->timelines.emplace_back(m_gameState->timelines.back(), m_gameState->tick, !m_gameState->backwards());
 
     //Create a new player entity
     Player* oldPlayer = m_gameState->currentPlayer();
     std::shared_ptr<Player> newPlayer(new Player(m_gameState->nextID(), oldPlayer));
-    newPlayer->backwards = m_backwards;
+    newPlayer->backwards = m_gameState->backwards();
     std::cout << "Creating new player with ID " << newPlayer->id << std::endl;
     oldPlayer->recorded = true;
 
     oldPlayer->hasFinalTimeline = true;
-    oldPlayer->finalTimeline = m_currentTimeline - 1;
-    newPlayer->initialTimeline = m_currentTimeline;
-    if(m_backwards)
+    oldPlayer->finalTimeline = m_gameState->currentTimeline() - 1;
+    newPlayer->initialTimeline = m_gameState->currentTimeline();
+    if(m_gameState->backwards())
     {
         oldPlayer->hasEnding = true;
-        oldPlayer->ending = m_currentTick;
+        oldPlayer->ending = m_gameState->tick;
         newPlayer->hasEnding = true;
-        newPlayer->ending = m_currentTick;
+        newPlayer->ending = m_gameState->tick;
         newPlayer->beginning = 0;
     }
     else
     {
-        oldPlayer->beginning = m_currentTick;
-        newPlayer->beginning = m_currentTick;
+        oldPlayer->beginning = m_gameState->tick;
+        newPlayer->beginning = m_gameState->tick;
         newPlayer->hasEnding = false;
     }
     m_gameState->objects()[newPlayer->id] = newPlayer;
@@ -340,50 +331,50 @@ void GameController::pushTimeline()
         newHeldObject->state.attachedObjectId = newPlayer->id;
 
         oldHeldObject->hasFinalTimeline = true;
-        oldHeldObject->finalTimeline = m_currentTimeline - 1;
-        newHeldObject->initialTimeline = m_currentTimeline;
-        if(m_backwards)
+        oldHeldObject->finalTimeline = m_gameState->currentTimeline() - 1;
+        newHeldObject->initialTimeline = m_gameState->currentTimeline();
+        if(m_gameState->backwards())
         {
-            oldHeldObject->ending = m_currentTick;
+            oldHeldObject->ending = m_gameState->tick;
             oldHeldObject->hasEnding = true;
-            newHeldObject->ending = m_currentTick;
+            newHeldObject->ending = m_gameState->tick;
             newHeldObject->hasEnding = true;
             newHeldObject->beginning = 0;
         }
         else
         {
-            oldHeldObject->beginning = m_currentTick;
-            newHeldObject->beginning = m_currentTick;
+            oldHeldObject->beginning = m_gameState->tick;
+            newHeldObject->beginning = m_gameState->tick;
             newHeldObject->hasEnding = false;
         }
         m_gameState->objects()[newHeldObject->id] = newHeldObject;
-        m_gameState->historyBuffer().buffer[newHeldObject->id] = std::vector<ObjectState>(m_currentTick+1);
-        m_gameState->historyBuffer().buffer[newHeldObject->id][m_currentTick] = newHeldObject->state;
+        m_gameState->historyBuffer().buffer[newHeldObject->id] = std::vector<ObjectState>(m_gameState->tick+1);
+        m_gameState->historyBuffer().buffer[newHeldObject->id][m_gameState->tick] = newHeldObject->state;
         m_gameState->throwables().push_back(newHeldObject.get());
     }
 
     //Add a buffer to the new history buffer for the new player
-    m_gameState->historyBuffer().buffer[newPlayer->id] = std::vector<ObjectState>(m_currentTick+1);
-    m_gameState->historyBuffer().buffer[newPlayer->id][m_currentTick] = newPlayer->state;
+    m_gameState->historyBuffer().buffer[newPlayer->id] = std::vector<ObjectState>(m_gameState->tick+1);
+    m_gameState->historyBuffer().buffer[newPlayer->id][m_gameState->tick] = newPlayer->state;
 
-    newPlayer->observations.resize(m_currentTick+1);
-    observation::recordObservations(m_gameState.get(), newPlayer.get(), m_currentTick);
+    newPlayer->observations.resize(m_gameState->tick+1);
+    observation::recordObservations(m_gameState.get(), newPlayer.get(), m_gameState->tick);
 
     //Delete all transient objects whose origin is "after" the breakpoint
     std::vector<int> toDelete;
     for(auto pair : m_gameState->objects())
     {
         GameObject* obj = pair.second.get();
-        if(m_backwards)
+        if(m_gameState->backwards())
         {
-            if(obj->isTransient() && obj->backwards && obj->hasEnding && obj->ending < m_currentTick)
+            if(obj->isTransient() && obj->backwards && obj->hasEnding && obj->ending < m_gameState->tick)
             {
                 toDelete.push_back(obj->id);
             }
         }
         else
         {
-            if(obj->isTransient() && !obj->backwards && obj->beginning > m_currentTick)
+            if(obj->isTransient() && !obj->backwards && obj->beginning > m_gameState->tick)
             {
                 toDelete.push_back(obj->id);
             }
@@ -501,25 +492,25 @@ void GameController::tickPlayer(Player* player)
         bullet->state.pos = bulletPos;
         bullet->velocity = direction * Bullet::SPEED;
         bullet->state.angle_deg = math_util::angleBetween(player->state.pos, m_gameState->mousePos);
-        bullet->initialTimeline = m_currentTimeline;
+        bullet->initialTimeline = m_gameState->currentTimeline();
         bullet->backwards = player->backwards;
         bullet->nextState = bullet->state;
         if(player->backwards)
         {
-            bullet->ending = m_currentTick;
+            bullet->ending = m_gameState->tick;
             bullet->hasEnding = true;
         }
         else
         {
-            bullet->beginning = m_currentTick;
+            bullet->beginning = m_gameState->tick;
         }
 
         player->nextState.cooldown = player->fireCooldown;
 
         m_gameState->bullets().push_back(bullet.get());
         m_gameState->objects()[bullet->id] = bullet;
-        m_gameState->historyBuffer().buffer[bullet->id] = std::vector<ObjectState>(m_currentTick+1);
-        m_gameState->historyBuffer().buffer[bullet->id][m_currentTick] = bullet->state;
+        m_gameState->historyBuffer().buffer[bullet->id] = std::vector<ObjectState>(m_gameState->tick+1);
+        m_gameState->historyBuffer().buffer[bullet->id][m_gameState->tick] = bullet->state;
     }
 
     player->nextState.angle_deg = math_util::rotateTowardsPoint(player->state.angle_deg, player->state.pos, m_gameState->mousePos, 5.0f);
@@ -527,14 +518,14 @@ void GameController::tickPlayer(Player* player)
 
 void GameController::tickBullet(Bullet* bullet)
 {
-    if(!bullet->activeAt(m_currentTick))
+    if(!bullet->activeAt(m_gameState->tick))
     {
         return;
     }
 
-    if(bullet->backwards != m_backwards)
+    if(bullet->backwards != m_gameState->backwards())
     {
-        bullet->nextState = m_gameState->historyBuffer()[bullet->id][m_currentTick];
+        bullet->nextState = m_gameState->historyBuffer()[bullet->id][m_gameState->tick];
         return;
     }
 
@@ -543,15 +534,15 @@ void GameController::tickBullet(Bullet* bullet)
     if(m_gameState->level->tileAt(bullet->state.pos) == Level::WALL)
     {
 
-        bullet->finalTimeline = m_currentTimeline;
+        bullet->finalTimeline = m_gameState->currentTimeline();
         bullet->hasFinalTimeline = true;
         if(bullet->backwards)
         {
-            bullet->beginning = m_currentTick;
+            bullet->beginning = m_gameState->tick;
         }
         else
         {
-            bullet->ending = m_currentTick;
+            bullet->ending = m_gameState->tick;
             bullet->hasEnding = true;
         }
     }
@@ -606,14 +597,14 @@ void GameController::navigateEnemy(Enemy* enemy, point_t target)
 
 void GameController::tickEnemy(Enemy* enemy)
 {
-    if(!enemy->activeAt(m_currentTick))
+    if(!enemy->activeAt(m_gameState->tick))
     {
         return;
     }
 
-    if(enemy->backwards != m_backwards)
+    if(enemy->backwards != m_gameState->backwards())
     {
-        enemy->nextState = m_gameState->historyBuffer()[enemy->id][m_currentTick];
+        enemy->nextState = m_gameState->historyBuffer()[enemy->id][m_gameState->tick];
         return;
     }
 
@@ -621,7 +612,7 @@ void GameController::tickEnemy(Enemy* enemy)
 
     for(Bullet* bullet: m_gameState->bullets())
     {
-        if(!bullet->activeAt(m_currentTick))
+        if(!bullet->activeAt(m_gameState->tick))
         {
             continue;
         }
@@ -637,7 +628,7 @@ void GameController::tickEnemy(Enemy* enemy)
     }
     for(Throwable* throwable: m_gameState->throwables())
     {
-        if(!throwable->activeAt(m_currentTick))
+        if(!throwable->activeAt(m_gameState->tick))
         {
             continue;
         }
@@ -672,7 +663,7 @@ void GameController::tickEnemy(Enemy* enemy)
     else if(enemy->state.aiState == Enemy::AI_CHASE)
     {
         Player* target = dynamic_cast<Player*>(m_gameState->objects().at(enemy->state.targetId).get());
-        if(!target->activeAt(m_currentTick))
+        if(!target->activeAt(m_gameState->tick))
         {
             enemy->nextState.aiState = Enemy::AI_PATROL;
             return;
@@ -705,7 +696,7 @@ void GameController::tickEnemy(Enemy* enemy)
     else if(enemy->state.aiState == Enemy::AI_ATTACK)
     {
         Player* target = dynamic_cast<Player*>(m_gameState->objects().at(enemy->state.targetId).get());
-        if(!target->activeAt(m_currentTick))
+        if(!target->activeAt(m_gameState->tick))
         {
             enemy->nextState.aiState = Enemy::AI_PATROL;
             return;
@@ -725,23 +716,23 @@ void GameController::tickEnemy(Enemy* enemy)
                 bullet->state.pos = bulletPos;
                 bullet->velocity = direction * Bullet::SPEED / 4.0f; //Enemy bullets are slower
                 bullet->state.angle_deg = math_util::angleBetween(enemy->state.pos, target->state.pos);
-                bullet->initialTimeline = m_currentTimeline;
+                bullet->initialTimeline = m_gameState->currentTimeline();
                 bullet->backwards = enemy->backwards;
                 bullet->nextState = bullet->state;
                 if(enemy->backwards)
                 {
-                    bullet->ending = m_currentTick;
+                    bullet->ending = m_gameState->tick;
                     bullet->hasEnding = true;
                 }
                 else
                 {
-                    bullet->beginning = m_currentTick;
+                    bullet->beginning = m_gameState->tick;
                 }
 
                 m_gameState->bullets().push_back(bullet.get());
                 m_gameState->objects()[bullet->id] = bullet;
-                m_gameState->historyBuffer().buffer[bullet->id] = std::vector<ObjectState>(m_currentTick+1);
-                m_gameState->historyBuffer().buffer[bullet->id][m_currentTick] = bullet->state;
+                m_gameState->historyBuffer().buffer[bullet->id] = std::vector<ObjectState>(m_gameState->tick+1);
+                m_gameState->historyBuffer().buffer[bullet->id][m_gameState->tick] = bullet->state;
 
                 enemy->nextState.chargeTime = 0;
 
@@ -802,13 +793,13 @@ void GameController::tickContainer(Container* container)
         for(int i=1; i<Container::OCCUPANCY_SPACING + 300; i++)
         {
             int timestepToCheck;
-            if(m_backwards)
+            if(m_gameState->backwards())
             {
-                timestepToCheck = m_currentTick - i;
+                timestepToCheck = m_gameState->tick - i;
             }
             else
             {
-                timestepToCheck = m_currentTick + i;
+                timestepToCheck = m_gameState->tick + i;
             }
 
             if(timestepToCheck < 0 || timestepToCheck >= m_gameState->historyBuffer()[container->id].size())
@@ -852,22 +843,22 @@ void GameController::tickContainer(Container* container)
             }
         }
     } 
-    else if(m_currentTick >= m_gameState->historyBuffer()[container->id].size())
+    else if(m_gameState->tick >= m_gameState->historyBuffer()[container->id].size())
     {
         container->nextState.boxOccupied = false;
         container->nextState.attachedObjectId = -1;
     }
     else
     {
-        container->nextState = m_gameState->historyBuffer()[container->id][m_currentTick];
+        container->nextState = m_gameState->historyBuffer()[container->id][m_gameState->tick];
     }
 }
 
 void GameController::tickSwitch(Switch* sw)
 {
-    if(sw->backwards != m_backwards)
+    if(sw->backwards != m_gameState->backwards())
     {
-        sw->nextState = m_gameState->historyBuffer()[sw->id][m_currentTick];
+        sw->nextState = m_gameState->historyBuffer()[sw->id][m_gameState->tick];
         return;
     }
 
@@ -875,7 +866,7 @@ void GameController::tickSwitch(Switch* sw)
     {
         if(player->state.willInteract
             && math_util::dist(player->state.pos, sw->state.pos) < (sw->size.x + Player::INTERACT_RADIUS)
-            && player->backwards == m_backwards)
+            && player->backwards == m_gameState->backwards())
         {
             if(sw->state.aiState == Switch::OFF)
             {
@@ -894,14 +885,14 @@ void GameController::tickSwitch(Switch* sw)
 
 void GameController::tickDoor(Door* door)
 {
-    if(!door->activeAt(m_currentTick))
+    if(!door->activeAt(m_gameState->tick))
     {
         return;
     }
 
-    if(door->backwards != m_backwards)
+    if(door->backwards != m_gameState->backwards())
     {
-        door->nextState = m_gameState->historyBuffer()[door->id][m_currentTick];
+        door->nextState = m_gameState->historyBuffer()[door->id][m_gameState->tick];
         return;
     }
 
@@ -921,18 +912,18 @@ void GameController::tickDoor(Door* door)
 
 void GameController::tickSpikes(Spikes* spikes)
 {
-    if(!spikes->activeAt(m_currentTick))
+    if(!spikes->activeAt(m_gameState->tick))
     {
         return;
     }
 
-    if(spikes->backwards != m_backwards)
+    if(spikes->backwards != m_gameState->backwards())
     {
-        spikes->nextState = m_gameState->historyBuffer()[spikes->id][m_currentTick];
+        spikes->nextState = m_gameState->historyBuffer()[spikes->id][m_gameState->tick];
         return;
     }
 
-    int pointInCycle = (m_currentTick + spikes->cycleOffset) % (spikes->downDuration + spikes->upDuration);
+    int pointInCycle = (m_gameState->tick + spikes->cycleOffset) % (spikes->downDuration + spikes->upDuration);
     if(pointInCycle < spikes->downDuration)
     {
         if(spikes->downDuration - pointInCycle < Spikes::WARNING_DURATION)
@@ -960,15 +951,15 @@ void GameController::tickSpikes(Spikes* spikes)
 
 void GameController::tickThrowable(Throwable* throwable)
 {
-    if(!throwable->activeAt(m_currentTick))
+    if(!throwable->activeAt(m_gameState->tick))
     {
         return;
     }
 
-    if(throwable->backwards != m_backwards)
+    if(throwable->backwards != m_gameState->backwards())
     {
         //TODO we may want to have backwards throwables be usable in the future
-        throwable->nextState = m_gameState->historyBuffer()[throwable->id][m_currentTick];
+        throwable->nextState = m_gameState->historyBuffer()[throwable->id][m_gameState->tick];
         return;
     }
 
@@ -978,7 +969,7 @@ void GameController::tickThrowable(Throwable* throwable)
         {
             if(player->state.willThrow
                 && math_util::dist(player->state.pos, throwable->state.pos) < (throwable->size.x + Player::INTERACT_RADIUS)
-                && player->backwards == m_backwards
+                && player->backwards == m_gameState->backwards()
                 && !player->state.holdingObject
                 && !(player->nextState.holdingObject && player->nextState.heldObjectId != throwable->id))
             {
@@ -1014,7 +1005,7 @@ void GameController::tickThrowable(Throwable* throwable)
 
         for(Enemy* enemy : m_gameState->enemies())
         {
-            if(enemy->activeAt(m_currentTick) && enemy->state.aiState != Enemy::AI_DEAD && enemy->isColliding(*throwable))
+            if(enemy->activeAt(m_gameState->tick) && enemy->state.aiState != Enemy::AI_DEAD && enemy->isColliding(*throwable))
             {
                 throwable->nextState.aiState = Throwable::STILL;
                 throwable->nextState.speed = 0.0f;
@@ -1084,7 +1075,7 @@ void GameController::playTick()
     for(auto pair : m_gameState->objects())
     {
         std::shared_ptr<GameObject> obj = pair.second;
-        if(!obj->activeAt(m_currentTick))
+        if(!obj->activeAt(m_gameState->tick))
         {
             continue;
         }
@@ -1092,27 +1083,27 @@ void GameController::playTick()
         if(!obj->recorded)
         {
             obj->applyNextState();
-            if(m_currentTick == m_gameState->historyBuffer()[obj->id].size())
+            if(m_gameState->tick == m_gameState->historyBuffer()[obj->id].size())
             {  
                 m_gameState->historyBuffer()[obj->id].push_back(obj->state);
             }
-            else if(m_currentTick > m_gameState->historyBuffer()[obj->id].size())
+            else if(m_gameState->tick > m_gameState->historyBuffer()[obj->id].size())
             {
-                throw std::runtime_error("It is tick " + std::to_string(m_currentTick) + " but object " + std::to_string(obj->id) + " has history buffer size " + std::to_string(m_gameState->historyBuffer()[obj->id].size()));
+                throw std::runtime_error("It is tick " + std::to_string(m_gameState->tick) + " but object " + std::to_string(obj->id) + " has history buffer size " + std::to_string(m_gameState->historyBuffer()[obj->id].size()));
             }
             else
             {
-                m_gameState->historyBuffer()[obj->id][m_currentTick] = obj->state;
+                m_gameState->historyBuffer()[obj->id][m_gameState->tick] = obj->state;
             }
         }
         else
         {
-            obj->state = m_gameState->historyBuffer()[obj->id][m_currentTick];
+            obj->state = m_gameState->historyBuffer()[obj->id][m_gameState->tick];
         }
     }
     //Creating it both here and elsewhere because we want it to be right before recoring observations
     m_gameState->obstructionGrid = search::createObstructionGrid(m_gameState.get());
-    observation::recordObservations(m_gameState.get(), m_gameState->currentPlayer(), m_currentTick);
+    observation::recordObservations(m_gameState.get(), m_gameState->currentPlayer(), m_gameState->tick);
 }
 
 void GameController::tick(TickType type)
@@ -1128,15 +1119,15 @@ void GameController::tick(TickType type)
     m_boxToEnter = -1;
 
     
-    if(m_backwards)
+    if(m_gameState->backwards())
     {
         if(type == REWIND)
         {
             //Rewinding backwards time
-            if(m_currentTick < m_gameState->historyBuffer().breakpoint)
+            if(m_gameState->tick < m_gameState->historyBuffer().breakpoint)
             {
-                m_currentTick++;
-                restoreState(m_currentTick);
+                m_gameState->tick++;
+                restoreState();
             }
             //If going backwards there is always another timeline to pop to
             else
@@ -1147,9 +1138,9 @@ void GameController::tick(TickType type)
         else if(type == ADVANCE)
         {
             //Normal backwards time
-            if(m_currentTick > 0)
+            if(m_gameState->tick > 0)
             {
-                m_currentTick--;
+                m_gameState->tick--;
 
                 playTick();
             }
@@ -1168,10 +1159,10 @@ void GameController::tick(TickType type)
         if(type == REWIND)
         {
             //Rewind
-            if(m_currentTick > m_gameState->historyBuffer().breakpoint)
+            if(m_gameState->tick > m_gameState->historyBuffer().breakpoint)
             {
-                m_currentTick--;
-                restoreState(m_currentTick);
+                m_gameState->tick--;
+                restoreState();
             }
             else if(m_gameState->timelines.size() > 1)
             {
@@ -1185,7 +1176,7 @@ void GameController::tick(TickType type)
         else if(type == ADVANCE)
         {
             //Normal
-            m_currentTick++;
+            m_gameState->tick++;
 
             playTick();
         }

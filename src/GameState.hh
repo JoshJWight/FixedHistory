@@ -157,8 +157,13 @@ struct Timeline
 typedef std::vector<std::vector<bool>> VisibilityGrid;
 
 struct GameState {
+    int tick;
     std::shared_ptr<Level> level;
     std::vector<Timeline> timelines;
+
+    int currentTimeline() { return timelines.size() - 1; }
+    bool backwards(){ return timelines.size() % 2 == 0; }
+
     std::map<int, std::shared_ptr<GameObject>> & objects() { return timelines.back().objects; }
 
     std::vector<Player*> & players() { return timelines.back().players; }
@@ -180,7 +185,8 @@ struct GameState {
     point_t mousePos;
 
     GameState()
-        : level(nullptr)
+        : tick(-1) //Start at -1 so that the first tick is 0
+        , level(nullptr)
         , m_lastID(0)
     {
         timelines.push_back(Timeline());
@@ -241,7 +247,7 @@ struct GameState {
         objects().erase(id);
     }
 
-    void restoreState(int tick)
+    void restoreState()
     {
         for(auto pair : objects())
         {
@@ -271,7 +277,7 @@ struct GameState {
         return m_lastID++;
     }
 
-    void doRewindCleanup(int tick, int timeline)
+    void doRewindCleanup()
     {
         std::vector<int> toDelete;
         for(auto pair : objects())
@@ -279,11 +285,11 @@ struct GameState {
             GameObject* obj = pair.second.get();
 
             //Delete objects whose origin we've rewound past
-            if(obj->initialTimeline > timeline)
+            if(obj->initialTimeline > currentTimeline())
             {
                 toDelete.push_back(obj->id);
             }
-            else if(pair.second->initialTimeline == timeline)
+            else if(pair.second->initialTimeline == currentTimeline())
             {
                 if(obj->backwards)
                 {
@@ -302,7 +308,7 @@ struct GameState {
             }
 
             //Remove an object's ending marker if we've rewound past that ending
-            if(obj->hasFinalTimeline && obj->finalTimeline > timeline)
+            if(obj->hasFinalTimeline && obj->finalTimeline > currentTimeline())
             {
                 obj->hasFinalTimeline = false;
                 if(obj->backwards)
@@ -314,7 +320,7 @@ struct GameState {
                     obj->hasEnding = false;
                 }
             }
-            else if(obj->hasFinalTimeline && obj->finalTimeline == timeline)
+            else if(obj->hasFinalTimeline && obj->finalTimeline == currentTimeline())
             {
                 if(obj->backwards)
                 {

@@ -45,7 +45,7 @@ void Graphics::setSpriteScale(sf::Sprite & sprite, point_t worldSize)
 
 //TODO objects should be sorted by some kind of z-level
 //That probably waits until we have a better ontology for objects
-void Graphics::draw(GameState * state, int tick, point_t cameraCenter, const std::string& statusString)
+void Graphics::draw(GameState * state, point_t cameraCenter, const std::string& statusString)
 {
     m_cameraWorldPos = cameraCenter;
 
@@ -104,12 +104,12 @@ void Graphics::draw(GameState * state, int tick, point_t cameraCenter, const std
         }
     }
 
-    drawObjects(state, tick, visibilityGrid);
+    drawObjects(state, visibilityGrid);
 
     m_reticleSprite.setPosition(worldToCamera(state->mousePos));
     m_window.draw(m_reticleSprite);
 
-    m_tickCounter.setString(std::to_string(tick));
+    m_tickCounter.setString(std::to_string(state->tick));
     m_window.draw(m_tickCounter);
 
     if(statusString!="")
@@ -145,7 +145,7 @@ void Graphics::drawObjAs(GameObject* obj, sf::Sprite & sprite)
     m_window.draw(sprite);
 }
 
-void Graphics::drawObjects(GameState* state, int tick, const VisibilityGrid & visibilityGrid)
+void Graphics::drawObjects(GameState* state, const VisibilityGrid & visibilityGrid)
 {
     auto compare = [](GameObject* a, GameObject* b)
     {
@@ -155,7 +155,7 @@ void Graphics::drawObjects(GameState* state, int tick, const VisibilityGrid & vi
     for(auto it = state->objects().begin(); it != state->objects().end(); ++it)
     {
         GameObject * obj = it->second.get();
-        if(obj->activeAt(tick))
+        if(obj->activeAt(state->tick))
         {
             drawQueue.push(obj);
         }
@@ -167,7 +167,7 @@ void Graphics::drawObjects(GameState* state, int tick, const VisibilityGrid & vi
     for(auto it = state->objects().begin(); it != state->objects().end(); ++it)
     {
         std::shared_ptr<GameObject> obj = it->second;
-        if(!obj->activeAt(tick))
+        if(!obj->activeAt(state->tick))
         {
             continue;
         }
@@ -191,7 +191,7 @@ void Graphics::drawObjects(GameState* state, int tick, const VisibilityGrid & vi
         {
             continue;
         }
-        if(!player->activeAt(tick))
+        if(!player->activeAt(state->tick))
         {
             continue;
         }
@@ -201,7 +201,7 @@ void Graphics::drawObjects(GameState* state, int tick, const VisibilityGrid & vi
             toDraw[player->id] = player;
         }
 
-        for(auto & obj : player->observations[tick])
+        for(auto & obj : player->observations[state->tick])
         {
             //The object observed this timeline didn't match the originally observed object's ID
             //Mostly happens to bullets that get removed and recreated

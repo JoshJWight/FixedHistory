@@ -43,7 +43,7 @@ private:
 
     void addObject(std::shared_ptr<GameObject> obj);
 
-    void restoreState(int tick);
+    void restoreState();
     void popTimeline();
     void pushTimeline();
 
@@ -69,14 +69,8 @@ private:
 
     std::shared_ptr<GameState> m_gameState;
 
-    int m_currentTick;
-    int m_currentTimeline;
-
-    bool m_backwards;
-
     //Text shown in the middle of the screen
     std::string m_statusString;
-
 
     //Flags only valid for the current tick
     bool m_shouldReverse;
