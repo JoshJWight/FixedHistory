@@ -45,7 +45,7 @@ void Graphics::setSpriteScale(sf::Sprite & sprite, point_t worldSize)
 
 //TODO objects should be sorted by some kind of z-level
 //That probably waits until we have a better ontology for objects
-void Graphics::draw(GameState * state, point_t cameraCenter, const std::string& statusString)
+void Graphics::draw(GameState * state, point_t cameraCenter)
 {
     m_cameraWorldPos = cameraCenter;
 
@@ -112,10 +112,10 @@ void Graphics::draw(GameState * state, point_t cameraCenter, const std::string& 
     m_tickCounter.setString(std::to_string(state->tick));
     m_window.draw(m_tickCounter);
 
-    if(statusString!="")
+    if(state->statusString!="")
     {
-        m_statusText.setString(statusString);
-        int charSize = std::max(10.0, 200 / std::sqrt((double)statusString.size()));
+        m_statusText.setString(state->statusString);
+        int charSize = std::max(10.0, 200 / std::sqrt((double)state->statusString.size()));
         m_statusText.setCharacterSize(charSize);
         m_window.draw(m_statusText);
     }

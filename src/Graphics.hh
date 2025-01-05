@@ -1,7 +1,7 @@
 #ifndef __GRAPHICS_HH__
 #define __GRAPHICS_HH__
 
-#include "GameObject.hh"
+#include <objects/GameObject.hh>
 #include "Level.hh"
 #include "TextureBank.hh"
 #include <vector>
@@ -16,7 +16,7 @@ class Graphics
 public:
     Graphics(int windowWidth, int windowHeight);
 
-    void draw(GameState* state, point_t cameraCenter, const std::string& statusString);
+    void draw(GameState* state, point_t cameraCenter);
 
     point_t getMousePos();
 

@@ -1,3 +1,6 @@
+#ifndef GAMECONTROLLER_HH
+#define GAMECONTROLLER_HH
+
 #include <objects/GameObject.hh>
 #include <objects/Player.hh>
 #include <objects/Bullet.hh>
@@ -9,6 +12,16 @@
 #include <objects/Turnstile.hh>
 #include <objects/Container.hh>
 #include <objects/Spikes.hh>
+
+#include <tick/tickPlayer.hh>
+#include <tick/tickBullet.hh>
+#include <tick/tickEnemy.hh>
+#include <tick/tickContainer.hh>
+#include <tick/tickSwitch.hh>
+#include <tick/tickDoor.hh>
+#include <tick/tickSpikes.hh>
+#include <tick/tickThrowable.hh>
+
 #include "Graphics.hh"
 #include "TextureBank.hh"
 #include "Level.hh"
@@ -50,14 +63,6 @@ private:
     bool playerVisibleToEnemy(Player* player, Enemy* enemy);
     void navigateEnemy(Enemy* enemy, point_t target);
 
-    void tickPlayer(Player* player);
-    void tickBullet(Bullet* bullet);
-    void tickEnemy(Enemy* enemy);
-    void tickContainer(Container* container);
-    void tickSwitch(Switch* sw);
-    void tickDoor(Door* door);
-    void tickSpikes(Spikes* spikes);
-    void tickThrowable(Throwable* throwable);
     void playTick();
 
     void tick(TickType type);
@@ -68,11 +73,6 @@ private:
     DemoWriter * m_demoWriter;
 
     std::shared_ptr<GameState> m_gameState;
-
-    //Text shown in the middle of the screen
-    std::string m_statusString;
-
-    //Flags only valid for the current tick
-    bool m_shouldReverse;
-    int m_boxToEnter;
 };
+
+#endif

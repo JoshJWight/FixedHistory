@@ -4,8 +4,6 @@ GameController::GameController(const std::string & levelPath, Graphics * graphic
     : m_graphics(graphics)
     , m_demoReader(demoReader)
     , m_demoWriter(demoWriter)
-    , m_shouldReverse(false)
-    , m_boxToEnter(-1)
 {
     m_gameState = loadGameState(levelPath);
     m_gameState->obstructionGrid = search::createObstructionGrid(m_gameState.get());
@@ -75,7 +73,7 @@ bool GameController::mainLoop()
 
         if(rewinding)
         {
-            m_statusString = "";
+            m_gameState->statusString = "";
             type = REWIND;
             paradox = false;
             win = false;
@@ -92,7 +90,7 @@ bool GameController::mainLoop()
         }
         else if(!paradox && !win)
         {
-            m_statusString = "";
+            m_gameState->statusString = "";
             paradox = checkParadoxes();
             win = checkWin();
             if(!paradox && !win)
@@ -125,7 +123,7 @@ bool GameController::mainLoop()
 
         if(tickCounter % playbackSpeed == 0)
         {
-            m_graphics->draw(m_gameState.get(), cameraCenter, m_statusString);
+            m_graphics->draw(m_gameState.get(), cameraCenter);
             std::this_thread::sleep_until(lastDraw + frameDuration);
             lastDraw = std::chrono::system_clock::now();
         }
@@ -152,10 +150,10 @@ bool GameController::checkParadoxes()
             {
                 if(player->id == m_gameState->currentPlayer()->id)
                 {
-                    m_statusString = "YOU GOT SHOT";
+                    m_gameState->statusString = "YOU GOT SHOT";
                 }
                 else{
-                    m_statusString = "A PAST YOU GOT SHOT";
+                    m_gameState->statusString = "A PAST YOU GOT SHOT";
                 }
                 return true;
             }
@@ -175,10 +173,10 @@ bool GameController::checkParadoxes()
             {
                 if(player->id == m_gameState->currentPlayer()->id)
                 {
-                    m_statusString = "YOU GOT SPIKED";
+                    m_gameState->statusString = "YOU GOT SPIKED";
                 }
                 else{
-                    m_statusString = "A PAST YOU GOT SPIKED";
+                    m_gameState->statusString = "A PAST YOU GOT SPIKED";
                 }
                 return true;
             }
@@ -197,7 +195,7 @@ bool GameController::checkParadoxes()
             std::string result = observation::checkObservations(m_gameState.get(), player, m_gameState->tick);
             if(result != "")
             {
-                m_statusString = result;
+                m_gameState->statusString = result;
                 return true;
             }
         }
@@ -220,7 +218,7 @@ bool GameController::checkWin()
     {
         if(exit->activeAt(m_gameState->tick) && player->isColliding(*exit))
         {
-            m_statusString = "YOU WIN";
+            m_gameState->statusString = "YOU WIN";
             return true;
         }
     }
@@ -282,9 +280,9 @@ void GameController::pushTimeline()
     m_gameState->objects()[newPlayer->id] = newPlayer;
     m_gameState->players().push_back(newPlayer.get());
 
-    if(m_boxToEnter > -1)
+    if(m_gameState->boxToEnter > -1)
     {
-        Container* box = dynamic_cast<Container*>(m_gameState->objects().at(m_boxToEnter).get());
+        Container* box = dynamic_cast<Container*>(m_gameState->objects().at(m_gameState->boxToEnter).get());
         box->activeOccupant = newPlayer->id;
 
         newPlayer->state.boxOccupied = true;
@@ -387,688 +385,43 @@ void GameController::pushTimeline()
 
 }
 
-void GameController::tickPlayer(Player* player)
-{
-    player->nextState.willInteract = m_controls.interact;
-    player->nextState.willThrow = m_controls.throw_;
-
-    if(player->state.boxOccupied)
-    {
-        if(player->state.willInteract)
-        {
-            std::cout << "Exiting box" << std::endl;
-            Container * container = dynamic_cast<Container*>(m_gameState->objects().at(player->state.attachedObjectId).get());
-            if(container->reverseOnExit)
-            {
-                m_shouldReverse = true;
-            }
-            else
-            {
-                container->activeOccupant = -1;
-                container->nextState.boxOccupied = false;
-                container->nextState.attachedObjectId = -1;
-                player->nextState.boxOccupied = false;
-                player->nextState.attachedObjectId = -1;
-                player->nextState.visible = true;
-
-                if(player->state.holdingObject)
-                {
-                    Throwable* throwable = dynamic_cast<Throwable*>(m_gameState->objects().at(player->state.heldObjectId).get());
-                    throwable->nextState.visible = true;
-                }
-            }
-        }
-
-        //Player can't move or act while in a box
-        return;
-    }
-    
-    if(player->state.willInteract)
-    {
-        for(Container* container: m_gameState->containers())
-        {
-            if(math_util::dist(player->state.pos, container->state.pos) < (container->size.x + Player::INTERACT_RADIUS)
-                && !container->state.boxOccupied)
-            {
-                if(container->reverseOnEnter)
-                {
-                    m_shouldReverse = true;
-                    m_boxToEnter = container->id;
-                    break;
-                }
-                else
-                {
-                    container->activeOccupant = player->id;
-                    player->nextState.boxOccupied = true;
-                    player->nextState.attachedObjectId = container->id;
-                    player->nextState.visible = false;
-
-                    if(player->state.holdingObject)
-                    {
-                        Throwable* throwable = dynamic_cast<Throwable*>(m_gameState->objects().at(player->state.heldObjectId).get());
-                        throwable->nextState.visible = false;
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
-
-    if(player->state.cooldown > 0)
-    {
-        player->nextState.cooldown--;
-    }
-
-    if(m_controls.up)
-    {
-        player->nextState.pos.y += player->moveSpeed;
-    }
-    if(m_controls.down)
-    {
-        player->nextState.pos.y -= player->moveSpeed;
-    }
-    if(m_controls.left)
-    {
-        player->nextState.pos.x -= player->moveSpeed;
-    }
-    if(m_controls.right)
-    {
-        player->nextState.pos.x += player->moveSpeed;
-    }
-
-    //No walking through walls or obstructions
-    if(search::checkObstruction(m_gameState.get(), player->nextState.pos) && !search::checkObstruction(m_gameState.get(), player->state.pos))
-    {
-        player->nextState.pos = player->state.pos;
-    }
-
-    if(m_controls.fire && player->state.cooldown == 0)
-    {
-        point_t direction = math_util::normalize(m_gameState->mousePos - player->state.pos);
-        point_t bulletPos = player->state.pos + direction * player->size.x;
-        std::shared_ptr<Bullet> bullet(new Bullet(m_gameState->nextID()));
-        bullet->creatorId = player->id;
-        bullet->state.pos = bulletPos;
-        bullet->velocity = direction * Bullet::SPEED;
-        bullet->state.angle_deg = math_util::angleBetween(player->state.pos, m_gameState->mousePos);
-        bullet->initialTimeline = m_gameState->currentTimeline();
-        bullet->backwards = player->backwards;
-        bullet->nextState = bullet->state;
-        if(player->backwards)
-        {
-            bullet->ending = m_gameState->tick;
-            bullet->hasEnding = true;
-        }
-        else
-        {
-            bullet->beginning = m_gameState->tick;
-        }
-
-        player->nextState.cooldown = player->fireCooldown;
-
-        m_gameState->bullets().push_back(bullet.get());
-        m_gameState->objects()[bullet->id] = bullet;
-        m_gameState->historyBuffer().buffer[bullet->id] = std::vector<ObjectState>(m_gameState->tick+1);
-        m_gameState->historyBuffer().buffer[bullet->id][m_gameState->tick] = bullet->state;
-    }
-
-    player->nextState.angle_deg = math_util::rotateTowardsPoint(player->state.angle_deg, player->state.pos, m_gameState->mousePos, 5.0f);
-}
-
-void GameController::tickBullet(Bullet* bullet)
-{
-    if(!bullet->activeAt(m_gameState->tick))
-    {
-        return;
-    }
-
-    if(bullet->backwards != m_gameState->backwards())
-    {
-        bullet->nextState = m_gameState->historyBuffer()[bullet->id][m_gameState->tick];
-        return;
-    }
-
-    bullet->nextState.pos += bullet->velocity;
-
-    if(m_gameState->level->tileAt(bullet->state.pos) == Level::WALL)
-    {
-
-        bullet->finalTimeline = m_gameState->currentTimeline();
-        bullet->hasFinalTimeline = true;
-        if(bullet->backwards)
-        {
-            bullet->beginning = m_gameState->tick;
-        }
-        else
-        {
-            bullet->ending = m_gameState->tick;
-            bullet->hasEnding = true;
-        }
-    }
-}
-
-bool GameController::playerVisibleToEnemy(Player* player, Enemy* enemy)
-{
-    bool visible = true;
-
-    float angleToPlayer = math_util::angleBetween(enemy->state.pos, player->state.pos);
-    float angleDiff = math_util::angleDiff(enemy->state.angle_deg, angleToPlayer);
-
-    //Not in a box
-    visible &= player->state.visible;
-    //Within view angle of enemy
-    visible &= (std::abs(angleDiff) < (Enemy::VIEW_ANGLE / 2.0f));
-    //Close enough to see
-    visible &= (math_util::dist(enemy->state.pos, player->state.pos) < Enemy::VIEW_RADIUS);
-    //Not obstructed
-    visible &= search::checkVisibility(m_gameState.get(), enemy->state.pos, enemy->radius(), player->state.pos, player->radius());
-
-    return visible;
-}
-
-void GameController::navigateEnemy(Enemy* enemy, point_t target)
-{
-    point_t moveToward = search::navigate(m_gameState.get(), enemy->state.pos, target);
-
-    for(Enemy * enemy2 : m_gameState->enemies())
-    {
-        if(enemy2 != enemy 
-           && enemy2->state.aiState != Enemy::AI_DEAD 
-           && math_util::dist(enemy->state.pos, enemy2->state.pos) < enemy->radius() * 2)
-        {
-            moveToward += math_util::normalize(enemy->state.pos - enemy2->state.pos) * (m_gameState->level->scale / 5);
-        }
-    }
-
-    //If already at destination, or navigation failed, don't move
-    if(moveToward == enemy->state.pos)
-    {
-        return;
-    }
-    enemy->nextState.pos += math_util::normalize(moveToward - enemy->state.pos) * enemy->moveSpeed;
-    enemy->nextState.angle_deg = math_util::rotateTowardsPoint(enemy->state.angle_deg, enemy->state.pos, moveToward, 5.0f);
-
-    if(search::checkObstruction(m_gameState.get(), enemy->nextState.pos) && !search::checkObstruction(m_gameState.get(), enemy->state.pos))
-    {
-        enemy->nextState.pos = enemy->state.pos;
-    }
-}
-
-void GameController::tickEnemy(Enemy* enemy)
-{
-    if(!enemy->activeAt(m_gameState->tick))
-    {
-        return;
-    }
-
-    if(enemy->backwards != m_gameState->backwards())
-    {
-        enemy->nextState = m_gameState->historyBuffer()[enemy->id][m_gameState->tick];
-        return;
-    }
-
-    enemy->nextState.animIdx = enemy->state.aiState;
-
-    for(Bullet* bullet: m_gameState->bullets())
-    {
-        if(!bullet->activeAt(m_gameState->tick))
-        {
-            continue;
-        }
-        if(m_gameState->objects().at(bullet->creatorId)->type() != GameObject::PLAYER)
-        {
-            continue;
-        }
-
-        if(enemy->state.aiState != Enemy::AI_DEAD && enemy->isColliding(*bullet))
-        {
-            enemy->nextState.aiState = Enemy::AI_DEAD;
-        }
-    }
-    for(Throwable* throwable: m_gameState->throwables())
-    {
-        if(!throwable->activeAt(m_gameState->tick))
-        {
-            continue;
-        }
-
-        if(throwable->deadly && throwable->state.aiState == Throwable::THROWN && enemy->state.aiState != Enemy::AI_DEAD && enemy->isColliding(*throwable))
-        {
-            enemy->nextState.aiState = Enemy::AI_DEAD;
-        }
-    }
-
-    if(enemy->state.aiState == Enemy::AI_PATROL)
-    {
-        if(math_util::dist(enemy->state.pos, enemy->patrolPoints[enemy->state.patrolIdx]) <= m_gameState->level->scale / 3)
-        {
-            enemy->nextState.patrolIdx = (enemy->state.patrolIdx + 1) % enemy->patrolPoints.size();
-        }
-
-        navigateEnemy(enemy, enemy->patrolPoints[enemy->state.patrolIdx]);
-
-        //Check if a player is seen
-        for(Player* player : m_gameState->players())
-        {
-            if(playerVisibleToEnemy(player, enemy))
-            {
-                enemy->nextState.aiState = Enemy::AI_CHASE;
-                enemy->nextState.targetId = player->id;
-                enemy->nextState.lastSeen = player->state.pos;
-                break;
-            }
-        }
-    }
-    else if(enemy->state.aiState == Enemy::AI_CHASE)
-    {
-        Player* target = dynamic_cast<Player*>(m_gameState->objects().at(enemy->state.targetId).get());
-        if(!target->activeAt(m_gameState->tick))
-        {
-            enemy->nextState.aiState = Enemy::AI_PATROL;
-            return;
-        }
-
-        if(playerVisibleToEnemy(target, enemy))
-        {
-            enemy->nextState.lastSeen = target->state.pos;
-            if(math_util::dist(enemy->state.pos, target->state.pos) < Enemy::ATTACK_RADIUS)
-            {
-                enemy->nextState.aiState = Enemy::AI_ATTACK;
-            }
-            else
-            {
-                navigateEnemy(enemy, target->state.pos);
-            }
-        }
-        else
-        {
-            if(math_util::dist(enemy->state.pos, enemy->state.lastSeen) < enemy->moveSpeed)
-            {
-                enemy->nextState.aiState = Enemy::AI_PATROL;
-            }
-            else
-            {
-                navigateEnemy(enemy, enemy->state.lastSeen);
-            }
-        }
-    }
-    else if(enemy->state.aiState == Enemy::AI_ATTACK)
-    {
-        Player* target = dynamic_cast<Player*>(m_gameState->objects().at(enemy->state.targetId).get());
-        if(!target->activeAt(m_gameState->tick))
-        {
-            enemy->nextState.aiState = Enemy::AI_PATROL;
-            return;
-        }
-
-        if(playerVisibleToEnemy(target, enemy))
-        {
-            enemy->nextState.lastSeen = target->state.pos;
-            enemy->nextState.angle_deg = math_util::rotateTowardsPoint(enemy->state.angle_deg, enemy->state.pos, target->state.pos, 5.0f);
-
-            if(enemy->state.chargeTime >= Enemy::ATTACK_CHARGE_TIME)
-            {
-                point_t direction = math_util::normalize(target->state.pos - enemy->state.pos);
-                point_t bulletPos = enemy->state.pos + direction * enemy->size.x;
-                std::shared_ptr<Bullet> bullet(new Bullet(m_gameState->nextID()));
-                bullet->creatorId = enemy->id;
-                bullet->state.pos = bulletPos;
-                bullet->velocity = direction * Bullet::SPEED / 4.0f; //Enemy bullets are slower
-                bullet->state.angle_deg = math_util::angleBetween(enemy->state.pos, target->state.pos);
-                bullet->initialTimeline = m_gameState->currentTimeline();
-                bullet->backwards = enemy->backwards;
-                bullet->nextState = bullet->state;
-                if(enemy->backwards)
-                {
-                    bullet->ending = m_gameState->tick;
-                    bullet->hasEnding = true;
-                }
-                else
-                {
-                    bullet->beginning = m_gameState->tick;
-                }
-
-                m_gameState->bullets().push_back(bullet.get());
-                m_gameState->objects()[bullet->id] = bullet;
-                m_gameState->historyBuffer().buffer[bullet->id] = std::vector<ObjectState>(m_gameState->tick+1);
-                m_gameState->historyBuffer().buffer[bullet->id][m_gameState->tick] = bullet->state;
-
-                enemy->nextState.chargeTime = 0;
-
-                std::cout << "Enemy " << enemy->id << " fired bullet " << bullet->id << std::endl;
-            }
-            //Continue an attack in progress as long as we can see the target
-            else if(enemy->state.chargeTime > 0)
-            {
-                enemy->nextState.chargeTime++;
-            }
-            //But if not shooting, close distance first if needed
-            else if(math_util::dist(enemy->state.pos, target->state.pos) > Enemy::ATTACK_RADIUS)
-            {
-                enemy->nextState.aiState = Enemy::AI_CHASE;
-            }
-            //If target is close enough, start charging
-            else
-            {
-                enemy->nextState.chargeTime++;
-            }
-        }
-        else
-        {
-            enemy->nextState.chargeTime = 0;
-            enemy->nextState.aiState = Enemy::AI_CHASE;
-            //If there is another visible target, swap to that.
-            for(Player* player : m_gameState->players())
-            {
-                if(playerVisibleToEnemy(player, enemy))
-                {
-                    
-                    enemy->nextState.targetId = player->id;
-                    enemy->nextState.lastSeen = player->state.pos;
-                    break;
-                }
-            }
-        }
-    }
-    else if(enemy->state.aiState == Enemy::AI_DEAD)
-    {
-        //Do nothing
-    }
-    else
-    {
-        throw std::runtime_error("Unknown AI state " + std::to_string(enemy->state.aiState) + " for enemy " + std::to_string(enemy->id));
-    }
-}
-
-
-void GameController::tickContainer(Container* container)
-{
-    if(container->activeOccupant > -1)
-    {
-        container->nextState.boxOccupied = true;
-        container->nextState.attachedObjectId = container->activeOccupant;
-
-        //If about to run into a point where someone else was in the box, kick the current occupant out
-        for(int i=1; i<Container::OCCUPANCY_SPACING + 300; i++)
-        {
-            int timestepToCheck;
-            if(m_gameState->backwards())
-            {
-                timestepToCheck = m_gameState->tick - i;
-            }
-            else
-            {
-                timestepToCheck = m_gameState->tick + i;
-            }
-
-            if(timestepToCheck < 0 || timestepToCheck >= m_gameState->historyBuffer()[container->id].size())
-            {
-                break;
-            }
-
-            ObjectState & state = m_gameState->historyBuffer()[container->id][timestepToCheck];
-            if(state.boxOccupied && state.attachedObjectId != container->activeOccupant)
-            {
-                if(i<Container::OCCUPANCY_SPACING)
-                {
-                    if(container->reverseOnExit)
-                    {
-                        m_shouldReverse = true;
-                    }
-                    else
-                    {
-                        GameObject* occupant = m_gameState->objects().at(container->activeOccupant).get();
-                        if(occupant->state.holdingObject)
-                        {
-                            Throwable* throwable = dynamic_cast<Throwable*>(m_gameState->objects().at(occupant->state.heldObjectId).get());
-                            throwable->nextState.visible = true;
-                        }
-
-                        occupant->nextState.boxOccupied = false;
-                        occupant->nextState.attachedObjectId = -1;
-                        occupant->nextState.visible = true;
-                        container->activeOccupant = -1;
-
-                        container->nextState.boxOccupied = false;
-                        container->nextState.attachedObjectId = -1;
-                    }
-                }
-                else
-                {
-                    int secondsLeft = (i - Container::OCCUPANCY_SPACING) / 60;
-                    m_statusString = "AUTO-EJECT IN " + std::to_string(secondsLeft);
-                }
-                break;
-            }
-        }
-    } 
-    else if(m_gameState->tick >= m_gameState->historyBuffer()[container->id].size())
-    {
-        container->nextState.boxOccupied = false;
-        container->nextState.attachedObjectId = -1;
-    }
-    else
-    {
-        container->nextState = m_gameState->historyBuffer()[container->id][m_gameState->tick];
-    }
-}
-
-void GameController::tickSwitch(Switch* sw)
-{
-    if(sw->backwards != m_gameState->backwards())
-    {
-        sw->nextState = m_gameState->historyBuffer()[sw->id][m_gameState->tick];
-        return;
-    }
-
-    for(Player* player : m_gameState->players())
-    {
-        if(player->state.willInteract
-            && math_util::dist(player->state.pos, sw->state.pos) < (sw->size.x + Player::INTERACT_RADIUS)
-            && player->backwards == m_gameState->backwards())
-        {
-            if(sw->state.aiState == Switch::OFF)
-            {
-                sw->nextState.aiState = Switch::ON;
-            }
-            else
-            {
-                sw->nextState.aiState = Switch::OFF;
-            }
-            break;
-        }
-    }
-
-    sw->nextState.animIdx = sw->nextState.aiState;
-}
-
-void GameController::tickDoor(Door* door)
-{
-    if(!door->activeAt(m_gameState->tick))
-    {
-        return;
-    }
-
-    if(door->backwards != m_gameState->backwards())
-    {
-        door->nextState = m_gameState->historyBuffer()[door->id][m_gameState->tick];
-        return;
-    }
-
-    int onSwitches = 0;
-    for(int swId : door->getConnectedSwitches())
-    {
-        Switch* sw = dynamic_cast<Switch*>(m_gameState->objects().at(swId).get());
-        if(sw->state.aiState == Switch::ON)
-        {
-            onSwitches++;
-        }
-    }
-
-    door->nextState.aiState = (onSwitches % 2 == 1) ? Door::OPEN : Door::CLOSED;
-    door->nextState.animIdx = door->nextState.aiState;
-}
-
-void GameController::tickSpikes(Spikes* spikes)
-{
-    if(!spikes->activeAt(m_gameState->tick))
-    {
-        return;
-    }
-
-    if(spikes->backwards != m_gameState->backwards())
-    {
-        spikes->nextState = m_gameState->historyBuffer()[spikes->id][m_gameState->tick];
-        return;
-    }
-
-    int pointInCycle = (m_gameState->tick + spikes->cycleOffset) % (spikes->downDuration + spikes->upDuration);
-    if(pointInCycle < spikes->downDuration)
-    {
-        if(spikes->downDuration - pointInCycle < Spikes::WARNING_DURATION)
-        {
-            spikes->nextState.aiState = Spikes::WARNING;
-        }
-        else
-        {
-            spikes->nextState.aiState = Spikes::DOWN;
-        }
-    }
-    else
-    {
-        if(spikes->downDuration > 0 && (spikes->upDuration - (pointInCycle - spikes->downDuration) < Spikes::WARNING_DURATION))
-        {
-            spikes->nextState.aiState = Spikes::WARNING;
-        }
-        else
-        {
-            spikes->nextState.aiState = Spikes::UP;
-        }
-    }
-    spikes->nextState.animIdx = spikes->nextState.aiState;
-}
-
-void GameController::tickThrowable(Throwable* throwable)
-{
-    if(!throwable->activeAt(m_gameState->tick))
-    {
-        return;
-    }
-
-    if(throwable->backwards != m_gameState->backwards())
-    {
-        //TODO we may want to have backwards throwables be usable in the future
-        throwable->nextState = m_gameState->historyBuffer()[throwable->id][m_gameState->tick];
-        return;
-    }
-
-    if(throwable->state.aiState == Throwable::STILL)
-    {
-        for(Player* player : m_gameState->players())
-        {
-            if(player->state.willThrow
-                && math_util::dist(player->state.pos, throwable->state.pos) < (throwable->size.x + Player::INTERACT_RADIUS)
-                && player->backwards == m_gameState->backwards()
-                && !player->state.holdingObject
-                && !(player->nextState.holdingObject && player->nextState.heldObjectId != throwable->id))
-            {
-                throwable->nextState.aiState = Throwable::HELD;
-                throwable->nextState.attachedObjectId = player->id;
-                player->nextState.heldObjectId = throwable->id;
-                player->nextState.holdingObject = true;
-                break;
-            }
-        }
-    }
-    else if(throwable->state.aiState == Throwable::THROWN)
-    {
-        point_t nextPos = math_util::moveInDirection(throwable->state.pos, throwable->state.angle_deg, throwable->state.speed);
-        if(search::checkObstruction(m_gameState.get(), nextPos))
-        {
-            float bounceAngle = search::bounceOffWall(m_gameState.get(), throwable->state.pos, nextPos);
-            throwable->nextState.angle_deg = bounceAngle;
-            throwable->nextState.speed *= throwable->bounciness;
-            throwable->nextState.pos = math_util::moveInDirection(throwable->state.pos, bounceAngle, throwable->nextState.speed);
-        }
-        else
-        {
-            throwable->nextState.pos = nextPos;
-        }
-        throwable->nextState.speed -= throwable->drag;
-
-        if(throwable->nextState.speed < 0.0f)
-        {
-            throwable->nextState.aiState = Throwable::STILL;
-            throwable->nextState.speed = 0.0f;
-        }
-
-        for(Enemy* enemy : m_gameState->enemies())
-        {
-            if(enemy->activeAt(m_gameState->tick) && enemy->state.aiState != Enemy::AI_DEAD && enemy->isColliding(*throwable))
-            {
-                throwable->nextState.aiState = Throwable::STILL;
-                throwable->nextState.speed = 0.0f;
-                break;
-            }
-        }
-    }
-    else if(throwable->state.aiState == Throwable::HELD)
-    {
-        Player * holder = dynamic_cast<Player*>(m_gameState->objects().at(throwable->state.attachedObjectId).get());
-        throwable->nextState.pos = math_util::moveInDirection(holder->state.pos, holder->state.angle_deg - 30, holder->size.x);
-        throwable->nextState.angle_deg = holder->state.angle_deg;
-        if(holder->state.willThrow && !holder->state.boxOccupied)
-        {
-            throwable->nextState.aiState = Throwable::THROWN;
-            throwable->nextState.attachedObjectId = -1;
-            holder->nextState.heldObjectId = -1;
-            holder->nextState.holdingObject = false;
-            throwable->nextState.speed = throwable->throwSpeed;
-        }
-    }
-    else
-    {
-        throw std::runtime_error("Unknown throwable state");
-    }
-}
 
 void GameController::playTick()
 {
-    tickPlayer(m_gameState->currentPlayer());
+    tick::tickPlayer(m_gameState.get(), m_gameState->currentPlayer(), &m_controls);
     for(Bullet* bullet : m_gameState->bullets())
     {
-        tickBullet(bullet);
+        tick::tickBullet(m_gameState.get(), bullet);
     }
 
     for(Enemy* enemy : m_gameState->enemies())
     {
-        tickEnemy(enemy);
+        tick::tickEnemy(m_gameState.get(), enemy);
     }
 
     for(Container* container : m_gameState->containers())
     {
-        tickContainer(container);
+        tick::tickContainer(m_gameState.get(), container);
     }
 
     for(Switch* sw : m_gameState->switches())
     {
-        tickSwitch(sw);
+        tick::tickSwitch(m_gameState.get(), sw);
     }
 
     for(Door* door : m_gameState->doors())
     {
-        tickDoor(door);
+        tick::tickDoor(m_gameState.get(), door);
     }
 
     for(Spikes* spikes : m_gameState->spikes())
     {
-        tickSpikes(spikes);
+        tick::tickSpikes(m_gameState.get(), spikes);
     }
 
     for(Throwable* throwable : m_gameState->throwables())
     {
-        tickThrowable(throwable);
+        tick::tickThrowable(m_gameState.get(), throwable);
     }
 
     //Apply next states to current states
@@ -1115,8 +468,8 @@ void GameController::tick(TickType type)
     }
 
     //Reset per-tick flags
-    m_shouldReverse = false;
-    m_boxToEnter = -1;
+    m_gameState->shouldReverse = false;
+    m_gameState->boxToEnter = -1;
 
     
     if(m_gameState->backwards())
@@ -1146,7 +499,7 @@ void GameController::tick(TickType type)
             }
             else
             {
-                m_statusString = "TIME'S BOUNDARY";
+                m_gameState->statusString = "TIME'S BOUNDARY";
             }
         }
         else
@@ -1170,7 +523,7 @@ void GameController::tick(TickType type)
             }
             else
             {
-                m_statusString = "TIME'S BOUNDARY";
+                m_gameState->statusString = "TIME'S BOUNDARY";
             }
         }
         else if(type == ADVANCE)
@@ -1186,11 +539,11 @@ void GameController::tick(TickType type)
         }
     }
 
-    if(m_controls.reverse || m_shouldReverse)
+    if(m_controls.reverse || m_gameState->shouldReverse)
     {
         pushTimeline();
     }
-    m_shouldReverse = false;
+    m_gameState->shouldReverse = false;
 
     m_gameState->obstructionGrid = search::createObstructionGrid(m_gameState.get());
 }

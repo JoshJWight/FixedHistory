@@ -184,10 +184,17 @@ struct GameState {
     //This is in world coordinates
     point_t mousePos;
 
+    //Per-tick variables
+    std::string statusString;
+    bool shouldReverse;
+    int boxToEnter;
+
     GameState()
         : tick(-1) //Start at -1 so that the first tick is 0
         , level(nullptr)
         , m_lastID(0)
+        , shouldReverse(false)
+        , boxToEnter(-1)
     {
         timelines.push_back(Timeline());
     }
