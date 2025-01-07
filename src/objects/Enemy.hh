@@ -14,7 +14,7 @@ public:
         AI_DEAD = 3
     };
 
-    constexpr static float VIEW_RADIUS = 90;
+    constexpr static float VIEW_RADIUS = 150;
     constexpr static float VIEW_ANGLE = 90;
     constexpr static float ATTACK_RADIUS = 70;
     constexpr static float ATTACK_CHARGE_TIME = 30;

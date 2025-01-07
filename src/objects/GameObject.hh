@@ -33,6 +33,10 @@ struct ObjectState
         , holdingObject(false)
         , heldObjectId(-1)
         , speed(0)
+        , searchStatus(0)
+        , discovered(false)
+        , alarmRadius(0)
+        , assignedAlarm(-1)
     {
     }
 
@@ -53,6 +57,10 @@ struct ObjectState
         , holdingObject(other.holdingObject)
         , heldObjectId(other.heldObjectId)
         , speed(other.speed)
+        , searchStatus(other.searchStatus)
+        , discovered(other.discovered)
+        , alarmRadius(other.alarmRadius)
+        , assignedAlarm(other.assignedAlarm)
     {
     }
 
@@ -87,6 +95,13 @@ struct ObjectState
 
     //Used for throwables
     float speed;
+
+
+    //Crime/alarm related params
+    uint64_t searchStatus;
+    bool discovered; //For dead enemies
+    float alarmRadius;
+    int assignedAlarm;
 };
 
 class GameObject
@@ -106,7 +121,9 @@ public:
         SPIKES,
         OBJECTIVE,
         KNIFE,
-        EXIT
+        EXIT,
+        CRIME,
+        ALARM
     };
 
     static std::string typeToString(ObjectType type)
@@ -137,6 +154,10 @@ public:
                 return "knife";
             case EXIT:
                 return "exit";
+            case CRIME:
+                return "crime";
+            case ALARM:
+                return "alarm";
             default:
                 return "undefined";
         }

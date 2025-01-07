@@ -16,6 +16,8 @@
 #include "objects/Objective.hh"
 #include "objects/Knife.hh"
 #include "objects/Exit.hh"
+#include "objects/Crime.hh"
+#include "objects/Alarm.hh"
 #include <objects/GameObject.hh>
 
 #include <vector>
@@ -152,6 +154,8 @@ struct Timeline
     std::vector<Spikes*> spikes;
     std::vector<Throwable*> throwables;
     std::vector<Exit*> exits;
+    std::vector<Crime*> crimes;
+    std::vector<Alarm*> alarms;
 };
 
 typedef std::vector<std::vector<bool>> VisibilityGrid;
@@ -176,6 +180,8 @@ struct GameState {
     std::vector<Spikes*> & spikes() { return timelines.back().spikes; }
     std::vector<Throwable*> & throwables() { return timelines.back().throwables; }
     std::vector<Exit*> & exits() { return timelines.back().exits; }
+    std::vector<Crime*> & crimes() { return timelines.back().crimes; }
+    std::vector<Alarm*> & alarms() { return timelines.back().alarms; }
     HistoryBuffer & historyBuffer() { return timelines.back().historyBuffer; }
     int m_lastID;
 

@@ -2,8 +2,13 @@
 
 namespace search{
 
-VisibilityGrid createVisibilityGrid(GameState * state, point_t center)
+VisibilityGrid createVisibilityGrid(GameState * state, point_t center, float startAngle_deg, float endAngle_deg)
 {
+    if(startAngle_deg > endAngle_deg)
+    {
+        endAngle_deg += 360;
+    }
+
     //Initialize grid to false
     VisibilityGrid grid(state->level->width, std::vector<bool>(state->level->height, false));
 
@@ -16,9 +21,13 @@ VisibilityGrid createVisibilityGrid(GameState * state, point_t center)
     //From here on out we work in level coordinates
     point_t center_level = state->level->toLevelCoords(center);
 
+    float startAngle_rad = startAngle_deg * M_PI / 180.0;
+    float endAngle_rad = endAngle_deg * M_PI / 180.0;
+    float increment = (endAngle_rad - startAngle_rad) / N_RAYCASTS;
+
     for(int i = 0; i < N_RAYCASTS; i++)
     {
-        float angle = i * 2 * M_PI / N_RAYCASTS;
+        float angle = startAngle_rad + (i * increment);
 
         point_t delta = point_t(DELTA_SIZE * cos(angle), DELTA_SIZE * sin(angle));
         point_t current = center_level;

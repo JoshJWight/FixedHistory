@@ -132,3 +132,8 @@ point_t Level::toLevelCoords(const point_t & worldPos) const
 {
     return point_t(floor((worldPos.x - bottomLeft.x) / scale), floor((worldPos.y - bottomLeft.y) / scale));
 }
+
+point_t Level::fromLevelCoords(const point_t & levelPos) const
+{
+    return point_t((levelPos.x + 0.5) * scale + bottomLeft.x, (levelPos.y + 0.5) * scale + bottomLeft.y);
+}

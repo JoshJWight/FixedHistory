@@ -61,7 +61,7 @@ void Graphics::draw(GameState * state, point_t cameraCenter)
 
     m_window.clear();
 
-    VisibilityGrid visibilityGrid = search::createVisibilityGrid(state, m_cameraWorldPos);
+    VisibilityGrid visibilityGrid = search::createVisibilityGrid(state, m_cameraWorldPos, 0, 360);
 
     //Draw each tile of the level
     for(int x = 0; x < state->level->width; ++x)

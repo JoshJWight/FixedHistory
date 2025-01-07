@@ -385,9 +385,48 @@ void GameController::pushTimeline()
 
 }
 
+void GameController::updateAlarmConnections()
+{
+    for(Alarm * alarm : m_gameState->alarms())
+    {
+        alarm->crimes.clear();
+        alarm->enemies.clear();
+    }
+    for(Crime * crime : m_gameState->crimes())
+    {
+        if(!crime->activeAt(m_gameState->tick))
+        {
+            continue;
+        }
+        if(crime->state.assignedAlarm == -1)
+        {
+            throw std::runtime_error("Crime has no assigned alarm!");
+        }
+
+        Alarm * alarm = dynamic_cast<Alarm*>(m_gameState->objects().at(crime->state.assignedAlarm).get());
+        alarm->crimes.push_back(crime->id);
+    }
+    for(Enemy * enemy : m_gameState->enemies())
+    {
+        if(!enemy->activeAt(m_gameState->tick))
+        {
+            continue;
+        }
+        if(enemy->state.assignedAlarm == -1)
+        {
+            continue;
+        }
+
+        Alarm * alarm = dynamic_cast<Alarm*>(m_gameState->objects().at(enemy->state.assignedAlarm).get());
+        alarm->enemies.push_back(enemy->id);
+    }
+}
+
 
 void GameController::playTick()
 {
+    updateAlarmConnections();
+
     tick::tickPlayer(m_gameState.get(), m_gameState->currentPlayer(), &m_controls);
     for(Bullet* bullet : m_gameState->bullets())
     {

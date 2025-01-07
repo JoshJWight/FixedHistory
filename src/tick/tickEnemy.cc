@@ -2,23 +2,178 @@
 
 namespace tick{
 
-bool playerVisibleToEnemy(GameState * state, Player* player, Enemy* enemy)
+void createCrime(GameState * state, Enemy* enemy, Crime::CrimeType crimeType, GameObject* subject)
+{
+    //Check if this report matches an existing crime
+    for(Crime * crime : state->crimes())
+    {
+        if(!crime->activeAt(state->tick) || crime->backwards != enemy->backwards)
+        {
+            continue;
+        }
+
+        if(crime->crimeType == crimeType
+           && crime->subjectId == subject->id)
+        {
+            if(crime->crimeType == Crime::TRESPASSING)
+            {
+                crime->nextState.pos = subject->state.pos;
+                crime->nextState.searchStatus = 0;
+            }
+            //Murder does not need to be updated based on the enemy still seeing the body
+
+            //No need to create a new crime for the same thing, but assign this enemy to that alarm
+            enemy->nextState.assignedAlarm = crime->state.assignedAlarm;
+            return;
+        }
+    }
+
+    int alarmId = enemy->state.assignedAlarm;
+    if(alarmId == -1)
+    {
+        //Search for an existing alarm whose radius contains this crime
+        for(Alarm * alarm : state->alarms())
+        {
+            if(alarm->state.alarmRadius > math_util::dist(alarm->state.pos, subject->state.pos))
+            {
+                alarmId = alarm->id;
+                break;
+            }
+        }
+
+        //If no alarm found, create a new one
+        std::shared_ptr<Alarm> alarm(new Alarm(state->nextID()));
+        alarm->state.pos = enemy->state.pos;
+        alarm->initialTimeline = state->currentTimeline();
+        alarm->backwards = enemy->backwards;
+        alarm->state.alarmRadius = Alarm::DEFAULT_RADIUS;
+        alarm->nextState = alarm->state;
+        if(enemy->backwards)
+        {
+            alarm->ending = state->tick;
+            alarm->hasEnding = true;
+        }
+        else
+        {
+            alarm->beginning = state->tick;
+        }
+
+        state->alarms().push_back(alarm.get());
+        state->objects()[alarm->id] = alarm;
+        state->historyBuffer().buffer[alarm->id] = std::vector<ObjectState>(state->tick+1);
+        state->historyBuffer().buffer[alarm->id][state->tick] = alarm->state;
+    }
+
+
+
+    std::shared_ptr<Crime> crime(new Crime(state->nextID()));
+    crime->state.pos = subject->state.pos;
+    crime->crimeType = crimeType;
+    crime->subjectId = subject->id;
+    crime->state.assignedAlarm = alarmId;
+    crime->initialTimeline = state->currentTimeline();
+    crime->backwards = enemy->backwards;
+    crime->nextState = crime->state;
+    if(enemy->backwards)
+    {
+        crime->ending = state->tick;
+        crime->hasEnding = true;
+    }
+    else
+    {
+        crime->beginning = state->tick;
+    }
+
+    state->crimes().push_back(crime.get());
+    state->objects()[crime->id] = crime;
+    state->historyBuffer().buffer[crime->id] = std::vector<ObjectState>(state->tick+1);
+    state->historyBuffer().buffer[crime->id][state->tick] = crime->state;
+}
+
+void reportCrimes(GameState * state, Enemy* enemy)
+{
+    //Trespassing
+    for(Player* player : state->players())
+    {
+        if(!player->activeAt(state->tick))
+        {
+            continue;
+        }
+        if(playerVisibleToEnemy(state, player, enemy))
+        {
+            createCrime(state, enemy, Crime::TRESPASSING, player);   
+        }
+    }
+
+    //Murder
+    for(Enemy* other : state->enemies())
+    {
+        if(other->activeAt(state->tick) 
+            && other->state.aiState == Enemy::AI_DEAD
+            && !other->state.discovered
+            && pointVisibleToEnemy(state, other->state.pos, enemy))
+        {
+            createCrime(state, enemy, Crime::MURDER, other);
+            //Note this may cause problems if there are enemies with opposite arrows of time
+            other->nextState.discovered = true;
+        }
+    }
+}
+
+void reportSearches(GameState * state, Enemy* enemy)
+{
+    Alarm * alarm = dynamic_cast<Alarm*>(state->objects().at(enemy->state.assignedAlarm).get());
+    for(Crime * crime : state->crimes())
+    {
+        for(int x = -Crime::SEARCH_RADIUS; x <= Crime::SEARCH_RADIUS; x++)
+        {
+            for(int y = -Crime::SEARCH_RADIUS; y <= Crime::SEARCH_RADIUS; y++)
+            {
+                if(crime->isSearched(x, y))
+                {
+                    continue;
+                }
+                point_t crimePos = state->level->toLevelCoords(crime->state.pos);
+                point_t searchPos = crimePos + point_t(x, y);
+                if(searchPos.x < 0 || searchPos.x >= state->level->width || searchPos.y < 0 || searchPos.y >= state->level->height)
+                {
+                    //Out of bounds, so just check it off
+                    crime->submitSearch(x, y);
+                }
+                else if(state->obstructionGrid[searchPos.x][searchPos.y])
+                {
+                    //Obstructed, so just check it off
+                    crime->submitSearch(x, y);
+                }
+                else if(pointVisibleToEnemy(state, state->level->fromLevelCoords(searchPos), enemy))
+                {
+                    crime->submitSearch(x, y);
+                }
+            }
+        }
+    }
+}
+
+bool pointVisibleToEnemy(GameState * state, point_t point, Enemy * enemy)
 {
     bool visible = true;
 
-    float angleToPlayer = math_util::angleBetween(enemy->state.pos, player->state.pos);
-    float angleDiff = math_util::angleDiff(enemy->state.angle_deg, angleToPlayer);
+    float angleToPoint = math_util::angleBetween(enemy->state.pos, point);
+    float angleDiff = math_util::angleDiff(enemy->state.angle_deg, angleToPoint);
 
-    //Not in a box
-    visible &= player->state.visible;
     //Within view angle of enemy
     visible &= (std::abs(angleDiff) < (Enemy::VIEW_ANGLE / 2.0f));
     //Close enough to see
-    visible &= (math_util::dist(enemy->state.pos, player->state.pos) < Enemy::VIEW_RADIUS);
+    visible &= (math_util::dist(enemy->state.pos, point) < Enemy::VIEW_RADIUS);
     //Not obstructed
-    visible &= search::checkVisibility(state, enemy->state.pos, enemy->radius(), player->state.pos, player->radius());
+    visible &= search::checkVisibility(state, enemy->state.pos, enemy->radius(), point, 0);
 
     return visible;
+}
+
+bool playerVisibleToEnemy(GameState * state, Player* player, Enemy* enemy)
+{
+    return player->state.visible && pointVisibleToEnemy(state, player->state.pos, enemy);
 }
 
 void navigateEnemy(GameState * state, Enemy* enemy, point_t target)

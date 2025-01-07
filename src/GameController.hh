@@ -60,8 +60,7 @@ private:
     void popTimeline();
     void pushTimeline();
 
-    bool playerVisibleToEnemy(Player* player, Enemy* enemy);
-    void navigateEnemy(Enemy* enemy, point_t target);
+    void updateAlarmConnections();
 
     void playTick();
 
