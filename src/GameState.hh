@@ -253,6 +253,12 @@ struct GameState {
             case GameObject::EXIT:
                 std::erase_if(exits(), [id](Exit* e){return e->id == id;});
                 break;
+            case GameObject::CRIME:
+                std::erase_if(crimes(), [id](Crime* c){return c->id == id;});
+                break;
+            case GameObject::ALARM:
+                std::erase_if(alarms(), [id](Alarm* a){return a->id == id;});
+                break;
             default:
                 throw std::runtime_error("Object type " + GameObject::typeToString(objects().at(id)->type()) + " not handled in deleteObject");
                 break;

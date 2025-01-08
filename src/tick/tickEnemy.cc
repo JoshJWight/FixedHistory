@@ -62,6 +62,8 @@ void createCrime(GameState * state, Enemy* enemy, Crime::CrimeType crimeType, Ga
         state->objects()[alarm->id] = alarm;
         state->historyBuffer().buffer[alarm->id] = std::vector<ObjectState>(state->tick+1);
         state->historyBuffer().buffer[alarm->id][state->tick] = alarm->state;
+
+        alarmId = alarm->id;
     }
 
 
@@ -122,6 +124,11 @@ void reportCrimes(GameState * state, Enemy* enemy)
 
 void reportSearches(GameState * state, Enemy* enemy)
 {
+    if(enemy->state.assignedAlarm == -1)
+    {
+        return;
+    }
+
     Alarm * alarm = dynamic_cast<Alarm*>(state->objects().at(enemy->state.assignedAlarm).get());
     for(Crime * crime : state->crimes())
     {
@@ -197,7 +204,18 @@ float crimePriority(GameState * state, Crime* crime, Enemy* enemy)
 
 float searchPriority(GameState * state, point_t pos, Enemy* enemy)
 {
+    const float DISTANCE_MULTIPLIER = 1;
+    const float ANGLE_MULTIPLIER = 1;
 
+    float priority = 0;
+
+    priority -= math_util::dist(enemy->state.pos, pos) * DISTANCE_MULTIPLIER;
+
+    priority -= abs(math_util::angleDiff(
+        math_util::angleBetween(enemy->state.pos, pos),
+        enemy->state.angle_deg)) * ANGLE_MULTIPLIER;
+
+    return priority;
 }
 
 bool pointVisibleToEnemy(GameState * state, point_t point, Enemy * enemy)
@@ -267,6 +285,18 @@ void tickEnemy(GameState * state, Enemy* enemy)
     {
         reportCrimes(state, enemy);
         reportSearches(state, enemy);
+
+        if(enemy->state.assignedAlarm == -1)
+        {
+            for(Alarm * alarm : state->alarms())
+            {
+                if(alarm->activeAt(state->tick) && math_util::dist(enemy->state.pos, alarm->state.pos) < alarm->state.alarmRadius)
+                {
+                    enemy->nextState.assignedAlarm = alarm->id;
+                    break;
+                }
+            }
+        }
     }
 
     enemy->nextState.animIdx = enemy->state.aiState;
@@ -489,6 +519,18 @@ void tickEnemy(GameState * state, Enemy* enemy)
             }
 
             navigateEnemy(state, enemy, bestSearchPos);
+        }
+
+        //Check if a player is seen
+        for(Player* player : state->players())
+        {
+            if(playerVisibleToEnemy(state, player, enemy))
+            {
+                enemy->nextState.aiState = Enemy::AI_CHASE;
+                enemy->nextState.targetId = player->id;
+                enemy->nextState.lastSeen = player->state.pos;
+                break;
+            }
         }
     }
     else

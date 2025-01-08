@@ -7,10 +7,10 @@ class Crime : public GameObject
 {
 public:
     //Overall 7x7 grid, largest that can fit in 64-bit int
-    const static int SEARCH_RADIUS = 3;
-    const static int SEARCH_DIAMETER = 2 * SEARCH_RADIUS + 1;
+    constexpr static int SEARCH_RADIUS = 3;
+    constexpr static int SEARCH_DIAMETER = 2 * SEARCH_RADIUS + 1;
 
-    const static uint64_t FULLY_SEARCHED = (1UL << (SEARCH_DIAMETER * SEARCH_DIAMETER + 1UL)) - 1UL;
+    constexpr static uint64_t FULLY_SEARCHED = (1UL << (SEARCH_DIAMETER * SEARCH_DIAMETER + 1UL)) - 1UL;
 
     enum CrimeType
     {
@@ -32,6 +32,11 @@ public:
         , crimeType(ancestor->crimeType)
         , subjectId(ancestor->subjectId)
     {
+    }
+
+    ObjectType type() override
+    {
+        return CRIME;
     }
     
     bool isTransient() override

@@ -6,7 +6,7 @@
 class Alarm : public GameObject
 {
 public:
-    const static float DEFAULT_RADIUS = 150;
+    constexpr static float DEFAULT_RADIUS = 150;
 
     Alarm(int id)
         : GameObject(id)
@@ -19,6 +19,11 @@ public:
     Alarm(int id, Alarm* ancestor)
         : GameObject(id, ancestor)
     {
+    }
+
+    ObjectType type() override
+    {
+        return ALARM;
     }
 
     bool isTransient() override
