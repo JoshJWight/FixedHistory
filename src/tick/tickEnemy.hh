@@ -15,6 +15,10 @@ void reportCrimes(GameState * state, Enemy* enemy);
 
 void reportSearches(GameState * state, Enemy* enemy);
 
+float crimePriority(GameState * state, Crime* crime, Enemy* enemy);
+
+float searchPriority(GameState * state, point_t pos, Enemy* enemy);
+
 bool pointVisibleToEnemy(GameState * state, point_t point, Enemy* enemy);
 
 bool playerVisibleToEnemy(GameState * state, Player* player, Enemy* enemy);

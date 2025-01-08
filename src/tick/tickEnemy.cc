@@ -148,10 +148,56 @@ void reportSearches(GameState * state, Enemy* enemy)
                 else if(pointVisibleToEnemy(state, state->level->fromLevelCoords(searchPos), enemy))
                 {
                     crime->submitSearch(x, y);
+                    if(crime->nextState.searchStatus == Crime::FULLY_SEARCHED)
+                    {
+                        if(crime->backwards)
+                        {
+                            crime->beginning = state->tick;
+                        }
+                        else
+                        {
+                            crime->hasEnding = true;
+                            crime->ending = state->tick;
+                        }
+                    }
                 }
             }
         }
     }
+}
+
+float crimePriority(GameState * state, Crime* crime, Enemy* enemy)
+{
+    const int BASE_PRIORITY = 100;
+    const int TRESPASSING_MULTIPLIER = 5;
+    const int MURDER_MULTIPLIER = 1;
+    const float DISTANCE_MULTIPLIER = 1;
+    const float ANGLE_MULTIPLIER = 1;
+
+
+    float priority = 0;
+
+    if(crime->crimeType == Crime::TRESPASSING)
+    {
+        priority = BASE_PRIORITY * TRESPASSING_MULTIPLIER;
+    }
+    else if(crime->crimeType == Crime::MURDER)
+    {
+        priority = BASE_PRIORITY * MURDER_MULTIPLIER;
+    }
+
+    priority -= math_util::dist(enemy->state.pos, crime->state.pos) * DISTANCE_MULTIPLIER;
+
+    priority -= abs(math_util::angleDiff(
+        math_util::angleBetween(enemy->state.pos, crime->state.pos),
+        enemy->state.angle_deg)) * ANGLE_MULTIPLIER;
+
+    return priority;
+}
+
+float searchPriority(GameState * state, point_t pos, Enemy* enemy)
+{
+
 }
 
 bool pointVisibleToEnemy(GameState * state, point_t point, Enemy * enemy)
@@ -217,6 +263,12 @@ void tickEnemy(GameState * state, Enemy* enemy)
         return;
     }
 
+    if(enemy->state.aiState != Enemy::AI_DEAD)
+    {
+        reportCrimes(state, enemy);
+        reportSearches(state, enemy);
+    }
+
     enemy->nextState.animIdx = enemy->state.aiState;
 
     for(Bullet* bullet: state->bullets())
@@ -256,6 +308,11 @@ void tickEnemy(GameState * state, Enemy* enemy)
         }
 
         navigateEnemy(state, enemy, enemy->patrolPoints[enemy->state.patrolIdx]);
+
+        if(enemy->state.assignedAlarm != -1)
+        {
+            enemy->nextState.aiState = Enemy::AI_SEARCH;
+        }
 
         //Check if a player is seen
         for(Player* player : state->players())
@@ -383,6 +440,56 @@ void tickEnemy(GameState * state, Enemy* enemy)
     else if(enemy->state.aiState == Enemy::AI_DEAD)
     {
         //Do nothing
+    }
+    else if(enemy->state.aiState == Enemy::AI_SEARCH)
+    {
+        Alarm * alarm = dynamic_cast<Alarm*>(state->objects().at(enemy->state.assignedAlarm).get());
+        if(!alarm->activeAt(state->tick) || alarm->crimes.size() == 0)
+        {
+            enemy->nextState.aiState = Enemy::AI_PATROL;
+            enemy->nextState.assignedAlarm = -1;
+        }
+        else
+        {
+            float bestPriority = -1e12;
+            Crime * bestCrime = nullptr;
+            for(int crimeId : alarm->crimes)
+            {
+                Crime * crime = dynamic_cast<Crime*>(state->objects().at(crimeId).get());
+                if(crimePriority(state, crime, enemy) > bestPriority)
+                {
+                    bestPriority = crimePriority(state, crime, enemy);
+                    bestCrime = crime;
+                }
+            }
+
+            if(bestCrime == nullptr)
+            {
+                throw std::runtime_error("No best crime found. This should never happen!");
+            }
+            
+            bestPriority = -1e12;
+            point_t bestSearchPos = enemy->state.pos;
+            for(int x=-Crime::SEARCH_RADIUS; x<=Crime::SEARCH_RADIUS; x++)
+            {
+                for(int y=-Crime::SEARCH_RADIUS; y<=Crime::SEARCH_RADIUS; y++)
+                {
+                    if(bestCrime->isSearched(x, y))
+                    {
+                        continue;
+                    }
+                    point_t searchPos = bestCrime->state.pos + (point_t(x * state->level->scale, y * state->level->scale));
+                    float priority = searchPriority(state, searchPos, enemy);
+                    if(priority > bestPriority)
+                    {
+                        bestPriority = priority;
+                        bestSearchPos = searchPos;
+                    }
+                }
+            }
+
+            navigateEnemy(state, enemy, bestSearchPos);
+        }
     }
     else
     {

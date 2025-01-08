@@ -11,7 +11,8 @@ public:
         AI_PATROL = 0,
         AI_CHASE = 1,
         AI_ATTACK = 2,
-        AI_DEAD = 3
+        AI_DEAD = 3,
+        AI_SEARCH = 4
     };
 
     constexpr static float VIEW_RADIUS = 150;

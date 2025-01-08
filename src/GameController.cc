@@ -420,6 +420,24 @@ void GameController::updateAlarmConnections()
         Alarm * alarm = dynamic_cast<Alarm*>(m_gameState->objects().at(enemy->state.assignedAlarm).get());
         alarm->enemies.push_back(enemy->id);
     }
+
+    for(Alarm * alarm : m_gameState->alarms())
+    {
+        if(alarm->crimes.size() == 0)
+        {
+            if(alarm->backwards)
+            {
+                alarm->beginning = m_gameState->tick;
+            }
+            else
+            {
+                alarm->ending = m_gameState->tick;
+                alarm->hasEnding = true;
+            }
+        }
+    }
+
+    
 }
 
 

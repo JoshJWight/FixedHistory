@@ -10,6 +10,8 @@ public:
     const static int SEARCH_RADIUS = 3;
     const static int SEARCH_DIAMETER = 2 * SEARCH_RADIUS + 1;
 
+    const static uint64_t FULLY_SEARCHED = (1UL << (SEARCH_DIAMETER * SEARCH_DIAMETER + 1UL)) - 1UL;
+
     enum CrimeType
     {
         MURDER,
