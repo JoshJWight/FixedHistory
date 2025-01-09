@@ -394,7 +394,7 @@ void GameController::updateAlarmConnections()
     }
     for(Crime * crime : m_gameState->crimes())
     {
-        if(!crime->activeAt(m_gameState->tick))
+        if(!crime->activeAt(m_gameState->tick) || crime->backwards != m_gameState->backwards()) 
         {
             continue;
         }
@@ -408,7 +408,7 @@ void GameController::updateAlarmConnections()
     }
     for(Enemy * enemy : m_gameState->enemies())
     {
-        if(!enemy->activeAt(m_gameState->tick))
+        if(!enemy->activeAt(m_gameState->tick) || enemy->backwards != m_gameState->backwards())
         {
             continue;
         }
@@ -423,6 +423,11 @@ void GameController::updateAlarmConnections()
 
     for(Alarm * alarm : m_gameState->alarms())
     {
+        if(!alarm->activeAt(m_gameState->tick) || alarm->backwards != m_gameState->backwards())
+        {
+            continue;
+        }
+
         if(alarm->crimes.size() == 0)
         {
             if(alarm->backwards)

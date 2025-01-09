@@ -12,7 +12,7 @@ public:
         : GameObject(id)
     {
         colliderType = CIRCLE;
-        size = point_t(1, 1);
+        size = point_t(20, 20);
         setupSprites({"alarm.png"});
     }
 

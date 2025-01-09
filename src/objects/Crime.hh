@@ -23,7 +23,7 @@ public:
         , subjectId(-1)
     {
         colliderType = CIRCLE;
-        size = point_t(1, 1);
+        size = point_t(10, 10);
         setupSprites({"crime.png"});
     }
 
