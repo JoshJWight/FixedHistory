@@ -63,6 +63,32 @@ void Graphics::draw(GameState * state, point_t cameraCenter)
 
     VisibilityGrid visibilityGrid = search::createVisibilityGrid(state, m_cameraWorldPos, 0, 360);
 
+    VisibilityGrid crimeSearchGrid(state->level->width, std::vector<bool>(state->level->height, false));
+    for(Crime * crime : state->crimes())
+    {
+        if(!crime->activeAt(state->tick))
+        {
+            continue;
+        }
+        for(int x=-Crime::SEARCH_RADIUS; x<=Crime::SEARCH_RADIUS; x++)
+        {
+            for(int y=-Crime::SEARCH_RADIUS; y<=Crime::SEARCH_RADIUS; y++)
+            {
+                if(crime->isSearched(x, y))
+                {
+                    continue;
+                }
+                point_t searchPos = crime->state.pos + (point_t(x * state->level->scale, y * state->level->scale));
+                point_t levelCoords = state->level->toLevelCoords(searchPos);
+                if(levelCoords.x < 0 || levelCoords.x >= state->level->width || levelCoords.y < 0 || levelCoords.y >= state->level->height)
+                {
+                    continue;
+                }
+                crimeSearchGrid[levelCoords.x][levelCoords.y] = true;
+            }
+        }
+    }
+
     //Draw each tile of the level
     for(int x = 0; x < state->level->width; ++x)
     {
@@ -72,7 +98,11 @@ void Graphics::draw(GameState * state, point_t cameraCenter)
             
             if(state->level->tiles[x][y].type == Level::WALL)
             {
-                if(visibilityGrid[x][y])
+                if(crimeSearchGrid[x][y])
+                {
+                    m_wallSprite.setColor(RED_TINT);
+                }
+                else if(visibilityGrid[x][y])
                 {
                     m_wallSprite.setColor(NORMAL_COLOR);
                 }
@@ -87,7 +117,11 @@ void Graphics::draw(GameState * state, point_t cameraCenter)
             }
             else
             {
-                if(visibilityGrid[x][y])
+                if(crimeSearchGrid[x][y])
+                {
+                    m_floorSprite.setColor(RED_TINT);
+                }
+                else if(visibilityGrid[x][y])
                 {
                     m_floorSprite.setColor(NORMAL_COLOR);
                 }
@@ -171,6 +205,12 @@ void Graphics::drawObjects(GameState* state, const VisibilityGrid & visibilityGr
         {
             continue;
         }
+        if(obj->isAlwaysDrawn())
+        {
+            toDraw[obj->id] = obj.get();
+            continue;
+        }
+
         if(!obj->state.visible)
         {
             continue;

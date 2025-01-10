@@ -26,6 +26,7 @@ private:
 
     const sf::Color GREYED_OUT = sf::Color(100, 100, 100, 255);
     const sf::Color NORMAL_COLOR = sf::Color(255, 255, 255, 255);
+    const sf::Color RED_TINT = sf::Color(255, 100, 100, 255);
 
     void drawObj(GameObject* obj);
     void drawObjAs(GameObject* obj, sf::Sprite & sprite);

@@ -215,8 +215,13 @@ point_t navigate(GameState * state, const point_t & start, const point_t & end) 
     Level::Tile& startTile = state->level->tiles[(int)startX][(int)startY];
     Level::Tile& endTile = state->level->tiles[(int)endX][(int)endY];
 
-    if (startTile.type == Level::WALL || endTile.type == Level::WALL) {
-        std::cout << "Start or end position is a wall. Cannot navigate!" << std::endl;
+    if (startTile.type == Level::WALL) {
+        std::cout << "Start position is a wall. Cannot navigate!" << std::endl;
+        return start;
+    }
+    else if(endTile.type == Level::WALL)
+    {
+        std::cout << "End position is a wall. Cannot navigate!" << std::endl;
         return start;
     }
 

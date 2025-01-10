@@ -155,7 +155,7 @@ void reportSearches(GameState * state, Enemy* enemy)
                 else if(pointVisibleToEnemy(state, state->level->fromLevelCoords(searchPos), enemy))
                 {
                     crime->submitSearch(x, y);
-                    if(crime->nextState.searchStatus == Crime::FULLY_SEARCHED)
+                    if(crime->nextState.searchStatus == Crime::FULLY_SEARCHED())
                     {
                         if(crime->backwards)
                         {
@@ -243,6 +243,13 @@ bool playerVisibleToEnemy(GameState * state, Player* player, Enemy* enemy)
 void navigateEnemy(GameState * state, Enemy* enemy, point_t target)
 {
     point_t moveToward = search::navigate(state, enemy->state.pos, target);
+    //If already at destination, or navigation failed, don't move
+    if(moveToward == enemy->state.pos)
+    {
+        return;
+    }
+
+    point_t moveVec = math_util::normalize(moveToward - enemy->state.pos);
 
     for(Enemy * enemy2 : state->enemies())
     {
@@ -250,16 +257,12 @@ void navigateEnemy(GameState * state, Enemy* enemy, point_t target)
            && enemy2->state.aiState != Enemy::AI_DEAD 
            && math_util::dist(enemy->state.pos, enemy2->state.pos) < enemy->radius() * 2)
         {
-            moveToward += math_util::normalize(enemy->state.pos - enemy2->state.pos) * (state->level->scale / 5);
+            moveVec += 0.5f * math_util::normalize(enemy->state.pos - enemy2->state.pos);
+            moveVec = math_util::normalize(moveVec);
         }
     }
-
-    //If already at destination, or navigation failed, don't move
-    if(moveToward == enemy->state.pos)
-    {
-        return;
-    }
-    enemy->nextState.pos += math_util::normalize(moveToward - enemy->state.pos) * enemy->moveSpeed;
+    
+    enemy->nextState.pos += moveVec * enemy->moveSpeed;
     enemy->nextState.angle_deg = math_util::rotateTowardsPoint(enemy->state.angle_deg, enemy->state.pos, moveToward, 5.0f);
 
     if(search::checkObstruction(state, enemy->nextState.pos) && !search::checkObstruction(state, enemy->state.pos))

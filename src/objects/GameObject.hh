@@ -208,6 +208,11 @@ public:
         return false;
     }
 
+    virtual bool isAlwaysDrawn()
+    {
+        return false;
+    }
+
     virtual ObjectType type(){
         return UNDEFINED;
     }

@@ -10,7 +10,15 @@ public:
     constexpr static int SEARCH_RADIUS = 3;
     constexpr static int SEARCH_DIAMETER = 2 * SEARCH_RADIUS + 1;
 
-    constexpr static uint64_t FULLY_SEARCHED = (1UL << (SEARCH_DIAMETER * SEARCH_DIAMETER + 1UL)) - 1UL;
+    constexpr static uint64_t FULLY_SEARCHED()
+    {
+        uint64_t FULLY_SEARCHED = 0;
+        for(int i=0; i<SEARCH_DIAMETER * SEARCH_DIAMETER; i++)
+        {
+            FULLY_SEARCHED |= 1 << i;
+        }
+        return FULLY_SEARCHED;
+    }
 
     enum CrimeType
     {
@@ -40,6 +48,11 @@ public:
     }
     
     bool isTransient() override
+    {
+        return true;
+    }
+
+    bool isAlwaysDrawn() override
     {
         return true;
     }

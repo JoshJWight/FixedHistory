@@ -31,6 +31,11 @@ public:
         return true;
     }
 
+    bool isAlwaysDrawn() override
+    {
+        return true;
+    }
+
     //These should be updated every tick based on the state of enemies/crimes
     std::vector<int> enemies;
     std::vector<int> crimes;
