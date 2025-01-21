@@ -51,6 +51,7 @@ struct ObjectState
         , patrolIdx(other.patrolIdx)
         , aiState(other.aiState)
         , targetId(other.targetId)
+        , lastSeen(other.lastSeen)
         , chargeTime(other.chargeTime)
         , willInteract(other.willInteract)
         , willThrow(other.willThrow)
