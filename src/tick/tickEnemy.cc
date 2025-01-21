@@ -64,6 +64,8 @@ void createCrime(GameState * state, Enemy* enemy, Crime::CrimeType crimeType, Ga
         state->historyBuffer().buffer[alarm->id][state->tick] = alarm->state;
 
         alarmId = alarm->id;
+
+        std::cout << "Alarm " << alarm->id << " created on tick " << state->tick << std::endl;
     }
 
 
@@ -90,6 +92,8 @@ void createCrime(GameState * state, Enemy* enemy, Crime::CrimeType crimeType, Ga
     state->objects()[crime->id] = crime;
     state->historyBuffer().buffer[crime->id] = std::vector<ObjectState>(state->tick+1);
     state->historyBuffer().buffer[crime->id][state->tick] = crime->state;
+
+    std::cout << "Crime " << crime->id << " created on tick " << state->tick << std::endl;
 }
 
 void reportCrimes(GameState * state, Enemy* enemy)
@@ -157,6 +161,7 @@ void reportSearches(GameState * state, Enemy* enemy)
                     crime->submitSearch(x, y);
                     if(crime->nextState.searchStatus == Crime::FULLY_SEARCHED())
                     {
+                        std::cout << "Crime " << crime->id << " finished on tick " << state->tick << std::endl;
                         if(crime->backwards)
                         {
                             crime->beginning = state->tick;

@@ -387,11 +387,13 @@ void GameController::pushTimeline()
 
 void GameController::updateAlarmConnections()
 {
+    //Clear temporary info from the last tick
     for(Alarm * alarm : m_gameState->alarms())
     {
         alarm->crimes.clear();
         alarm->enemies.clear();
     }
+    //Add crimes to their respective alarms' temporary info
     for(Crime * crime : m_gameState->crimes())
     {
         if(!crime->activeAt(m_gameState->tick) || crime->backwards != m_gameState->backwards()) 
@@ -406,6 +408,7 @@ void GameController::updateAlarmConnections()
         Alarm * alarm = dynamic_cast<Alarm*>(m_gameState->objects().at(crime->state.assignedAlarm).get());
         alarm->crimes.push_back(crime->id);
     }
+    //Add enemies to their respective alarms' temporary info
     for(Enemy * enemy : m_gameState->enemies())
     {
         if(!enemy->activeAt(m_gameState->tick) || enemy->backwards != m_gameState->backwards())
@@ -420,7 +423,7 @@ void GameController::updateAlarmConnections()
         Alarm * alarm = dynamic_cast<Alarm*>(m_gameState->objects().at(enemy->state.assignedAlarm).get());
         alarm->enemies.push_back(enemy->id);
     }
-
+    //Alarms with no crimes left (or no witnesses left) are ended
     for(Alarm * alarm : m_gameState->alarms())
     {
         if(!alarm->activeAt(m_gameState->tick) || alarm->backwards != m_gameState->backwards())
@@ -428,8 +431,9 @@ void GameController::updateAlarmConnections()
             continue;
         }
 
-        if(alarm->crimes.size() == 0)
+        if(alarm->crimes.size() == 0 || alarm->enemies.size() == 0)
         {
+            std::cout << "Alarm " << alarm->id << " ended on tick " << m_gameState->tick << std::endl;
             if(alarm->backwards)
             {
                 alarm->beginning = m_gameState->tick;
@@ -442,7 +446,21 @@ void GameController::updateAlarmConnections()
         }
     }
 
-    
+    //Handle crimes/alarms with the wrong backwardsness
+    for(Crime* crime : m_gameState->crimes())
+    {
+        if(crime->activeAt(m_gameState->tick) && crime->backwards != m_gameState->backwards())
+        {
+            crime->nextState = m_gameState->historyBuffer()[crime->id][m_gameState->tick];
+        }
+    }
+    for(Alarm* alarm : m_gameState->alarms())
+    {
+        if(alarm->activeAt(m_gameState->tick) && alarm->backwards != m_gameState->backwards())
+        {
+            alarm->nextState = m_gameState->historyBuffer()[alarm->id][m_gameState->tick];
+        }
+    }
 }
 
 

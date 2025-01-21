@@ -139,6 +139,20 @@ struct Timeline
             objects[newExit->id] = newExit;
         }
 
+        for(Crime* c : other.crimes)
+        {
+            std::shared_ptr<Crime> newCrime = std::make_shared<Crime>(c->id, c);
+            crimes.push_back(newCrime.get());
+            objects[newCrime->id] = newCrime;
+        }
+
+        for(Alarm* a : other.alarms)
+        {
+            std::shared_ptr<Alarm> newAlarm = std::make_shared<Alarm>(a->id, a);
+            alarms.push_back(newAlarm.get());
+            objects[newAlarm->id] = newAlarm;
+        }
+
         historyBuffer = HistoryBuffer(other.historyBuffer, breakpoint);
     }
 
