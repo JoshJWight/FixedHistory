@@ -19,6 +19,7 @@
 #include "objects/Crime.hh"
 #include "objects/Alarm.hh"
 #include <objects/GameObject.hh>
+#include "Promise.hh"
 
 #include <vector>
 
@@ -178,6 +179,7 @@ struct GameState {
     int tick;
     std::shared_ptr<Level> level;
     std::vector<Timeline> timelines;
+    std::vector<std::shared_ptr<Promise>> promises;
 
     int currentTimeline() { return timelines.size() - 1; }
     bool backwards(){ return timelines.size() % 2 == 0; }
@@ -377,6 +379,63 @@ struct GameState {
         {
             deleteObject(id);
         }
+
+        //Remove promises whose origin we've rewound past
+        std::vector<std::shared_ptr<Promise>> toDeletePromises;
+        for(std::shared_ptr<Promise> promise: promises)
+        {
+            if(promise->originTimeline > currentTimeline())
+            {
+                toDeletePromises.push_back(promise);
+            }
+            else if(promise->originTimeline == currentTimeline())
+            {
+                if(backwards())
+                {
+                    if(promise->originTick < tick)
+                    {
+                        toDeletePromises.push_back(promise);
+                    }
+                }
+                else
+                {
+                    if(promise->originTick > tick)
+                    {
+                        toDeletePromises.push_back(promise);
+                    }
+                }
+            }
+        }
+        for(std::shared_ptr<Promise> promise: toDeletePromises)
+        {
+            promises.erase(std::remove(promises.begin(), promises.end(), promise), promises.end());
+        }
+        //Deactive promises whose activation we've rewound past
+        for(std::shared_ptr<Promise> promise: promises)
+        {
+            if(promise->activatedTimeline > currentTimeline())
+            {
+                promise->activatedTimeline = -1;
+            }
+            else if(promise->activatedTimeline == currentTimeline())
+            {
+                if(backwards())
+                {
+                    if(promise->originTick < tick)
+                    {
+                        promise->activatedTimeline = -1;
+                    }
+                }
+                else
+                {
+                    if(promise->originTick > tick)
+                    {
+                        promise->activatedTimeline = -1;
+                    }
+                }
+            }
+        }
+
 
 
         //Special case stuff

@@ -383,6 +383,24 @@ void GameController::pushTimeline()
         m_gameState->deleteObject(id);
     }
 
+    //Transients with same backwardness should no longer have an ending "after" the breakpoint
+    //(non-transient objects that end due to going in a timebox should still have an ending)
+    for(auto pair: m_gameState->objects())
+    {
+        GameObject* obj = pair.second.get();
+        if(obj->isTransient() && obj->backwards == m_gameState->backwards())
+        {
+            if(!obj->backwards && obj->hasEnding && obj->ending > m_gameState->tick)
+            {
+                obj->hasEnding = false;
+            }
+            else if(obj->backwards && obj->beginning < m_gameState->tick)
+            {
+                obj->beginning = 0;
+            }
+        }
+    }
+
 }
 
 void GameController::updateAlarmConnections()
@@ -459,6 +477,33 @@ void GameController::updateAlarmConnections()
         if(alarm->activeAt(m_gameState->tick) && alarm->backwards != m_gameState->backwards())
         {
             alarm->nextState = m_gameState->historyBuffer()[alarm->id][m_gameState->tick];
+        }
+    }
+}
+
+void GameController::createPromises()
+{
+    if(m_controls.promiseAbsence)
+    {
+        Enemy* closestEnemy = nullptr;
+        float closestDist = 1e12;
+        for(Enemy* enemy : m_gameState->enemies())
+        {
+            if(!enemy->activeAt(m_gameState->tick))
+            {
+                continue;
+            }
+            float dist = math_util::dist(enemy->state.pos, m_gameState->mousePos);
+            if(dist < closestDist)
+            {
+                closestDist = dist;
+                closestEnemy = enemy;
+            }
+        }
+        if(closestDist < 20)
+        {
+            std::shared_ptr<Promise> promise(new Promise(m_gameState->currentTimeline(), m_gameState->tick, closestEnemy->id, Promise::ABSENCE));
+            m_gameState->promises.push_back(promise);
         }
     }
 }

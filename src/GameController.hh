@@ -62,6 +62,8 @@ private:
 
     void updateAlarmConnections();
 
+    void createPromises();
+
     void playTick();
 
     void tick(TickType type);

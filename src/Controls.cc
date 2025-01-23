@@ -6,6 +6,7 @@ Controls::Controls()
     m_actOnPressKeys.push_back(sf::Keyboard::E);
     m_actOnPressKeys.push_back(sf::Keyboard::F);
     m_actOnPressKeys.push_back(sf::Keyboard::R);
+    m_actOnPressKeys.push_back(sf::Keyboard::Q);
 
     for(auto key : m_actOnPressKeys)
     {
@@ -30,6 +31,8 @@ void Controls::tick()
     reverse = sf::Keyboard::isKeyPressed(sf::Keyboard::E) && !m_lastStateMap[sf::Keyboard::E];
     restart = sf::Keyboard::isKeyPressed(sf::Keyboard::R) && !m_lastStateMap[sf::Keyboard::R];
 
+    promiseAbsence = sf::Keyboard::isKeyPressed(sf::Keyboard::Q) && !m_lastStateMap[sf::Keyboard::Q];
+
     for(auto key : m_actOnPressKeys)
     {
         m_lastStateMap[key] = sf::Keyboard::isKeyPressed(key);
@@ -52,6 +55,8 @@ void Controls::tick(short encoded)
     m_lastStateMap[sf::Keyboard::E] = encoded & 1 << 8;
     restart = (encoded & 1 << 9) && !m_lastStateMap[sf::Keyboard::R];
     m_lastStateMap[sf::Keyboard::R] = encoded & 1 << 9;
+    promiseAbsence = (encoded & 1 << 10) && !m_lastStateMap[sf::Keyboard::Q];
+    m_lastStateMap[sf::Keyboard::Q] = encoded & 1 << 10;
 }
 
 short Controls::encode()
@@ -107,6 +112,11 @@ short Controls::encode()
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::R))
     {
         encoded |= 1 << 9;
+    }
+    //Promise Absence
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
+    {
+        encoded |= 1 << 10;
     }
 
     return encoded;
