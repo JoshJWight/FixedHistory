@@ -502,8 +502,22 @@ void GameController::createPromises()
         }
         if(closestDist < 20)
         {
+            std::cout << "Promise of absence created for enemy " << closestEnemy->id << std::endl;
             std::shared_ptr<Promise> promise(new Promise(m_gameState->currentTimeline(), m_gameState->tick, closestEnemy->id, Promise::ABSENCE));
             m_gameState->promises.push_back(promise);
+        }
+        else
+        {
+            std::cout << "No enemy close enough to create promise of absence (dist = " << closestDist << std::endl;
+        }
+    }
+
+    for(auto promise: m_gameState->promises)
+    {
+        if(promise->activatedTimeline < 0 && m_gameState->tick < promise->originTick)
+        {
+            promise->activatedTimeline = m_gameState->currentTimeline();
+            std::cout << "Promise of absence activated for enemy " << promise->target << " on tick " << m_gameState->tick << std::endl;
         }
     }
 }
@@ -511,6 +525,7 @@ void GameController::createPromises()
 
 void GameController::playTick()
 {
+    createPromises();
     updateAlarmConnections();
 
     tick::tickPlayer(m_gameState.get(), m_gameState->currentPlayer(), &m_controls);

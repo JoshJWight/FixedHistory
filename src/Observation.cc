@@ -42,6 +42,11 @@ void recordObservations(GameState * state, Player * player, int tick)
             continue;
         }
 
+        if(obj->isAlwaysDrawn())
+        {
+            continue;
+        }
+
         if(search::checkVisibility(state, player->state.pos, player->radius(), obj->state.pos, obj->radius()))
         {
             frame.push_back({obj->type(), obj->state, obj->id});
@@ -109,6 +114,11 @@ std::string checkObservations(GameState * state, Player * player, int tick)
             continue;
         }
         if(obj->state.visible == false)
+        {
+            continue;
+        }
+
+        if(obj->isAlwaysDrawn())
         {
             continue;
         }

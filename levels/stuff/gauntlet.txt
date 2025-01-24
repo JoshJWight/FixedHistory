@@ -1,0 +1,16 @@
+10 10
+XXXXXXXXXX
+X....XX.eX
+X.XX.X..mX
+X.XX.X.XXX
+X....X.dXX
+XXXX.X..XX
+XXXc..t.XX
+XpXa...bXX
+X.......XX
+XXXXXXXXXX
+player 0 p
+enemy 1 a b c d
+objective 2 t
+exit 3 e
+timebox 4 m

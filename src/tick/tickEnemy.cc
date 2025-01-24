@@ -289,6 +289,17 @@ void tickEnemy(GameState * state, Enemy* enemy)
         return;
     }
 
+    for(auto promise: state->promises)
+    {
+        if(promise->target == enemy->id && promise->activatedTimeline < 0)
+        {
+            enemy->nextState.visible = false;
+            return;
+        }
+    }
+
+    enemy->nextState.visible = true;
+
     if(enemy->state.aiState != Enemy::AI_DEAD)
     {
         reportCrimes(state, enemy);
