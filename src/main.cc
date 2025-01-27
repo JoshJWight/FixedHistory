@@ -49,7 +49,7 @@ int main(int argc, char** argv)
 
     for(int i = 0; i < levels.size(); i++)
     {
-        std::string level = "levels/" + std::string(levels[i]) + ".txt";
+        std::string level = std::string(levels[i]);
         GameController gc(level, &graphics, demoReader.get(), demoWriter.get());
         bool rc = gc.mainLoop();
         if(!rc)

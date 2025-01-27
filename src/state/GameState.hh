@@ -448,6 +448,4 @@ struct GameState {
     }
 };
 
-std::shared_ptr<GameState> loadGameState(const std::string& filename);
-
 #endif

@@ -4,8 +4,9 @@ GameController::GameController(const std::string & levelPath, Graphics * graphic
     : m_graphics(graphics)
     , m_demoReader(demoReader)
     , m_demoWriter(demoWriter)
+    , m_gameState(new GameState())
 {
-    m_gameState = loadGameState(levelPath);
+    loadLevel(m_gameState.get(), levelPath);
     m_gameState->obstructionGrid = search::createObstructionGrid(m_gameState.get());
 }
 

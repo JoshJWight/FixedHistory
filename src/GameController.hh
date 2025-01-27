@@ -30,6 +30,7 @@
 #include <procedures/Search.hh>
 #include <procedures/Observation.hh>
 #include <io/Demo.hh>
+#include <io/LoadLevel.hh>
 #include <vector>
 #include <iostream>
 #include <chrono>
