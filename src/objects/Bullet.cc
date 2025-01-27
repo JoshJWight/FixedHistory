@@ -1,5 +1,5 @@
 #include "Bullet.hh"
-#include "TextureBank.hh"
+#include <io/TextureBank.hh>
 
 Bullet::Bullet(int id)
     : GameObject(id)

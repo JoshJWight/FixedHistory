@@ -1,10 +1,10 @@
 #ifndef __TICKPLAYER_HH__
 #define __TICKPLAYER_HH__
 
-#include <GameState.hh>
+#include <state/GameState.hh>
 #include <objects/Player.hh>
-#include <Controls.hh>
-#include <Search.hh>
+#include <io/Controls.hh>
+#include <procedures/Search.hh>
 
 namespace tick{
 

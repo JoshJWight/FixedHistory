@@ -1,8 +1,8 @@
 #ifndef __GAME_OBJECT_HH__
 #define __GAME_OBJECT_HH__
 
-#include "MathUtil.hh"
-#include "TextureBank.hh"
+#include <utils/MathUtil.hh>
+#include <io/TextureBank.hh>
 #include <SFML/Graphics/Sprite.hpp>
 #include <initializer_list>
 #include <vector>

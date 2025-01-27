@@ -1,7 +1,7 @@
 #include <argparse/argparse.hpp>
 #include "GameController.hh"
-#include "Graphics.hh"
-#include "Demo.hh"
+#include <io/Graphics.hh>
+#include <io/Demo.hh>
 
 int main(int argc, char** argv)
 {

@@ -1,7 +1,7 @@
 #ifndef __TICKDOOR_HH__
 #define __TICKDOOR_HH__
 
-#include <GameState.hh>
+#include <state/GameState.hh>
 #include <objects/Door.hh>
 
 namespace tick{

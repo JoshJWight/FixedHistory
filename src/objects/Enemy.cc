@@ -1,5 +1,5 @@
 #include "Enemy.hh"
-#include "TextureBank.hh"
+#include <io/TextureBank.hh>
 
 Enemy::Enemy(int id)
     : GameObject(id)

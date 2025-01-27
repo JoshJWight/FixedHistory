@@ -1,5 +1,5 @@
 #include "Door.hh"
-#include "TextureBank.hh"
+#include <io/TextureBank.hh>
 
 Door::Door(int id)
     : GameObject(id)

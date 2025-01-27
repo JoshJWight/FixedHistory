@@ -1,8 +1,8 @@
 #ifndef __OBSERVATION_HH__
 #define __OBSERVATION_HH__
 
-#include "GameState.hh"
-#include "Search.hh"
+#include <state/GameState.hh>
+#include <procedures/Search.hh>
 #include <objects/Player.hh>
 
 #include <vector>

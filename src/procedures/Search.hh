@@ -1,9 +1,9 @@
 #ifndef __SEARCH_HH__
 #define __SEARCH_HH__
 
-#include "GameState.hh"
-#include "Level.hh"
-#include "MathUtil.hh"
+#include <state/GameState.hh>
+#include <state/Level.hh>
+#include <utils/MathUtil.hh>
 
 namespace search {
 

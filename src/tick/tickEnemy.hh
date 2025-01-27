@@ -2,10 +2,10 @@
 #define __TICKENEMY_HH__
 
 
-#include <GameState.hh>
+#include <state/GameState.hh>
 #include <objects/Enemy.hh>
 #include <objects/Player.hh>
-#include <Search.hh>
+#include <procedures/Search.hh>
 
 namespace tick{
 

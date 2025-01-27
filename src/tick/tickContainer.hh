@@ -1,7 +1,7 @@
 #ifndef __TICKCONTAINER_HH__
 #define __TICKCONTAINER_HH__
 
-#include <GameState.hh>
+#include <state/GameState.hh>
 #include <objects/Container.hh>
 
 namespace tick{

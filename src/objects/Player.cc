@@ -1,5 +1,5 @@
 #include "Player.hh"
-#include "TextureBank.hh"
+#include <io/TextureBank.hh>
 
 Player::Player(int id)
     : GameObject(id)

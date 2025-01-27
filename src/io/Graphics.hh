@@ -2,14 +2,14 @@
 #define __GRAPHICS_HH__
 
 #include <objects/GameObject.hh>
-#include "Level.hh"
-#include "TextureBank.hh"
+#include <state/Level.hh>
+#include <io/TextureBank.hh>
 #include <vector>
 #include <memory>
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Text.hpp>
-#include "GameState.hh"
-#include "Search.hh"
+#include <state/GameState.hh>
+#include <procedures/Search.hh>
 
 class Graphics
 {

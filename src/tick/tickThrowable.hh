@@ -1,10 +1,10 @@
 #ifndef __TICKTHROWABLE_HH__
 #define __TICKTHROWABLE_HH__
 
-#include <GameState.hh>
+#include <state/GameState.hh>
 #include <objects/Throwable.hh>
 #include <objects/Player.hh>
-#include <Search.hh>
+#include <procedures/Search.hh>
 
 namespace tick{
 

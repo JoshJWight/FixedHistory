@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <iostream>
 
-#include "MathUtil.hh"
+#include <utils/MathUtil.hh>
 
 class Level {
 public:

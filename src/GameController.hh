@@ -22,14 +22,14 @@
 #include <tick/tickSpikes.hh>
 #include <tick/tickThrowable.hh>
 
-#include "Graphics.hh"
-#include "TextureBank.hh"
-#include "Level.hh"
-#include "Controls.hh"
-#include "GameState.hh"
-#include "Search.hh"
-#include "Observation.hh"
-#include "Demo.hh"
+#include <io/Graphics.hh>
+#include <io/TextureBank.hh>
+#include <state/Level.hh>
+#include <io/Controls.hh>
+#include <state/GameState.hh>
+#include <procedures/Search.hh>
+#include <procedures/Observation.hh>
+#include <io/Demo.hh>
 #include <vector>
 #include <iostream>
 #include <chrono>

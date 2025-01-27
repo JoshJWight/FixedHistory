@@ -2,7 +2,7 @@
 #define __BULLET_HH__
 
 #include "GameObject.hh"
-#include "MathUtil.hh"
+#include <utils/MathUtil.hh>
 
 class Bullet : public GameObject
 {

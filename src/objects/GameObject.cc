@@ -1,6 +1,6 @@
 #include "GameObject.hh"
 #include <iostream>
-#include "CollisionUtil.hh"
+#include <utils/CollisionUtil.hh>
 
 GameObject::GameObject(int id)
     : id(id)
