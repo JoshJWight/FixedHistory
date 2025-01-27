@@ -8,7 +8,7 @@ Level::Level(int _width, int _height, const point_t & _bottomLeft, float _scale)
 {
     tiles.resize(width);
     for (int i = 0; i < width; i++) {
-        tiles[i].resize(height);
+        tiles[i].resize(height, {WALL, {}});
     }
 }
 

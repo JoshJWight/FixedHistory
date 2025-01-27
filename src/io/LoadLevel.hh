@@ -5,5 +5,6 @@
 
 void loadLevel(GameState * state, const std::string & levelName);
 
+bool levelExists(const std::string & levelName);
 
 #endif

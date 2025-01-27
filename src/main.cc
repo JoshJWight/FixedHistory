@@ -1,5 +1,6 @@
 #include <argparse/argparse.hpp>
 #include "GameController.hh"
+#include "Editor.hh"
 #include <io/Graphics.hh>
 #include <io/Demo.hh>
 
@@ -14,6 +15,11 @@ int main(int argc, char** argv)
     program.add_argument("levels")
         .help("Level to play")
         .remaining();
+
+    program.add_argument("-e", "--edit")
+        .help("Launch in editor mode")
+        .default_value(false)
+        .implicit_value(true);
 
     try
     {
@@ -32,30 +38,41 @@ int main(int argc, char** argv)
         std::cout << "Specify at least one level via positional args" << std::endl;
         exit(0);
     }
-    std::string demo = program.get<std::string>("--demo");
-    std::shared_ptr<DemoReader> demoReader;
-    if(demo != "")
-    {
-        std::cout << "Playing demo " << demo << std::endl;
-        demoReader.reset(new DemoReader(demo));
-    }
-    else
-    {
-        std::cout << "Not playing demo" << std::endl;
-    }
-    std::shared_ptr<DemoWriter> demoWriter(new DemoWriter("most_recent_demo"));
 
     Graphics graphics(1920, 1080);
 
-    for(int i = 0; i < levels.size(); i++)
+    if(program["--edit"] == true)
     {
-        std::string level = std::string(levels[i]);
-        GameController gc(level, &graphics, demoReader.get(), demoWriter.get());
-        bool rc = gc.mainLoop();
-        if(!rc)
+        std::cout << "Launching editor" << std::endl;
+        Editor editor(&graphics, levels[0]);
+        editor.mainLoop();
+        return 0;
+    }
+    else
+    {
+        std::string demo = program.get<std::string>("--demo");
+        std::shared_ptr<DemoReader> demoReader;
+        if(demo != "")
         {
-            //Restart level
-            i--;
+            std::cout << "Playing demo " << demo << std::endl;
+            demoReader.reset(new DemoReader(demo));
+        }
+        else
+        {
+            std::cout << "Not playing demo" << std::endl;
+        }
+        std::shared_ptr<DemoWriter> demoWriter(new DemoWriter("most_recent_demo"));
+
+        for(int i = 0; i < levels.size(); i++)
+        {
+            std::string level = std::string(levels[i]);
+            GameController gc(level, &graphics, demoReader.get(), demoWriter.get());
+            bool rc = gc.mainLoop();
+            if(!rc)
+            {
+                //Restart level
+                i--;
+            }
         }
     }
 

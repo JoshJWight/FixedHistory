@@ -236,3 +236,10 @@ void loadLevel(GameState * state, const std::string & levelName)
 
     return;
 }
+
+bool levelExists(const std::string & levelName)
+{
+    std::string BASE_LEVEL_DIR = "./levels/";
+    std::ifstream file(BASE_LEVEL_DIR + levelName + ".txt");
+    return file.is_open();
+}

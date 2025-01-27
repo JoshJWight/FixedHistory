@@ -2,6 +2,7 @@
 
 Controls::Controls()
     : up(false), down(false), left(false), right(false), fire(false), interact(false), rewind(false), reverse(false)
+    , restart(false), throw_(false), promiseAbsence(false), m_rightMouseLastState(false)
 {
     m_actOnPressKeys.push_back(sf::Keyboard::E);
     m_actOnPressKeys.push_back(sf::Keyboard::F);
