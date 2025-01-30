@@ -7,6 +7,16 @@
 const float SCALE = 20.0f;
 const point_t BOTTOM_LEFT(0, 0);
 
+//To parse things like "2.5,4.2"
+point_t parsePoint(const std::string & point)
+{
+    std::istringstream iss(point);
+    std::string x, y;
+    std::getline(iss, x, ',');
+    std::getline(iss, y, ',');
+    return point_t(std::stof(x), std::stof(y));
+}
+
 point_t getLocation(const std::vector<std::string>& tileLines, const std::string & location, float scale, point_t bottomLeft)
 {
     for(int x = 0; x < tileLines[0].size(); x++)
@@ -58,7 +68,8 @@ void constructObject(GameState * state, int id, const std::string & objType, poi
         for(int i=3; i<tokens.size(); i++)
         {
             std::string patrolPoint = tokens[i];
-            enemy->patrolPoints.push_back(getLocation(tileLines, patrolPoint, SCALE, BOTTOM_LEFT));
+            //enemy->patrolPoints.push_back(getLocation(tileLines, patrolPoint, SCALE, BOTTOM_LEFT));
+            enemy->patrolPoints.push_back(parsePoint(patrolPoint));
         }
 
         state->enemies().push_back(enemy.get());
@@ -229,12 +240,121 @@ void loadLevel(GameState * state, const std::string & levelName)
         }
         else
         {
-            point_t position = getLocation(tileLines, location, SCALE, BOTTOM_LEFT);
+            //point_t position = getLocation(tileLines, location, SCALE, BOTTOM_LEFT);
+            point_t position = parsePoint(location);
             constructObject(state, id, objType, position, tokens, tileLines);
         }
     }
 
     return;
+}
+
+void saveLevel(GameState * state, const std::string & levelName)
+{
+    std::string BASE_LEVEL_DIR = "./levels/";
+    std::ofstream file(BASE_LEVEL_DIR + levelName + ".txt");
+    if(!file.is_open())
+    {
+        std::cout << "ERROR: Could not open file for level " << levelName << std::endl;
+        return;
+    }
+
+    file << state->level->width << " " << state->level->height << std::endl;
+    for(int y = state->level->height - 1; y >= 0; y--)
+    {
+        for(int x = 0; x < state->level->width; x++)
+        {
+            if(state->level->tiles[x][y].type == Level::EMPTY)
+            {
+                file << ".";
+            }
+            else if(state->level->tiles[x][y].type == Level::WALL)
+            {
+                file << "X";
+            }
+            else
+            {
+                file << "?";
+            }
+        }
+        file << std::endl;
+    }
+
+    for(auto pair : state->objects())
+    {
+        GameObject * obj = pair.second.get();
+        file << GameObject::typeToString(obj->type()) << " " << obj->id << " " << obj->state.pos.x << "," << obj->state.pos.y;
+
+        switch(obj->type())
+        {
+            case GameObject::PLAYER:
+            {
+                break;
+            }
+            case GameObject::ENEMY:
+            {
+                Enemy * enemy = static_cast<Enemy*>(obj);
+                for(point_t patrolPoint : enemy->patrolPoints)
+                {
+                    file << " " << patrolPoint.x << "," << patrolPoint.y;
+                }
+                break;
+            }
+            case GameObject::SWITCH:
+            {
+                Switch * sw = static_cast<Switch*>(obj);
+                file << " " << (sw->state.aiState == Switch::ON ? "on" : "off");
+                break;
+            }
+            case GameObject::DOOR:
+            {
+                Door * door = static_cast<Door*>(obj);
+                for(int sw : door->getConnectedSwitches())
+                {
+                    file << " " << sw;
+                }
+                break;
+            }
+            case GameObject::TIMEBOX:
+            {
+                break;
+            }
+            case GameObject::CLOSET:
+            {
+                break;
+            }
+            case GameObject::TURNSTILE:
+            {
+                break;
+            }
+            case GameObject::SPIKES:
+            {
+                Spikes * spikes = static_cast<Spikes*>(obj);
+                file << " " << spikes->downDuration << " " << spikes->upDuration << " " << spikes->cycleOffset;
+                break;
+            }
+            case GameObject::OBJECTIVE:
+            {
+                break;
+            }
+            case GameObject::KNIFE:
+            {
+                break;
+            }
+            case GameObject::EXIT:
+            {
+                break;
+            }
+            default:
+            {
+                throw std::runtime_error("Unknown object type " + GameObject::typeToString(obj->type()));
+            }
+        }
+
+        file << std::endl;
+    }
+
+    file.close();
 }
 
 bool levelExists(const std::string & levelName)

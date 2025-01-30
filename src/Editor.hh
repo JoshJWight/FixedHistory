@@ -19,6 +19,7 @@ private:
 
     std::shared_ptr<GameState> m_gameState;
     Graphics* m_graphics;
+    std::string m_levelName;
     EditorControls m_controls;
 
     bool m_isPainting;
@@ -28,6 +29,8 @@ private:
     GameObject * m_draggedObject;
 
     point_t m_cameraCenter;
+
+    bool m_hasUnsavedChanges;
 };
 
 #endif

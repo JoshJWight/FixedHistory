@@ -4,6 +4,7 @@
 #include <state/GameState.hh>
 
 void loadLevel(GameState * state, const std::string & levelName);
+void saveLevel(GameState * state, const std::string & levelName);
 
 bool levelExists(const std::string & levelName);
 

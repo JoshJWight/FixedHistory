@@ -3,6 +3,7 @@
 
 Editor::Editor(Graphics* graphics, const std::string & level)
     : m_graphics(graphics)
+    , m_levelName(level)
     , m_gameState(new GameState())
     , m_controls()
     , m_isPainting(false)
@@ -31,6 +32,16 @@ void Editor::mainLoop()
     {
         handleInputs();
         m_gameState->obstructionGrid = search::createObstructionGrid(m_gameState.get());
+
+        if(m_hasUnsavedChanges)
+        {
+            m_gameState->statusString = "Unsaved changes";
+        }
+        else
+        {
+            m_gameState->statusString = "";
+        }
+
         m_graphics->draw(m_gameState.get(), m_cameraCenter);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
@@ -72,6 +83,7 @@ void Editor::handleInputs()
         {
             m_isDragging = false;
             m_draggedObject = nullptr;
+            m_hasUnsavedChanges = true;
         }
     }
     else if(m_controls.drag)
@@ -112,6 +124,14 @@ void Editor::handleInputs()
             m_isPainting = true;
             m_paintType = m_gameState->level->tiles[levelCoords.x][levelCoords.y].type == Level::WALL ? Level::EMPTY : Level::WALL;
             m_gameState->level->tiles[levelCoords.x][levelCoords.y].type = m_paintType;
+            m_hasUnsavedChanges = true;
         }
+    }
+
+
+    if(m_controls.save)
+    {
+        saveLevel(m_gameState.get(), m_levelName);
+        m_hasUnsavedChanges = false;
     }
 }
