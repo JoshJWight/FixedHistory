@@ -8,6 +8,8 @@ EditorControls::EditorControls()
     m_actOnPressKeys.push_back(sf::Keyboard::R);
     m_actOnPressKeys.push_back(sf::Keyboard::Q);
     m_actOnPressKeys.push_back(sf::Keyboard::S);
+    m_actOnPressKeys.push_back(sf::Keyboard::Q);
+    m_actOnPressKeys.push_back(sf::Keyboard::X);
 
     for(auto key : m_actOnPressKeys)
     {
@@ -24,6 +26,10 @@ void EditorControls::tick()
 
     drag = sf::Mouse::isButtonPressed(sf::Mouse::Left);
     paint = sf::Mouse::isButtonPressed(sf::Mouse::Right);
+
+    select = sf::Keyboard::isKeyPressed(sf::Keyboard::Q) && !m_lastStateMap[sf::Keyboard::Q];
+    connect = sf::Keyboard::isKeyPressed(sf::Keyboard::E) && !m_lastStateMap[sf::Keyboard::E];
+    remove = sf::Keyboard::isKeyPressed(sf::Keyboard::X) && !m_lastStateMap[sf::Keyboard::X];
 
     save = sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::S) && !m_lastStateMap[sf::Keyboard::S];
 

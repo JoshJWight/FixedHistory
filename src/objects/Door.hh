@@ -17,7 +17,7 @@ public:
 
     Door(int id, Door* ancestor)
         : GameObject(id, ancestor)
-        , m_connectedSwitches(ancestor->m_connectedSwitches)
+        , connectedSwitches(ancestor->connectedSwitches)
     {
     }
 
@@ -35,8 +35,7 @@ public:
         return DOOR;
     }
 
-private:
-    std::vector<int> m_connectedSwitches;
+    std::vector<int> connectedSwitches;
 };
 
 #endif

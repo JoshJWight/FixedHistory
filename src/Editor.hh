@@ -30,6 +30,8 @@ private:
 
     point_t m_cameraCenter;
 
+    GameObject * m_selectedObject;
+
     bool m_hasUnsavedChanges;
 };
 

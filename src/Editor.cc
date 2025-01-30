@@ -10,6 +10,9 @@ Editor::Editor(Graphics* graphics, const std::string & level)
     , m_paintType(Level::EMPTY)
     , m_isDragging(false)
     , m_draggedObject(nullptr)
+    , m_cameraCenter(0, 0)
+    , m_selectedObject(nullptr)
+    , m_hasUnsavedChanges(false)
 {
     if(levelExists(level))
     {
@@ -53,6 +56,20 @@ void Editor::handleInputs()
     m_controls.tick();
     m_gameState->mousePos = m_graphics->getMousePos();
 
+    GameObject * highlightedObject = nullptr;
+    float minDist = 1000000;
+    for(auto pair: m_gameState->objects())
+    {
+        GameObject * obj = pair.second.get();
+        float dist = math_util::dist(obj->state.pos, m_gameState->mousePos);
+        if(dist < obj->size.x && dist < minDist)
+        {
+            highlightedObject = obj;
+            minDist = dist;
+        }
+    }
+
+
     const float CAMERA_SPEED = 2.0f;
 
     if(m_controls.up)
@@ -88,16 +105,10 @@ void Editor::handleInputs()
     }
     else if(m_controls.drag)
     {
-        //TODO revise this
-        for(auto pair: m_gameState->objects())
+        if(highlightedObject != nullptr)
         {
-            GameObject * obj = pair.second.get();
-            if(math_util::dist(obj->state.pos, m_gameState->mousePos) < obj->size.x)
-            {
-                m_isDragging = true;
-                m_draggedObject = obj;
-                break;
-            }
+            m_isDragging = true;
+            m_draggedObject = highlightedObject;
         }
     }
 
@@ -125,6 +136,83 @@ void Editor::handleInputs()
             m_paintType = m_gameState->level->tiles[levelCoords.x][levelCoords.y].type == Level::WALL ? Level::EMPTY : Level::WALL;
             m_gameState->level->tiles[levelCoords.x][levelCoords.y].type = m_paintType;
             m_hasUnsavedChanges = true;
+        }
+    }
+
+    if(m_controls.select)
+    {
+        if(highlightedObject != nullptr)
+        {
+            m_selectedObject = highlightedObject;
+            std::cout << "Selected object with ID " << m_selectedObject->id << std::endl;
+            if(m_selectedObject->type() == GameObject::ENEMY)
+            {
+                Enemy * enemy = static_cast<Enemy*>(m_selectedObject);
+                enemy->patrolPoints.clear();
+                enemy->patrolPoints.push_back(enemy->state.pos);
+            }
+        }
+        else
+        {
+            std::cout << "Deselected object" << std::endl;
+            m_selectedObject = nullptr;
+        }
+    }
+
+    if(m_controls.remove)
+    {
+        if(highlightedObject != nullptr)
+        {
+            std::cout << "Deleted object with ID " << highlightedObject->id << std::endl;
+
+            //This could cause segfaults if this pointer is being dragged or something
+            //but it's basically ok for the editor to have edge cases like that
+            m_gameState->objects().erase(highlightedObject->id);
+            m_hasUnsavedChanges = true;
+        }
+    }
+
+    if(m_controls.connect && m_selectedObject != nullptr)
+    {
+        switch(m_selectedObject->type())
+        {
+            case GameObject::DOOR:
+            {
+                Door * door = static_cast<Door*>(m_selectedObject);
+                if(highlightedObject != nullptr && highlightedObject->type() == GameObject::SWITCH)
+                {
+                    Switch * sw = static_cast<Switch*>(highlightedObject);
+                    if(std::find(door->getConnectedSwitches().begin(), door->getConnectedSwitches().end(), sw->id) == door->getConnectedSwitches().end())
+                    {
+                        door->addSwitch(sw);
+                    }
+                    else
+                    {
+                        std::erase_if(door->connectedSwitches, [sw](int id) { return id == sw->id; });
+                    }
+                    m_hasUnsavedChanges = true;
+                }
+                break;
+            }
+            case GameObject::ENEMY:
+            {
+                Enemy * enemy = static_cast<Enemy*>(m_selectedObject);
+                enemy->patrolPoints.push_back(m_gameState->mousePos);
+                m_hasUnsavedChanges = true;
+                std::cout << "Added patrol point " << m_gameState->mousePos.x << ", " << m_gameState->mousePos.y << std::endl;
+                break;
+            }
+            case GameObject::SWITCH:
+            {
+                Switch * sw = static_cast<Switch*>(m_selectedObject);
+                sw->state.aiState = sw->state.aiState == Switch::ON ? Switch::OFF : Switch::ON;
+                m_hasUnsavedChanges = true;
+                break;
+            }
+            default:
+            {
+                std::cout << "Cannot connect with selected object type " << GameObject::typeToString(m_selectedObject->type()) << std::endl;
+            }
         }
     }
 

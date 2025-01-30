@@ -21,6 +21,11 @@ public:
     bool drag;
     bool paint;
 
+    bool select;
+    bool connect;
+
+    bool remove;
+
     bool save;
 
 private:
