@@ -38,7 +38,7 @@ VisibilityGrid createVisibilityGrid(GameState * state, point_t center, float sta
             current += delta;
             if(current.x < 0 || current.x >= state->level->width || current.y < 0 || current.y >= state->level->height)
             {
-                std::cout << "Raycast out of bounds!" << std::endl;
+                //std::cout << "Raycast out of bounds!" << std::endl;
                 break;
             }
             grid[(size_t)current.x][(size_t)current.y] = true;

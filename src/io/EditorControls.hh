@@ -26,6 +26,11 @@ public:
 
     bool remove;
 
+    bool addRow;
+    bool addCol;
+    bool removeRow;
+    bool removeCol;
+
     bool save;
 
 private:

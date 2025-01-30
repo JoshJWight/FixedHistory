@@ -24,6 +24,7 @@ void Level::setupNavMesh()
             if (tiles[x][y].type == WALL) {
                 continue;
             }
+            tiles[x][y].node.neighbors.clear();
             bool upEmpty = y < height - 1 && tiles[x][y + 1].type == EMPTY;
             bool downEmpty = y > 0 && tiles[x][y - 1].type == EMPTY;
             bool leftEmpty = x > 0 && tiles[x - 1][y].type == EMPTY;

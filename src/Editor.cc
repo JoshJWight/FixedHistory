@@ -216,6 +216,45 @@ void Editor::handleInputs()
         }
     }
 
+    if(m_controls.addRow)
+    {
+        m_gameState->level->height++;
+        for(int x = 0; x < m_gameState->level->width; x++)
+        {
+            m_gameState->level->tiles[x].push_back(Level::Tile(Level::WALL));
+        }
+        m_gameState->level->setupNavMesh();
+        m_hasUnsavedChanges = true;
+    }
+    if(m_controls.addCol)
+    {
+        m_gameState->level->width++;
+        m_gameState->level->tiles.push_back(std::vector<Level::Tile>(m_gameState->level->height, Level::Tile(Level::WALL)));
+        m_gameState->level->setupNavMesh();
+        m_hasUnsavedChanges = true;
+    }
+    if(m_controls.removeRow)
+    {
+        if(m_gameState->level->height > 1)
+        {
+            m_gameState->level->height--;
+            for(int x = 0; x < m_gameState->level->width; x++)
+            {
+                m_gameState->level->tiles[x].pop_back();
+            }
+            m_hasUnsavedChanges = true;
+        }
+    }
+    if(m_controls.removeCol)
+    {
+        if(m_gameState->level->width > 1)
+        {
+            m_gameState->level->width--;
+            m_gameState->level->tiles.pop_back();
+            m_hasUnsavedChanges = true;
+        }
+    }
+
 
     if(m_controls.save)
     {
