@@ -11,6 +11,17 @@ EditorControls::EditorControls()
     m_actOnPressKeys.push_back(sf::Keyboard::Q);
     m_actOnPressKeys.push_back(sf::Keyboard::X);
     m_actOnPressKeys.push_back(sf::Keyboard::C);
+    m_actOnPressKeys.push_back(sf::Keyboard::Num0);
+    m_actOnPressKeys.push_back(sf::Keyboard::Num1);
+    m_actOnPressKeys.push_back(sf::Keyboard::Num2);
+    m_actOnPressKeys.push_back(sf::Keyboard::Num3);
+    m_actOnPressKeys.push_back(sf::Keyboard::Num4);
+    m_actOnPressKeys.push_back(sf::Keyboard::Num5);
+    m_actOnPressKeys.push_back(sf::Keyboard::Num6);
+    m_actOnPressKeys.push_back(sf::Keyboard::Num7);
+    m_actOnPressKeys.push_back(sf::Keyboard::Num8);
+    m_actOnPressKeys.push_back(sf::Keyboard::Num9);
+    m_actOnPressKeys.push_back(sf::Keyboard::Dash);
 
     for(auto key : m_actOnPressKeys)
     {
@@ -36,6 +47,18 @@ void EditorControls::tick()
     addCol = sf::Keyboard::isKeyPressed(sf::Keyboard::C) && !m_lastStateMap[sf::Keyboard::C] && !sf::Keyboard::isKeyPressed(sf::Keyboard::LShift);
     removeRow = sf::Keyboard::isKeyPressed(sf::Keyboard::R) && !m_lastStateMap[sf::Keyboard::R] && sf::Keyboard::isKeyPressed(sf::Keyboard::LShift);
     removeCol = sf::Keyboard::isKeyPressed(sf::Keyboard::C) && !m_lastStateMap[sf::Keyboard::C] && sf::Keyboard::isKeyPressed(sf::Keyboard::LShift);
+
+    placePlayer = sf::Keyboard::isKeyPressed(sf::Keyboard::Num1) && !m_lastStateMap[sf::Keyboard::Num1];
+    placeEnemy = sf::Keyboard::isKeyPressed(sf::Keyboard::Num2) && !m_lastStateMap[sf::Keyboard::Num2];
+    placeTimeBox = sf::Keyboard::isKeyPressed(sf::Keyboard::Num3) && !m_lastStateMap[sf::Keyboard::Num3];
+    placeSwitch = sf::Keyboard::isKeyPressed(sf::Keyboard::Num4) && !m_lastStateMap[sf::Keyboard::Num4];
+    placeDoor = sf::Keyboard::isKeyPressed(sf::Keyboard::Num5) && !m_lastStateMap[sf::Keyboard::Num5];
+    placeCloset = sf::Keyboard::isKeyPressed(sf::Keyboard::Num6) && !m_lastStateMap[sf::Keyboard::Num6];
+    placeTurnstile = sf::Keyboard::isKeyPressed(sf::Keyboard::Num7) && !m_lastStateMap[sf::Keyboard::Num7];
+    placeSpikes = sf::Keyboard::isKeyPressed(sf::Keyboard::Num8) && !m_lastStateMap[sf::Keyboard::Num8];
+    placeObjective = sf::Keyboard::isKeyPressed(sf::Keyboard::Num9) && !m_lastStateMap[sf::Keyboard::Num9];
+    placeKnife = sf::Keyboard::isKeyPressed(sf::Keyboard::Num0) && !m_lastStateMap[sf::Keyboard::Num0];
+    placeExit = sf::Keyboard::isKeyPressed(sf::Keyboard::Dash) && !m_lastStateMap[sf::Keyboard::Dash];
 
     save = sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::S) && !m_lastStateMap[sf::Keyboard::S];
 

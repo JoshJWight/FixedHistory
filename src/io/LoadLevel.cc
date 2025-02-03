@@ -96,8 +96,6 @@ void constructObject(GameState * state, int id, const std::string & objType, poi
         {
             throw std::runtime_error("Unknown switch state " + startingState);
         }
-
-        state->switches().push_back(sw.get());
         obj = sw;
     }
     else if(objType == "door")
@@ -110,23 +108,19 @@ void constructObject(GameState * state, int id, const std::string & objType, poi
             std::cout << "Switch ID: " << switchID << std::endl;
             door->addSwitch(state->getObject<Switch>(switchID));
         }
-        state->doors().push_back(door.get());
         obj = door;
     }
     else if(objType == "timebox")
     {
         obj = std::make_shared<TimeBox>(id);
-        state->containers().push_back(static_cast<TimeBox*>(obj.get()));
     }
     else if (objType == "closet")
     {
         obj = std::make_shared<Closet>(id);
-        state->containers().push_back(static_cast<Closet*>(obj.get()));
     }
     else if (objType == "turnstile")
     {
         obj = std::make_shared<Turnstile>(id);
-        state->containers().push_back(static_cast<Turnstile*>(obj.get()));
     }
     else if (objType == "spikes")
     {
@@ -146,22 +140,18 @@ void constructObject(GameState * state, int id, const std::string & objType, poi
             cycleOffset = std::stoi(tokens[5]);
         }
         obj = std::make_shared<Spikes>(id, downDuration, upDuration, cycleOffset);
-        state->spikes().push_back(static_cast<Spikes*>(obj.get()));
     }
     else if (objType == "objective")
     {
         obj = std::make_shared<Objective>(id);
-        state->throwables().push_back(static_cast<Objective*>(obj.get()));
     }
     else if (objType == "knife")
     {
         obj = std::make_shared<Knife>(id);
-        state->throwables().push_back(static_cast<Knife*>(obj.get()));
     }
     else if (objType == "exit")
     {
         obj = std::make_shared<Exit>(id);
-        state->exits().push_back(static_cast<Exit*>(obj.get()));
     }
     else
     {

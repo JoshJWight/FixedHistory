@@ -54,6 +54,7 @@ private:
  
     sf::Text m_tickCounter;
     sf::Text m_statusText;
+    sf::Text m_infoText;
 };
 
 #endif

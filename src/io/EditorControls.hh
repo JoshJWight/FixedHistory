@@ -31,6 +31,18 @@ public:
     bool removeRow;
     bool removeCol;
 
+    bool placePlayer;
+    bool placeEnemy;
+    bool placeTimeBox;
+    bool placeSwitch;
+    bool placeDoor;
+    bool placeCloset;
+    bool placeTurnstile;
+    bool placeSpikes;
+    bool placeObjective;
+    bool placeKnife;
+    bool placeExit;
+
     bool save;
 
 private:

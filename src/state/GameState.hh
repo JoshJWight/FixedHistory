@@ -208,6 +208,7 @@ struct GameState {
 
     //Per-tick variables
     std::string statusString;
+    std::string infoString;
     bool shouldReverse;
     int boxToEnter;
 
@@ -231,6 +232,46 @@ struct GameState {
         if(obj->id >= m_lastID)
         {
             m_lastID = obj->id + 1;
+        }
+
+        switch(obj->type())
+        {
+            case GameObject::PLAYER:
+                players().push_back(dynamic_cast<Player*>(obj.get()));
+                break;
+            case GameObject::BULLET:
+                bullets().push_back(dynamic_cast<Bullet*>(obj.get()));
+                break;
+            case GameObject::ENEMY:
+                enemies().push_back(dynamic_cast<Enemy*>(obj.get()));
+                break;
+            case GameObject::SWITCH:
+                switches().push_back(dynamic_cast<Switch*>(obj.get()));
+                break;
+            case GameObject::DOOR:
+                doors().push_back(dynamic_cast<Door*>(obj.get()));
+                break;
+            case GameObject::TIMEBOX:
+            case GameObject::CLOSET:
+            case GameObject::TURNSTILE:
+                containers().push_back(dynamic_cast<Container*>(obj.get()));
+                break;
+            case GameObject::SPIKES:
+                spikes().push_back(dynamic_cast<Spikes*>(obj.get()));
+                break;
+            case GameObject::OBJECTIVE:
+            case GameObject::KNIFE:
+                throwables().push_back(dynamic_cast<Throwable*>(obj.get()));
+                break;
+            case GameObject::EXIT:
+                exits().push_back(dynamic_cast<Exit*>(obj.get()));
+                break;
+            case GameObject::CRIME:
+                crimes().push_back(dynamic_cast<Crime*>(obj.get()));
+                break;
+            case GameObject::ALARM:
+                alarms().push_back(dynamic_cast<Alarm*>(obj.get()));
+                break;
         }
     }
 

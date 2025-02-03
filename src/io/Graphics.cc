@@ -30,6 +30,12 @@ Graphics::Graphics(int windowWidth, int windowHeight)
     m_statusText.setFillColor(sf::Color::Red);
     m_statusText.setPosition(0, 0);
     m_statusText.setString("Default text. This should not be seen.");
+
+    m_infoText.setFont(TextureBank::getFont());
+    m_infoText.setCharacterSize(20);    
+    m_infoText.setFillColor(sf::Color::White);
+    m_infoText.setPosition(1600, 0);
+    m_infoText.setString("Default text. This should not be seen.");
 }
 
 void Graphics::setSpriteScale(sf::Sprite & sprite, point_t worldSize)
@@ -152,6 +158,12 @@ void Graphics::draw(GameState * state, point_t cameraCenter)
         int charSize = std::max(10.0, 200 / std::sqrt((double)state->statusString.size()));
         m_statusText.setCharacterSize(charSize);
         m_window.draw(m_statusText);
+    }
+    if(state->infoString!="")
+    {
+        m_infoText.setString(state->infoString);
+        m_infoText.setCharacterSize(20);
+        m_window.draw(m_infoText);
     }
 
     m_window.display();
