@@ -71,8 +71,6 @@ void constructObject(GameState * state, int id, const std::string & objType, poi
             //enemy->patrolPoints.push_back(getLocation(tileLines, patrolPoint, SCALE, BOTTOM_LEFT));
             enemy->patrolPoints.push_back(parsePoint(patrolPoint));
         }
-
-        state->enemies().push_back(enemy.get());
         obj = enemy;
     }
     else if(objType == "switch")

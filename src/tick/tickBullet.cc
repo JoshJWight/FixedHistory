@@ -19,7 +19,6 @@ void tickBullet(GameState * state, Bullet* bullet)
 
     if(state->level->tileAt(bullet->state.pos) == Level::WALL)
     {
-
         bullet->finalTimeline = state->currentTimeline();
         bullet->hasFinalTimeline = true;
         if(bullet->backwards)

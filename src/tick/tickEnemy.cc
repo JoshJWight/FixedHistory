@@ -451,7 +451,7 @@ void tickEnemy(GameState * state, Enemy* enemy)
 
                 enemy->nextState.chargeTime = 0;
 
-                std::cout << "Enemy " << enemy->id << " fired bullet " << bullet->id << std::endl;
+                std::cout << "Enemy " << enemy->id << " fired bullet " << bullet->id << " on tick " << state->tick << std::endl;
             }
             //Continue an attack in progress as long as we can see the target
             else if(enemy->state.chargeTime > 0)
