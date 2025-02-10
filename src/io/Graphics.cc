@@ -358,6 +358,29 @@ void Graphics::drawDebug(GameState * state)
             m_window.draw(line, 2, sf::Lines);
         }
     }
+
+    //Draw selection area for painting
+    if(state->editorState.isPainting)
+    {
+        point_t start = worldToCamera(state->editorState.paintOrigin);
+        point_t end = worldToCamera(state->mousePos);
+        sf::Vertex line[] =
+        {
+            sf::Vertex(sf::Vector2f(start.x, start.y)),
+            sf::Vertex(sf::Vector2f(end.x, start.y)),
+            sf::Vertex(sf::Vector2f(end.x, start.y)),
+            sf::Vertex(sf::Vector2f(end.x, end.y)),
+            sf::Vertex(sf::Vector2f(end.x, end.y)),
+            sf::Vertex(sf::Vector2f(start.x, end.y)),
+            sf::Vertex(sf::Vector2f(start.x, end.y)),
+            sf::Vertex(sf::Vector2f(start.x, start.y))
+        };
+        for(int i=0; i<8; i++)
+        {
+            line[i].color = sf::Color::Yellow;
+        }
+        m_window.draw(line, 8, sf::Lines);
+    }
 }
 
 point_t Graphics::getMousePos()

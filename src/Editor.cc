@@ -135,14 +135,25 @@ void Editor::handleInputs()
     {
         if(m_controls.paint)
         {
-            point_t levelCoords = m_gameState->level->toLevelCoords(m_gameState->mousePos);
-            if(levelCoords.x >= 0 && levelCoords.x < m_gameState->level->width && levelCoords.y >= 0 && levelCoords.y < m_gameState->level->height)
-            {
-                m_gameState->level->tiles[levelCoords.x][levelCoords.y].type = m_state->paintType;
-            }
+            //Nothing to do until paint is released
         }
         else
         {
+            //When paint button is released, apply paint to every tile in the selected area
+            point_t start = m_gameState->level->toLevelCoords(m_state->paintOrigin);
+            point_t end = m_gameState->level->toLevelCoords(m_gameState->mousePos);
+
+            for(int x = std::min(start.x, end.x); x <= std::max(start.x, end.x); x++)
+            {
+                for(int y = std::min(start.y, end.y); y <= std::max(start.y, end.y); y++)
+                {
+                    if(x >= 0 && x < m_gameState->level->width && y >= 0 && y < m_gameState->level->height)
+                    {
+                        m_gameState->level->tiles[x][y].type = m_state->paintType;
+                    }
+                }
+            }
+            m_hasUnsavedChanges = true;
             m_state->isPainting = false;
         }
     }
@@ -153,8 +164,7 @@ void Editor::handleInputs()
         {
             m_state->isPainting = true;
             m_state->paintType = m_gameState->level->tiles[levelCoords.x][levelCoords.y].type == Level::WALL ? Level::EMPTY : Level::WALL;
-            m_gameState->level->tiles[levelCoords.x][levelCoords.y].type = m_state->paintType;
-            m_hasUnsavedChanges = true;
+            m_state->paintOrigin = m_gameState->mousePos;
         }
     }
 

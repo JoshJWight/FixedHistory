@@ -177,18 +177,18 @@ struct EditorState
 {
     EditorState()
         : isPainting(false)
+        , paintOrigin(0, 0)
         , paintType(Level::WALL)
         , isDragging(false)
-        , dragOrigin({0, 0})
         , draggedObject(nullptr)
         , selectedObject(nullptr)
         , hasConnected(false)
     {
     }
     bool isPainting;
+    point_t paintOrigin;
     Level::TileType paintType;
     bool isDragging;
-    point_t dragOrigin;
     GameObject * draggedObject;
 
     GameObject * selectedObject;
