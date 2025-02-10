@@ -286,6 +286,15 @@ void Graphics::drawObjects(GameState* state, const VisibilityGrid & visibilityGr
         drawQueue.pop();
         if(toDraw.find(obj->id) != toDraw.end())
         {
+            if(obj == state->editorState.selectedObject)
+            {
+                obj->getSprite().setColor(ORANGE_TINT);
+            }
+            else
+            {
+                obj->getSprite().setColor(NORMAL_COLOR);
+            }
+
             drawObj(obj);
         }
         else if(obj->type() == GameObject::ENEMY)
@@ -312,8 +321,16 @@ void Graphics::drawDebug(GameState * state)
                     sf::Vertex(sf::Vector2f(start.x, start.y)),
                     sf::Vertex(sf::Vector2f(end.x, end.y))
                 };
-                line[0].color = sf::Color::Blue;
-                line[1].color = sf::Color::Blue;
+                if(enemy == state->editorState.selectedObject)
+                {
+                    line[0].color = sf::Color::Magenta;
+                    line[1].color = sf::Color::Magenta;
+                }
+                else
+                {
+                    line[0].color = sf::Color::Blue;
+                    line[1].color = sf::Color::Blue;
+                }
                 m_window.draw(line, 2, sf::Lines);
             }
         }

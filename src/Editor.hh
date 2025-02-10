@@ -22,15 +22,11 @@ private:
     std::string m_levelName;
     EditorControls m_controls;
 
-    bool m_isPainting;
-    Level::TileType m_paintType;
-
-    bool m_isDragging;
-    GameObject * m_draggedObject;
+    //Pointer to the one in the gameState, just to make it easier to refer to
+    EditorState * m_state;
 
     point_t m_cameraCenter;
 
-    GameObject * m_selectedObject;
 
     bool m_hasUnsavedChanges;
 };

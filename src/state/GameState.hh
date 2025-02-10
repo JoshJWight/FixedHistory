@@ -173,6 +173,29 @@ struct Timeline
     std::vector<Alarm*> alarms;
 };
 
+struct EditorState
+{
+    EditorState()
+        : isPainting(false)
+        , paintType(Level::WALL)
+        , isDragging(false)
+        , dragOrigin({0, 0})
+        , draggedObject(nullptr)
+        , selectedObject(nullptr)
+        , hasConnected(false)
+    {
+    }
+    bool isPainting;
+    Level::TileType paintType;
+    bool isDragging;
+    point_t dragOrigin;
+    GameObject * draggedObject;
+
+    GameObject * selectedObject;
+    //Has the connect action been used since the last select action?
+    bool hasConnected;
+};
+
 typedef std::vector<std::vector<bool>> VisibilityGrid;
 
 struct GameState {
@@ -211,6 +234,8 @@ struct GameState {
     std::string infoString;
     bool shouldReverse;
     int boxToEnter;
+
+    EditorState editorState;
 
     GameState()
         : tick(-1) //Start at -1 so that the first tick is 0

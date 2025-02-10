@@ -6,12 +6,8 @@ Editor::Editor(Graphics* graphics, const std::string & level)
     , m_levelName(level)
     , m_gameState(new GameState())
     , m_controls()
-    , m_isPainting(false)
-    , m_paintType(Level::EMPTY)
-    , m_isDragging(false)
-    , m_draggedObject(nullptr)
+    , m_state(&m_gameState->editorState)
     , m_cameraCenter(0, 0)
-    , m_selectedObject(nullptr)
     , m_hasUnsavedChanges(false)
 {
     m_gameState->infoString = 
@@ -91,7 +87,7 @@ void Editor::handleInputs()
         }
     }
 
-
+    //CAMERA PAN
     const float CAMERA_SPEED = 2.0f;
 
     if(m_controls.up)
@@ -111,17 +107,17 @@ void Editor::handleInputs()
         m_cameraCenter.x += CAMERA_SPEED;
     }
 
-
-    if(m_isDragging)
+    //DRAG
+    if(m_state->isDragging)
     {
         if(m_controls.drag)
         {
-            m_draggedObject->state.pos = m_gameState->mousePos;
+            m_state->draggedObject->state.pos = m_gameState->mousePos;
         }
         else
         {
-            m_isDragging = false;
-            m_draggedObject = nullptr;
+            m_state->isDragging = false;
+            m_state->draggedObject = nullptr;
             m_hasUnsavedChanges = true;
         }
     }
@@ -129,24 +125,25 @@ void Editor::handleInputs()
     {
         if(highlightedObject != nullptr)
         {
-            m_isDragging = true;
-            m_draggedObject = highlightedObject;
+            m_state->isDragging = true;
+            m_state->draggedObject = highlightedObject;
         }
     }
 
-    if(m_isPainting)
+    //PAINT
+    if(m_state->isPainting)
     {
         if(m_controls.paint)
         {
             point_t levelCoords = m_gameState->level->toLevelCoords(m_gameState->mousePos);
             if(levelCoords.x >= 0 && levelCoords.x < m_gameState->level->width && levelCoords.y >= 0 && levelCoords.y < m_gameState->level->height)
             {
-                m_gameState->level->tiles[levelCoords.x][levelCoords.y].type = m_paintType;
+                m_gameState->level->tiles[levelCoords.x][levelCoords.y].type = m_state->paintType;
             }
         }
         else
         {
-            m_isPainting = false;
+            m_state->isPainting = false;
         }
     }
     else if(m_controls.paint)
@@ -154,33 +151,30 @@ void Editor::handleInputs()
         point_t levelCoords = m_gameState->level->toLevelCoords(m_gameState->mousePos);
         if(levelCoords.x >= 0 && levelCoords.x < m_gameState->level->width && levelCoords.y >= 0 && levelCoords.y < m_gameState->level->height)
         {
-            m_isPainting = true;
-            m_paintType = m_gameState->level->tiles[levelCoords.x][levelCoords.y].type == Level::WALL ? Level::EMPTY : Level::WALL;
-            m_gameState->level->tiles[levelCoords.x][levelCoords.y].type = m_paintType;
+            m_state->isPainting = true;
+            m_state->paintType = m_gameState->level->tiles[levelCoords.x][levelCoords.y].type == Level::WALL ? Level::EMPTY : Level::WALL;
+            m_gameState->level->tiles[levelCoords.x][levelCoords.y].type = m_state->paintType;
             m_hasUnsavedChanges = true;
         }
     }
 
+    //SELECT
     if(m_controls.select)
     {
         if(highlightedObject != nullptr)
         {
-            m_selectedObject = highlightedObject;
-            std::cout << "Selected object with ID " << m_selectedObject->id << std::endl;
-            if(m_selectedObject->type() == GameObject::ENEMY)
-            {
-                Enemy * enemy = static_cast<Enemy*>(m_selectedObject);
-                enemy->patrolPoints.clear();
-                enemy->patrolPoints.push_back(enemy->state.pos);
-            }
+            m_state->selectedObject = highlightedObject;
+            m_state->hasConnected = false;
+            std::cout << "Selected object with ID " << m_state->selectedObject->id << std::endl;
         }
         else
         {
             std::cout << "Deselected object" << std::endl;
-            m_selectedObject = nullptr;
+            m_state->selectedObject = nullptr;
         }
     }
 
+    //REMOVE
     if(m_controls.remove)
     {
         if(highlightedObject != nullptr)
@@ -194,13 +188,14 @@ void Editor::handleInputs()
         }
     }
 
-    if(m_controls.connect && m_selectedObject != nullptr)
+    //CONNECT
+    if(m_controls.connect && m_state->selectedObject != nullptr)
     {
-        switch(m_selectedObject->type())
+        switch(m_state->selectedObject->type())
         {
             case GameObject::DOOR:
             {
-                Door * door = static_cast<Door*>(m_selectedObject);
+                Door * door = static_cast<Door*>(m_state->selectedObject);
                 if(highlightedObject != nullptr && highlightedObject->type() == GameObject::SWITCH)
                 {
                     Switch * sw = static_cast<Switch*>(highlightedObject);
@@ -218,7 +213,15 @@ void Editor::handleInputs()
             }
             case GameObject::ENEMY:
             {
-                Enemy * enemy = static_cast<Enemy*>(m_selectedObject);
+                Enemy * enemy = static_cast<Enemy*>(m_state->selectedObject);
+
+                //Reset patrol points when placing the first new patrol point
+                if(!m_state->hasConnected)
+                {
+                    enemy->patrolPoints.clear();
+                    enemy->patrolPoints.push_back(enemy->state.pos);
+                }
+
                 enemy->patrolPoints.push_back(m_gameState->mousePos);
                 m_hasUnsavedChanges = true;
                 std::cout << "Added patrol point " << m_gameState->mousePos.x << ", " << m_gameState->mousePos.y << std::endl;
@@ -226,18 +229,20 @@ void Editor::handleInputs()
             }
             case GameObject::SWITCH:
             {
-                Switch * sw = static_cast<Switch*>(m_selectedObject);
+                Switch * sw = static_cast<Switch*>(m_state->selectedObject);
                 sw->state.aiState = sw->state.aiState == Switch::ON ? Switch::OFF : Switch::ON;
                 m_hasUnsavedChanges = true;
                 break;
             }
             default:
             {
-                std::cout << "Cannot connect with selected object type " << GameObject::typeToString(m_selectedObject->type()) << std::endl;
+                std::cout << "Cannot connect with selected object type " << GameObject::typeToString(m_state->selectedObject->type()) << std::endl;
             }
-        }
+        }//End switch
+        m_state->hasConnected = true;
     }
 
+    //ROW/COLUMN MANAGEMENT
     if(m_controls.addRow)
     {
         m_gameState->level->height++;
@@ -277,6 +282,7 @@ void Editor::handleInputs()
         }
     }
 
+    //PLACE OBJECTS
     if(m_controls.placePlayer)
     {
         if(m_gameState->players().size() == 0)
@@ -363,7 +369,7 @@ void Editor::handleInputs()
         m_hasUnsavedChanges = true;
     }
 
-
+    //SAVE
     if(m_controls.save)
     {
         saveLevel(m_gameState.get(), m_levelName);
