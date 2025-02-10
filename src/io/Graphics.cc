@@ -4,7 +4,8 @@
 #include <algorithm>
 
 Graphics::Graphics(int windowWidth, int windowHeight)
-    :m_window(sf::VideoMode(windowWidth, windowHeight), "Fixed History"),
+    :shouldDrawDebug(false),
+     m_window(sf::VideoMode(windowWidth, windowHeight), "Fixed History"),
      m_windowSize(windowWidth, windowHeight),
      m_cameraScale(windowWidth / 500.0)
 {
@@ -146,6 +147,11 @@ void Graphics::draw(GameState * state, point_t cameraCenter)
 
     drawObjects(state, visibilityGrid);
 
+    if(shouldDrawDebug)
+    {
+        drawDebug(state);
+    }
+
     m_reticleSprite.setPosition(worldToCamera(state->mousePos));
     m_window.draw(m_reticleSprite);
 
@@ -217,9 +223,12 @@ void Graphics::drawObjects(GameState* state, const VisibilityGrid & visibilityGr
         {
             continue;
         }
-        if(obj->isAlwaysDrawn())
+        if(obj->isDebugGraphic())
         {
-            toDraw[obj->id] = obj.get();
+            if(shouldDrawDebug)
+            {
+                toDraw[obj->id] = obj.get();
+            }
             continue;
         }
 
@@ -282,6 +291,54 @@ void Graphics::drawObjects(GameState* state, const VisibilityGrid & visibilityGr
         else if(obj->type() == GameObject::ENEMY)
         {
             drawObjAs(obj, m_hiddenEnemySprite);
+        }
+    }
+}
+
+void Graphics::drawDebug(GameState * state)
+{
+    //Draw patrol paths
+    for(Enemy* enemy: state->enemies())
+    {
+        if(enemy->patrolPoints.size() > 1)
+        {
+            for(int i=0; i<enemy->patrolPoints.size(); i++)
+            {
+                size_t nextIndex = (i+1) % enemy->patrolPoints.size();
+                point_t start = worldToCamera(enemy->patrolPoints[i]);
+                point_t end = worldToCamera(enemy->patrolPoints[nextIndex]);
+                sf::Vertex line[] =
+                {
+                    sf::Vertex(sf::Vector2f(start.x, start.y)),
+                    sf::Vertex(sf::Vector2f(end.x, end.y))
+                };
+                line[0].color = sf::Color::Blue;
+                line[1].color = sf::Color::Blue;
+                m_window.draw(line, 2, sf::Lines);
+            }
+        }
+    }
+
+    //Draw door-switch connections
+    for(Door * door: state->doors())
+    {
+        for(int sw : door->getConnectedSwitches())
+        {
+            if(state->objects().find(sw) == state->objects().end())
+            {
+                continue;
+            }
+            Switch * swObj = static_cast<Switch*>(state->objects().at(sw).get());
+            point_t doorPos = worldToCamera(door->state.pos);
+            point_t swPos = worldToCamera(swObj->state.pos);
+            sf::Vertex line[] =
+            {
+                sf::Vertex(sf::Vector2f(doorPos.x, doorPos.y)),
+                sf::Vertex(sf::Vector2f(swPos.x, swPos.y))
+            };
+            line[0].color = sf::Color::Green;
+            line[1].color = sf::Color::Green;
+            m_window.draw(line, 2, sf::Lines);
         }
     }
 }

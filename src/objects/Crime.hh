@@ -52,7 +52,7 @@ public:
         return true;
     }
 
-    bool isAlwaysDrawn() override
+    bool isDebugGraphic() override
     {
         return true;
     }

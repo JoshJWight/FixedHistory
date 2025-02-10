@@ -47,6 +47,8 @@ Editor::Editor(Graphics* graphics, const std::string & level)
     float startCamera = m_gameState->level->scale * 0.5 * std::min(m_gameState->level->width, m_gameState->level->height);
 
     m_cameraCenter = point_t(startCamera, startCamera);
+
+    m_graphics->shouldDrawDebug = true;
 }
     
 void Editor::mainLoop()

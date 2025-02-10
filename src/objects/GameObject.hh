@@ -209,7 +209,7 @@ public:
         return false;
     }
 
-    virtual bool isAlwaysDrawn()
+    virtual bool isDebugGraphic()
     {
         return false;
     }

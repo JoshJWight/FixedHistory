@@ -42,7 +42,7 @@ void recordObservations(GameState * state, Player * player, int tick)
             continue;
         }
 
-        if(obj->isAlwaysDrawn())
+        if(obj->isDebugGraphic())
         {
             continue;
         }
@@ -118,7 +118,7 @@ std::string checkObservations(GameState * state, Player * player, int tick)
             continue;
         }
 
-        if(obj->isAlwaysDrawn())
+        if(obj->isDebugGraphic())
         {
             continue;
         }

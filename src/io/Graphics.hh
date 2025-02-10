@@ -20,6 +20,8 @@ public:
 
     point_t getMousePos();
 
+    bool shouldDrawDebug;
+
 private:
     //Giving the camera some radius helps if the player is near the edge of a tile
     const float CAMERA_RADIUS = 10.0f;
@@ -31,6 +33,8 @@ private:
     void drawObj(GameObject* obj);
     void drawObjAs(GameObject* obj, sf::Sprite & sprite);
     void drawObjects(GameState* state, const VisibilityGrid & visibilityGrid);
+
+    void drawDebug(GameState * state);
 
     void setSpriteScale(sf::Sprite & sprite, point_t worldSize);
 
