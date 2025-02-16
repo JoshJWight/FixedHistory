@@ -1,7 +1,32 @@
 #include "EditorControls.hh"
 
 EditorControls::EditorControls()
-    : up(false), down(false), left(false), right(false), drag(false), paint(false)
+    : up(false)
+    , down(false)
+    , left(false)
+    , right(false)
+    , drag(false)
+    , paint(false)
+    , select(false)
+    , connect(false)
+    , remove(false)
+    , addRow(false)
+    , addCol(false)
+    , removeRow(false)
+    , removeCol(false)
+    , placePlayer(false)
+    , placeEnemy(false)
+    , placeTimeBox(false)
+    , placeSwitch(false)
+    , placeDoor(false)
+    , placeCloset(false)
+    , placeTurnstile(false)
+    , placeSpikes(false)
+    , placeObjective(false)
+    , placeKnife(false)
+    , placeExit(false)
+    , save(false)
+    , toggleSnapToGrid(false)
 {
     m_actOnPressKeys.push_back(sf::Keyboard::E);
     m_actOnPressKeys.push_back(sf::Keyboard::F);
@@ -22,6 +47,7 @@ EditorControls::EditorControls()
     m_actOnPressKeys.push_back(sf::Keyboard::Num8);
     m_actOnPressKeys.push_back(sf::Keyboard::Num9);
     m_actOnPressKeys.push_back(sf::Keyboard::Dash);
+    m_actOnPressKeys.push_back(sf::Keyboard::BackSlash);
 
     for(auto key : m_actOnPressKeys)
     {
@@ -61,6 +87,8 @@ void EditorControls::tick()
     placeExit = sf::Keyboard::isKeyPressed(sf::Keyboard::Dash) && !m_lastStateMap[sf::Keyboard::Dash];
 
     save = sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::S) && !m_lastStateMap[sf::Keyboard::S];
+
+    toggleSnapToGrid = sf::Keyboard::isKeyPressed(sf::Keyboard::BackSlash) && !m_lastStateMap[sf::Keyboard::BackSlash];
 
     for(auto key : m_actOnPressKeys)
     {

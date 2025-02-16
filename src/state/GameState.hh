@@ -183,8 +183,25 @@ struct EditorState
         , draggedObject(nullptr)
         , selectedObject(nullptr)
         , hasConnected(false)
+        , snapToGrid(false)
     {
     }
+
+    point_t placement(point_t rawPlacement, float scale)
+    {
+        if(snapToGrid)
+        {
+            return point_t(
+                (std::round(rawPlacement.x / scale - 0.5) + 0.5) * scale,
+                (std::round(rawPlacement.y / scale - 0.5) + 0.5) * scale
+            );
+        }
+        else
+        {
+            return rawPlacement;
+        }
+    }
+
     bool isPainting;
     point_t paintOrigin;
     Level::TileType paintType;
@@ -194,6 +211,8 @@ struct EditorState
     GameObject * selectedObject;
     //Has the connect action been used since the last select action?
     bool hasConnected;
+
+    bool snapToGrid;
 };
 
 typedef std::vector<std::vector<bool>> VisibilityGrid;

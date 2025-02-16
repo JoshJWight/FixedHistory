@@ -16,6 +16,7 @@ public:
 
 private:
     void handleInputs();
+    point_t placement(point_t rawPlacement);
 
     std::shared_ptr<GameState> m_gameState;
     Graphics* m_graphics;

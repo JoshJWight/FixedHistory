@@ -45,6 +45,8 @@ public:
 
     bool save;
 
+    bool toggleSnapToGrid;
+
 private:
     std::map<sf::Keyboard::Key, bool> m_lastStateMap;
     std::vector<sf::Keyboard::Key> m_actOnPressKeys;

@@ -27,8 +27,9 @@ Editor::Editor(Graphics* graphics, const std::string & level)
         "turnstile: 7\n"
         "spikes: 8\n"
         "objective: 9\n"
-        "knife: 0\n";
-        "exit: -\n";
+        "knife: 0\n"
+        "exit: -\n"
+        "snap to grid: \\\n";
 
     if(levelExists(level))
     {
@@ -116,6 +117,7 @@ void Editor::handleInputs()
         }
         else
         {
+            m_state->draggedObject->state.pos = placement(m_gameState->mousePos);
             m_state->isDragging = false;
             m_state->draggedObject = nullptr;
             m_hasUnsavedChanges = true;
@@ -127,6 +129,7 @@ void Editor::handleInputs()
         {
             m_state->isDragging = true;
             m_state->draggedObject = highlightedObject;
+            m_state->selectedObject = highlightedObject;
         }
     }
 
@@ -232,7 +235,7 @@ void Editor::handleInputs()
                     enemy->patrolPoints.push_back(enemy->state.pos);
                 }
 
-                enemy->patrolPoints.push_back(m_gameState->mousePos);
+                enemy->patrolPoints.push_back(placement(m_gameState->mousePos));
                 m_hasUnsavedChanges = true;
                 std::cout << "Added patrol point " << m_gameState->mousePos.x << ", " << m_gameState->mousePos.y << std::endl;
                 break;
@@ -298,7 +301,7 @@ void Editor::handleInputs()
         if(m_gameState->players().size() == 0)
         {
             std::shared_ptr<Player> player = std::make_shared<Player>(m_gameState->nextID());
-            player->state.pos = m_gameState->mousePos;
+            player->state.pos = placement(m_gameState->mousePos);
             m_gameState->addObject(player);
             m_hasUnsavedChanges = true;
         }
@@ -310,7 +313,7 @@ void Editor::handleInputs()
     if(m_controls.placeEnemy)
     {
         std::shared_ptr<Enemy> enemy = std::make_shared<Enemy>(m_gameState->nextID());
-        enemy->state.pos = m_gameState->mousePos;
+        enemy->state.pos = placement(m_gameState->mousePos);
         enemy->patrolPoints.push_back(enemy->state.pos);
         m_gameState->addObject(enemy);
         m_hasUnsavedChanges = true;
@@ -318,63 +321,63 @@ void Editor::handleInputs()
     if(m_controls.placeTimeBox)
     {
         std::shared_ptr<TimeBox> tb = std::make_shared<TimeBox>(m_gameState->nextID());
-        tb->state.pos = m_gameState->mousePos;
+        tb->state.pos = placement(m_gameState->mousePos);
         m_gameState->addObject(tb);
         m_hasUnsavedChanges = true;
     }
     if(m_controls.placeSwitch)
     {
         std::shared_ptr<Switch> sw = std::make_shared<Switch>(m_gameState->nextID());
-        sw->state.pos = m_gameState->mousePos;
+        sw->state.pos = placement(m_gameState->mousePos);
         m_gameState->addObject(sw);
         m_hasUnsavedChanges = true;
     }
     if(m_controls.placeDoor)
     {
         std::shared_ptr<Door> door = std::make_shared<Door>(m_gameState->nextID());
-        door->state.pos = m_gameState->mousePos;
+        door->state.pos = placement(m_gameState->mousePos);
         m_gameState->addObject(door);
         m_hasUnsavedChanges = true;
     }
     if(m_controls.placeCloset)
     {
         std::shared_ptr<Closet> closet = std::make_shared<Closet>(m_gameState->nextID());
-        closet->state.pos = m_gameState->mousePos;
+        closet->state.pos = placement(m_gameState->mousePos);
         m_gameState->addObject(closet);
         m_hasUnsavedChanges = true;
     }
     if(m_controls.placeTurnstile)
     {
         std::shared_ptr<Turnstile> turnstile = std::make_shared<Turnstile>(m_gameState->nextID());
-        turnstile->state.pos = m_gameState->mousePos;
+        turnstile->state.pos = placement(m_gameState->mousePos);
         m_gameState->addObject(turnstile);
         m_hasUnsavedChanges = true;
     }
     if(m_controls.placeSpikes)
     {
         std::shared_ptr<Spikes> spikes = std::make_shared<Spikes>(m_gameState->nextID(), 0, 0, 0);
-        spikes->state.pos = m_gameState->mousePos;
+        spikes->state.pos = placement(m_gameState->mousePos);
         m_gameState->addObject(spikes);
         m_hasUnsavedChanges = true;
     }
     if(m_controls.placeObjective)
     {
         std::shared_ptr<Objective> obj = std::make_shared<Objective>(m_gameState->nextID());
-        obj->state.pos = m_gameState->mousePos;
+        obj->state.pos = placement(m_gameState->mousePos);
         m_gameState->addObject(obj);
         m_hasUnsavedChanges = true;
     }
     if(m_controls.placeKnife)
     {
         std::shared_ptr<Knife> knife = std::make_shared<Knife>(m_gameState->nextID());
-        knife->state.pos = m_gameState->mousePos;
+        knife->state.pos = placement(m_gameState->mousePos);
         m_gameState->addObject(knife);
         m_hasUnsavedChanges = true;
     }
     if(m_controls.placeExit)
     {
         std::shared_ptr<Exit> exit = std::make_shared<Exit>(m_gameState->nextID());
-        exit->state.pos = m_gameState->mousePos;
+        exit->state.pos = placement(m_gameState->mousePos);
         m_gameState->addObject(exit);
         m_hasUnsavedChanges = true;
     }
@@ -385,4 +388,14 @@ void Editor::handleInputs()
         saveLevel(m_gameState.get(), m_levelName);
         m_hasUnsavedChanges = false;
     }
+
+    if(m_controls.toggleSnapToGrid)
+    {
+        m_state->snapToGrid = !m_state->snapToGrid;
+    }
+}
+
+point_t Editor::placement(point_t rawPlacement)
+{
+    return m_state->placement(rawPlacement, m_gameState->level->scale);
 }

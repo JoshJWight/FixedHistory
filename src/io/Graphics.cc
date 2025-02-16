@@ -381,6 +381,26 @@ void Graphics::drawDebug(GameState * state)
         }
         m_window.draw(line, 8, sf::Lines);
     }
+
+    //Draw target for snap to grid
+    if(state->editorState.snapToGrid)
+    {
+        point_t placement = state->editorState.placement(state->mousePos, state->level->scale);
+        point_t cameraPos = worldToCamera(placement);
+        //Draw a cross
+        sf::Vertex line[] =
+        {
+            sf::Vertex(sf::Vector2f(cameraPos.x - 10, cameraPos.y - 10)),
+            sf::Vertex(sf::Vector2f(cameraPos.x + 10, cameraPos.y + 10)),
+            sf::Vertex(sf::Vector2f(cameraPos.x - 10, cameraPos.y + 10)),
+            sf::Vertex(sf::Vector2f(cameraPos.x + 10, cameraPos.y - 10))
+        }; 
+        for(int i=0; i<4; i++)
+        {
+            line[i].color = sf::Color::Red;
+        }
+        m_window.draw(line, 4, sf::Lines);
+    }
 }
 
 point_t Graphics::getMousePos()
