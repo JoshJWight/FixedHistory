@@ -138,3 +138,13 @@ point_t Level::fromLevelCoords(const point_t & levelPos) const
 {
     return point_t((levelPos.x + 0.5) * scale + bottomLeft.x, (levelPos.y + 0.5) * scale + bottomLeft.y);
 }
+
+bool Level::levelCoordsInBounds(const point_t & levelPos) const
+{
+    return levelPos.x >= 0 && levelPos.x < width && levelPos.y >= 0 && levelPos.y < height;
+}
+
+bool Level::worldCoordsInBounds(const point_t & worldPos) const
+{
+    return worldPos.x >= bottomLeft.x && worldPos.x < bottomLeft.x + width * scale && worldPos.y >= bottomLeft.y && worldPos.y < bottomLeft.y + height * scale;
+}

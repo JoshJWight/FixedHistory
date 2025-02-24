@@ -61,8 +61,15 @@ void Graphics::draw(GameState * state, point_t cameraCenter)
     {
         if(event.type == sf::Event::Closed)
         {
+            std::cout << "Window closed, exiting." << std::endl;
             m_window.close();
             exit(0);
+        }
+        if(event.type == sf::Event::MouseWheelMoved)
+        {
+            float scaleLog = std::log10(m_cameraScale);
+            scaleLog += event.mouseWheel.delta * 0.1;
+            m_cameraScale = std::pow(10, scaleLog);
         }
     }
 
@@ -109,7 +116,7 @@ void Graphics::draw(GameState * state, point_t cameraCenter)
                 {
                     m_wallSprite.setColor(RED_TINT);
                 }
-                else if(visibilityGrid[x][y])
+                else if(visibilityGrid[x][y] || shouldDrawDebug)
                 {
                     m_wallSprite.setColor(NORMAL_COLOR);
                 }
@@ -128,7 +135,7 @@ void Graphics::draw(GameState * state, point_t cameraCenter)
                 {
                     m_floorSprite.setColor(RED_TINT);
                 }
-                else if(visibilityGrid[x][y])
+                else if(visibilityGrid[x][y] || shouldDrawDebug)
                 {
                     m_floorSprite.setColor(NORMAL_COLOR);
                 }
@@ -237,7 +244,7 @@ void Graphics::drawObjects(GameState* state, const VisibilityGrid & visibilityGr
             continue;
         }
         point_t levelCoords = state->level->toLevelCoords(obj->state.pos);
-        if(!visibilityGrid[levelCoords.x][levelCoords.y])
+        if(!state->level->levelCoordsInBounds(levelCoords) || !visibilityGrid[levelCoords.x][levelCoords.y])
         {
             continue;
         }
@@ -277,6 +284,19 @@ void Graphics::drawObjects(GameState* state, const VisibilityGrid & visibilityGr
             }
             GameObject * objPtr = state->objects().at(obj.id).get();
             toDraw[obj.id] = objPtr;
+        }
+    }
+
+    if(shouldDrawDebug)
+    {
+        //Override prior considerations and draw all objects
+        for(auto it = state->objects().begin(); it != state->objects().end(); ++it)
+        {
+            GameObject * obj = it->second.get();
+            if(obj->activeAt(state->tick))
+            {
+                toDraw[obj->id] = obj;
+            }
         }
     }
 

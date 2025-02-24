@@ -89,7 +89,7 @@ void Editor::handleInputs()
     }
 
     //CAMERA PAN
-    const float CAMERA_SPEED = 2.0f;
+    float CAMERA_SPEED = 2.0f / m_graphics->m_cameraScale * 20.0;
 
     if(m_controls.up)
     {
@@ -118,6 +118,14 @@ void Editor::handleInputs()
         else
         {
             m_state->draggedObject->state.pos = placement(m_gameState->mousePos);
+
+            if(m_state->draggedObject->type() == GameObject::ENEMY)
+            {
+                Enemy * enemy = static_cast<Enemy*>(m_state->draggedObject);
+                enemy->patrolPoints[0].x = enemy->state.pos.x;
+                enemy->patrolPoints[0].y = enemy->state.pos.y;
+            }
+
             m_state->isDragging = false;
             m_state->draggedObject = nullptr;
             m_hasUnsavedChanges = true;
@@ -304,6 +312,7 @@ void Editor::handleInputs()
             player->state.pos = placement(m_gameState->mousePos);
             m_gameState->addObject(player);
             m_hasUnsavedChanges = true;
+            m_state->selectedObject = player.get();
         }
         else
         {
@@ -317,6 +326,7 @@ void Editor::handleInputs()
         enemy->patrolPoints.push_back(enemy->state.pos);
         m_gameState->addObject(enemy);
         m_hasUnsavedChanges = true;
+        m_state->selectedObject = enemy.get();
     }
     if(m_controls.placeTimeBox)
     {
@@ -324,6 +334,7 @@ void Editor::handleInputs()
         tb->state.pos = placement(m_gameState->mousePos);
         m_gameState->addObject(tb);
         m_hasUnsavedChanges = true;
+        m_state->selectedObject = tb.get();
     }
     if(m_controls.placeSwitch)
     {
@@ -331,6 +342,7 @@ void Editor::handleInputs()
         sw->state.pos = placement(m_gameState->mousePos);
         m_gameState->addObject(sw);
         m_hasUnsavedChanges = true;
+        m_state->selectedObject = sw.get();
     }
     if(m_controls.placeDoor)
     {
@@ -338,6 +350,7 @@ void Editor::handleInputs()
         door->state.pos = placement(m_gameState->mousePos);
         m_gameState->addObject(door);
         m_hasUnsavedChanges = true;
+        m_state->selectedObject = door.get();
     }
     if(m_controls.placeCloset)
     {
@@ -345,6 +358,7 @@ void Editor::handleInputs()
         closet->state.pos = placement(m_gameState->mousePos);
         m_gameState->addObject(closet);
         m_hasUnsavedChanges = true;
+        m_state->selectedObject = closet.get();
     }
     if(m_controls.placeTurnstile)
     {
@@ -352,6 +366,7 @@ void Editor::handleInputs()
         turnstile->state.pos = placement(m_gameState->mousePos);
         m_gameState->addObject(turnstile);
         m_hasUnsavedChanges = true;
+        m_state->selectedObject = turnstile.get();
     }
     if(m_controls.placeSpikes)
     {
@@ -359,6 +374,7 @@ void Editor::handleInputs()
         spikes->state.pos = placement(m_gameState->mousePos);
         m_gameState->addObject(spikes);
         m_hasUnsavedChanges = true;
+        m_state->selectedObject = spikes.get();
     }
     if(m_controls.placeObjective)
     {
@@ -366,6 +382,7 @@ void Editor::handleInputs()
         obj->state.pos = placement(m_gameState->mousePos);
         m_gameState->addObject(obj);
         m_hasUnsavedChanges = true;
+        m_state->selectedObject = obj.get();
     }
     if(m_controls.placeKnife)
     {
@@ -373,6 +390,7 @@ void Editor::handleInputs()
         knife->state.pos = placement(m_gameState->mousePos);
         m_gameState->addObject(knife);
         m_hasUnsavedChanges = true;
+        m_state->selectedObject = knife.get();
     }
     if(m_controls.placeExit)
     {
@@ -380,6 +398,7 @@ void Editor::handleInputs()
         exit->state.pos = placement(m_gameState->mousePos);
         m_gameState->addObject(exit);
         m_hasUnsavedChanges = true;
+        m_state->selectedObject = exit.get();
     }
 
     //SAVE

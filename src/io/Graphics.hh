@@ -22,6 +22,8 @@ public:
 
     bool shouldDrawDebug;
 
+    float m_cameraScale;
+
 private:
     //Giving the camera some radius helps if the player is near the edge of a tile
     const float CAMERA_RADIUS = 10.0f;
@@ -46,7 +48,6 @@ private:
 
     point_t m_cameraWorldPos;
     //Number of pixels per world unit
-    float m_cameraScale;
 
     point_t m_windowSize;
 

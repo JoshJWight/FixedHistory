@@ -65,6 +65,9 @@ public:
     point_t toLevelCoords(const point_t & worldPos) const;
     point_t fromLevelCoords(const point_t & levelPos) const;
 
+    bool worldCoordsInBounds(const point_t & worldPos) const;
+    bool levelCoordsInBounds(const point_t & levelPos) const;
+
     point_t bottomLeft;
     size_t width;
     size_t height;
