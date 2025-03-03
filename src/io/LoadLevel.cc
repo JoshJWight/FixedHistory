@@ -59,7 +59,6 @@ void constructObject(GameState * state, int id, const std::string & objType, poi
     if(objType == "player")
     {
         obj = std::make_shared<Player>(id);
-        state->players().push_back(static_cast<Player*>(obj.get()));
     }
     else if(objType == "enemy")
     {
@@ -104,7 +103,7 @@ void constructObject(GameState * state, int id, const std::string & objType, poi
             int switchID = std::stoi(tokens[i]);
             
             std::cout << "Switch ID: " << switchID << std::endl;
-            door->addSwitch(state->getObject<Switch>(switchID));
+            door->connectedSwitches.push_back(switchID);
         }
         obj = door;
     }
