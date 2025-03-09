@@ -343,7 +343,10 @@ void tickEnemy(GameState * state, Enemy* enemy)
             continue;
         }
 
-        if(throwable->deadly && throwable->state.aiState == Throwable::THROWN && enemy->state.aiState != Enemy::AI_DEAD && enemy->isColliding(*throwable))
+        if(throwable->deadly 
+            && (throwable->state.aiState == Throwable::THROWN || throwable->state.aiState == Throwable::USED)
+            && enemy->state.aiState != Enemy::AI_DEAD
+            && enemy->isColliding(*throwable))
         {
             enemy->nextState.aiState = Enemy::AI_DEAD;
         }

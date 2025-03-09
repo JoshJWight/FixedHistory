@@ -2,10 +2,13 @@
 
 namespace tick{
 
+//This tick is only for the current player
+//Past players just have their recorded state
 void tickPlayer(GameState* state, Player* player, Controls * controls)
 {
     player->nextState.willInteract = controls->interact;
     player->nextState.willThrow = controls->throw_;
+    player->nextState.willFire = false;
 
     if(player->state.boxOccupied)
     {
@@ -100,6 +103,8 @@ void tickPlayer(GameState* state, Player* player, Controls * controls)
 
     if(controls->fire && player->state.cooldown == 0)
     {
+        player->nextState.willFire = true;
+        /*
         point_t direction = math_util::normalize(state->mousePos - player->state.pos);
         point_t bulletPos = player->state.pos + direction * player->size.x;
         std::shared_ptr<Bullet> bullet(new Bullet(state->nextID()));
@@ -126,6 +131,7 @@ void tickPlayer(GameState* state, Player* player, Controls * controls)
         state->objects()[bullet->id] = bullet;
         state->historyBuffer().buffer[bullet->id] = std::vector<ObjectState>(state->tick+1);
         state->historyBuffer().buffer[bullet->id][state->tick] = bullet->state;
+        */
     }
 
     player->nextState.angle_deg = math_util::rotateTowardsPoint(player->state.angle_deg, player->state.pos, state->mousePos, 5.0f);

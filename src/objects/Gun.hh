@@ -17,6 +17,9 @@ public:
         drag = 0.05f;
         throwSpeed = 5.0f;
         bounciness = 0.70f;
+
+        //Short use duration, basically just fire the bullet
+        useDuration = 10;
     }
 
     Gun(int id, Gun* ancestor)

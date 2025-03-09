@@ -84,11 +84,12 @@ struct ObjectState
     int aiState;
     int targetId;
     point_t lastSeen;
-    int chargeTime;
+    int chargeTime; //Also used by some throwables
 
     //Player actions
     bool willInteract;
     bool willThrow;
+    bool willFire;
 
     //Separate ID for held object since the player can hold an item and go in a box at the same time.
     bool holdingObject;

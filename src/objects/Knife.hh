@@ -17,6 +17,9 @@ public:
         drag = 0.02f;
         throwSpeed = 6.0f;
         bounciness = 0.70f;
+
+        //Attack lasts about a half second
+        useDuration = 30;
     }
 
     Knife(int id, Knife* ancestor)
