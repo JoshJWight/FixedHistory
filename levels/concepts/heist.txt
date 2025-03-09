@@ -1,0 +1,68 @@
+48 49
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+X..........................................XXXXX
+X..........................................XXXXX
+X..........................................XXXXX
+X..........................................XXXXX
+X..........................................XXXXX
+X..........................................XXXXX
+X..........................................XXXXX
+X..........................................XXXXX
+X..........................................XXXXX
+X..........................................XXXXX
+X..........................................XXXXX
+X..........................................XXXXX
+X..........................................XXXXX
+X........................X.................XXXXX
+X........................X.................XXXXX
+X........................X.................XXXXX
+X........................X.................XXXXX
+X........................X.................XXXXX
+X..XXXXXXXX.X............X.................XXXXX
+X..X...X....XXXXX........X.................XXXXX
+X..X........X...X........X.................XXXXX
+X..X...X....X...X........X.................XXXXX
+X..X...X....X...X........X.................XXXXX
+X..X...X....X...X........X.................XXXXX
+X..X...X....X...X..........................XXXXX
+X..X...X....X...X..XXXXXXXXXXX.............XXXXX
+X..X...X........X..X.........X.............XXXXX
+X..X...X....X...X..X.........XXXX..XXXX....XXXXX
+X..XXXXXXXXXXXXXX..X.........X..X..X..X....XXXXX
+X..................X.........X..X..X..X....XXXXX
+X............................X..X..X..X....XXXXX
+XXXX.XXX.......XXXXX.........X........X....XXXXX
+X......X.......X...X.........XXXX..XXXX....XXXXX
+X.XXXX.X.......X...X...X.X...X..X..X..X....XXXXX
+X.XXXX.X.......X...X...X.X...X..X..X..X....XXXXX
+X.XXXX.X.......XX.XXXXXX.XXXXX..X..X..X....XXXXX
+X......X...........X.........X........X....XXXXX
+XX.XXXXX...........X.........XXXX..XXXX....XXXXX
+X..X...............X.........X..X..X..X....XXXXX
+X..X...............X.........X..X..X..X....XXXXX
+X.XXXXXXXX.........X.........X..X..X..X....XXXXX
+X..XX....X.........X.........X........X..XXXXXXX
+X.....X............X.........XXXX..XXXX..X.XXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+door 0 490,210 3 2
+door 1 490,170 3
+switch 2 850,30 on
+switch 3 370,210 on
+enemy 4 450,270 450,270 450,270 410,230 570,250
+enemy 5 530,270 530,270 530,270 570,230 410,250
+enemy 6 310,110 310,110 310,110 350,150 350,70 310,50
+enemy 7 350,50 350,50 350,50 270,50 290,110 350,110 370,90
+enemy 8 430,130 430,130 430,130 430,50 550,50 550,130
+objective 9 485.351,97.193
+timebox 10 622.525,291.004
+timebox 11 620.647,199.292
+timebox 12 621.473,99.8233
+timebox 13 739.927,294.22
+timebox 14 740.752,195.577
+timebox 15 741.165,97.7596
+player 16 172.007,409.373
+gun 17 209.352,410.118
