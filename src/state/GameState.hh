@@ -15,6 +15,7 @@
 #include "objects/Throwable.hh"
 #include "objects/Objective.hh"
 #include "objects/Knife.hh"
+#include "objects/Gun.hh"
 #include "objects/Exit.hh"
 #include "objects/Crime.hh"
 #include "objects/Alarm.hh"
@@ -125,6 +126,10 @@ struct Timeline
             else if(t->type() == GameObject::KNIFE)
             {
                 newThrowable = std::make_shared<Knife>(t->id, dynamic_cast<Knife*>(t));
+            }
+            else if(t->type() == GameObject::GUN)
+            {
+                newThrowable = std::make_shared<Gun>(t->id, dynamic_cast<Gun*>(t));
             }
             else
             {
@@ -305,6 +310,7 @@ struct GameState {
                 break;
             case GameObject::OBJECTIVE:
             case GameObject::KNIFE:
+            case GameObject::GUN:
                 throwables().push_back(dynamic_cast<Throwable*>(obj.get()));
                 break;
             case GameObject::EXIT:
@@ -349,6 +355,7 @@ struct GameState {
                 break;
             case GameObject::OBJECTIVE:
             case GameObject::KNIFE:
+            case GameObject::GUN:
                 std::erase_if(throwables(), [id](Throwable* t){return t->id == id;});
                 break;
             case GameObject::EXIT:

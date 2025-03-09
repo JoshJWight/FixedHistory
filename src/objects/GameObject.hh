@@ -122,6 +122,7 @@ public:
         SPIKES,
         OBJECTIVE,
         KNIFE,
+        GUN,
         EXIT,
         CRIME,
         ALARM
@@ -153,6 +154,8 @@ public:
                 return "objective";
             case KNIFE:
                 return "knife";
+            case GUN:
+                return "gun";
             case EXIT:
                 return "exit";
             case CRIME:

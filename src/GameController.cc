@@ -319,6 +319,11 @@ void GameController::pushTimeline()
             oldHeldObject = dynamic_cast<Knife*>(m_gameState->objects().at(oldPlayer->state.heldObjectId).get());
             newHeldObject = std::make_shared<Knife>(m_gameState->nextID(), dynamic_cast<Knife*>(m_gameState->objects().at(oldPlayer->state.heldObjectId).get()));
         }
+        else if(m_gameState->objects().at(oldPlayer->state.heldObjectId)->type() == GameObject::GUN)
+        {
+            oldHeldObject = dynamic_cast<Gun*>(m_gameState->objects().at(oldPlayer->state.heldObjectId).get());
+            newHeldObject = std::make_shared<Gun>(m_gameState->nextID(), dynamic_cast<Gun*>(m_gameState->objects().at(oldPlayer->state.heldObjectId).get()));
+        }
         else
         {
             throw std::runtime_error("Unknown object type held by player");

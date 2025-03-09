@@ -146,6 +146,10 @@ void constructObject(GameState * state, int id, const std::string & objType, poi
     {
         obj = std::make_shared<Knife>(id);
     }
+    else if (objType == "gun")
+    {
+        obj = std::make_shared<Gun>(id);
+    }
     else if (objType == "exit")
     {
         obj = std::make_shared<Exit>(id);
@@ -325,6 +329,10 @@ void saveLevel(GameState * state, const std::string & levelName)
                 break;
             }
             case GameObject::KNIFE:
+            {
+                break;
+            }
+            case GameObject::GUN:
             {
                 break;
             }

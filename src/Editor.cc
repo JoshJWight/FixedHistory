@@ -29,6 +29,7 @@ Editor::Editor(Graphics* graphics, const std::string & level)
         "objective: 9\n"
         "knife: 0\n"
         "exit: -\n"
+        "gun: =\n"
         "snap to grid: \\\n";
 
     if(levelExists(level))
@@ -391,6 +392,14 @@ void Editor::handleInputs()
         m_gameState->addObject(knife);
         m_hasUnsavedChanges = true;
         m_state->selectedObject = knife.get();
+    }
+    if(m_controls.placeGun)
+    {
+        std::shared_ptr<Gun> gun = std::make_shared<Gun>(m_gameState->nextID());
+        gun->state.pos = placement(m_gameState->mousePos);
+        m_gameState->addObject(gun);
+        m_hasUnsavedChanges = true;
+        m_state->selectedObject = gun.get();
     }
     if(m_controls.placeExit)
     {

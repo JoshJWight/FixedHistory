@@ -42,6 +42,7 @@ public:
     bool placeObjective;
     bool placeKnife;
     bool placeExit;
+    bool placeGun;
 
     bool save;
 
