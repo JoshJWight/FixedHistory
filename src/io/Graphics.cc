@@ -317,10 +317,17 @@ void Graphics::drawObjects(GameState* state, const VisibilityGrid & visibilityGr
 
             drawObj(obj);
         }
+        else
+        {
+            obj->getSprite().setColor(HOLOGRAM_COLOR);
+            drawObj(obj);
+        }
+        /*
         else if(obj->type() == GameObject::ENEMY)
         {
             drawObjAs(obj, m_hiddenEnemySprite);
         }
+        */
     }
 }
 

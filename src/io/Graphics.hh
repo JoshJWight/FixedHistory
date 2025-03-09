@@ -32,6 +32,7 @@ private:
     const sf::Color NORMAL_COLOR = sf::Color(255, 255, 255, 255);
     const sf::Color RED_TINT = sf::Color(255, 100, 100, 255);
     const sf::Color ORANGE_TINT = sf::Color(255, 200, 100, 255);
+    const sf::Color HOLOGRAM_COLOR = sf::Color(150, 150, 255, 100);
 
     void drawObj(GameObject* obj);
     void drawObjAs(GameObject* obj, sf::Sprite & sprite);
