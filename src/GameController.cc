@@ -96,7 +96,28 @@ bool GameController::mainLoop()
             win = checkWin();
             if(!paradox && !win)
             {
-                type = ADVANCE;
+                if(timeMovesWhenYouMove)
+                {
+                    if(m_controls.up 
+                        || m_controls.down
+                        || m_controls.left
+                        || m_controls.right
+                        || m_controls.fire
+                        || m_controls.interact
+                        || m_controls.throw_
+                        || m_controls.promiseAbsence)
+                    {
+                        type = ADVANCE;
+                    }
+                    else
+                    {
+                        type = PAUSE;
+                    }
+                }
+                else
+                {
+                    type = ADVANCE;
+                }
 
                 if(m_gameState->currentPlayer()->state.boxOccupied)
                 {

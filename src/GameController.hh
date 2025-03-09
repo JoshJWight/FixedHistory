@@ -75,6 +75,8 @@ private:
     DemoWriter * m_demoWriter;
 
     std::shared_ptr<GameState> m_gameState;
+
+    const bool timeMovesWhenYouMove = false;
 };
 
 #endif
