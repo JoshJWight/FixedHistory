@@ -104,6 +104,7 @@ void tickPlayer(GameState* state, Player* player, Controls * controls)
     if(controls->fire && player->state.cooldown == 0)
     {
         player->nextState.willFire = true;
+        player->nextState.cooldown = player->fireCooldown;
         /*
         point_t direction = math_util::normalize(state->mousePos - player->state.pos);
         point_t bulletPos = player->state.pos + direction * player->size.x;

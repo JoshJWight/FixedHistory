@@ -2,7 +2,7 @@
 
 Controls::Controls()
     : up(false), down(false), left(false), right(false), fire(false), interact(false), rewind(false), reverse(false)
-    , restart(false), throw_(false), promiseAbsence(false), m_rightMouseLastState(false)
+    , restart(false), throw_(false), promiseAbsence(false), m_rightMouseLastState(false), m_leftMouseLastState(false)
 {
     m_actOnPressKeys.push_back(sf::Keyboard::E);
     m_actOnPressKeys.push_back(sf::Keyboard::F);
@@ -22,7 +22,9 @@ void Controls::tick()
     left = sf::Keyboard::isKeyPressed(sf::Keyboard::A);
     right = sf::Keyboard::isKeyPressed(sf::Keyboard::D);
 
-    fire = sf::Mouse::isButtonPressed(sf::Mouse::Left);
+    bool leftMouse = sf::Mouse::isButtonPressed(sf::Mouse::Left);
+    fire = leftMouse && !m_leftMouseLastState;
+    m_leftMouseLastState = leftMouse;
     interact = sf::Keyboard::isKeyPressed(sf::Keyboard::F) && !m_lastStateMap[sf::Keyboard::F];
     bool rightMouse = sf::Mouse::isButtonPressed(sf::Mouse::Right);
     throw_ = rightMouse && !m_rightMouseLastState;
@@ -46,7 +48,8 @@ void Controls::tick(short encoded)
     down = encoded & 1 << 1;
     left = encoded & 1 << 2;
     right = encoded & 1 << 3;
-    fire = encoded & 1 << 4;
+    fire = encoded & 1 << 4 && !m_leftMouseLastState;
+    m_leftMouseLastState = encoded & 1 << 4;
     interact = (encoded & 1 << 5) && !m_lastStateMap[sf::Keyboard::F];
     m_lastStateMap[sf::Keyboard::F] = encoded & 1 << 5;
     throw_ = (encoded & 1 << 6) && !m_rightMouseLastState;

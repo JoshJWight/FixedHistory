@@ -3,7 +3,7 @@
 
 Player::Player(int id)
     : GameObject(id)
-    , moveSpeed(1)
+    , moveSpeed(1.5)
     , fireCooldown(60)
 {
 
