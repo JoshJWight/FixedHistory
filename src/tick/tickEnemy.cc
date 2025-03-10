@@ -423,7 +423,29 @@ void tickEnemy(GameState * state, Enemy* enemy)
         if(playerVisibleToEnemy(state, target, enemy))
         {
             enemy->nextState.lastSeen = target->state.pos;
-            enemy->nextState.angle_deg = math_util::rotateTowardsPoint(enemy->state.angle_deg, enemy->state.pos, target->state.pos, 5.0f);
+
+            point_t predictedTargetPos;// = target->state.pos + target->moveSpeed * math_util::dist(enemy->state.pos, target->state.pos) / Bullet::SPEED;
+            if(enemy->backwards)
+            {
+                //Make sure I don't start using backwards enemies without supporting it here
+                //Backwards enemies would have to reason from the target's position in the future (a whole can of worms...)
+                throw std::runtime_error("Backwards enemies not yet supported");
+            }
+            if(target->beginning <= state->tick - 2)
+            {
+                point_t previousTargetPos = state->historyBuffer().buffer[target->id][state->tick-2].pos;
+                point_t delta = target->state.pos - previousTargetPos;
+
+                //Assume a number of ticks to when the bullet hits them. Possibly this should vary by distance?
+                predictedTargetPos = target->state.pos + (delta * 20.0f);
+            }
+            else
+            {
+                predictedTargetPos = target->state.pos;
+            }
+
+
+            enemy->nextState.angle_deg = math_util::rotateTowardsPoint(enemy->state.angle_deg, enemy->state.pos, predictedTargetPos, 5.0f);
 
             if(enemy->state.chargeTime >= Enemy::ATTACK_CHARGE_TIME)
             {
@@ -432,8 +454,8 @@ void tickEnemy(GameState * state, Enemy* enemy)
                 std::shared_ptr<Bullet> bullet(new Bullet(state->nextID()));
                 bullet->creatorId = enemy->id;
                 bullet->state.pos = bulletPos;
-                bullet->velocity = direction * Bullet::SPEED / 4.0f; //Enemy bullets are slower
-                bullet->state.angle_deg = math_util::angleBetween(enemy->state.pos, target->state.pos);
+                bullet->velocity = direction * Bullet::SPEED / 2.0f; //Enemy bullets are slower
+                bullet->state.angle_deg = math_util::angleBetween(enemy->state.pos, predictedTargetPos);
                 bullet->initialTimeline = state->currentTimeline();
                 bullet->backwards = enemy->backwards;
                 bullet->nextState = bullet->state;
