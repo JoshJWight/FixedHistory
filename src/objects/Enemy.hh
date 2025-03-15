@@ -17,14 +17,19 @@ public:
 
     constexpr static float VIEW_RADIUS = 150;
     constexpr static float VIEW_ANGLE = 90;
+    //Distance at which to start shooting
     constexpr static float ATTACK_RADIUS = 70;
+    //Distance to stop shooting and resume chasing
+    constexpr static float CHASE_RADIUS = 100;
     constexpr static float ATTACK_CHARGE_TIME = 30;
+
+    constexpr static float WALK_SPEED = 0.6f;
+    constexpr static float RUN_SPEED = 1.7f;
 
     Enemy(int id);
 
     Enemy(int id, Enemy* ancestor)
         : GameObject(id, ancestor)
-        , moveSpeed(ancestor->moveSpeed)
         , patrolPoints(ancestor->patrolPoints)
     {
     }
@@ -33,8 +38,6 @@ public:
     {
         return ENEMY;
     }
-
-    float moveSpeed;
 
     std::vector<point_t> patrolPoints;
 };

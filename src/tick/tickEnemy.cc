@@ -286,7 +286,7 @@ void navigateEnemy(GameState * state, Enemy* enemy, point_t target)
         }
     }
     
-    enemy->nextState.pos += moveVec * enemy->moveSpeed;
+    enemy->nextState.pos += moveVec * enemy->state.speed;
     enemy->nextState.angle_deg = math_util::rotateTowardsPoint(enemy->state.angle_deg, enemy->state.pos, moveToward, 5.0f);
 
     if(search::checkObstruction(state, enemy->nextState.pos) && !search::checkObstruction(state, enemy->state.pos))
@@ -310,7 +310,7 @@ void tickEnemy(GameState * state, Enemy* enemy)
 
     for(auto promise: state->promises)
     {
-        if(promise->target == enemy->id && promise->activatedTimeline < 0)
+        if(promise->target == enemy->id && promise->type == Promise::ABSENCE && promise->activatedTimeline < 0)
         {
             enemy->nextState.visible = false;
             return;
@@ -336,6 +336,16 @@ void tickEnemy(GameState * state, Enemy* enemy)
             }
         }
     }
+
+    if(enemy->state.aiState == Enemy::AI_CHASE || enemy->state.aiState == Enemy::AI_SEARCH)
+    {
+        enemy->nextState.speed = Enemy::RUN_SPEED;
+    }
+    else
+    {
+        enemy->nextState.speed = Enemy::WALK_SPEED;
+    }
+
 
     enemy->nextState.animIdx = enemy->state.aiState;
 
@@ -420,7 +430,7 @@ void tickEnemy(GameState * state, Enemy* enemy)
         }
         else
         {
-            if(math_util::dist(enemy->state.pos, enemy->state.lastSeen) < enemy->moveSpeed)
+            if(math_util::dist(enemy->state.pos, enemy->state.lastSeen) < enemy->state.speed)
             {
                 enemy->nextState.aiState = Enemy::AI_PATROL;
             }
@@ -503,7 +513,7 @@ void tickEnemy(GameState * state, Enemy* enemy)
                 enemy->nextState.chargeTime++;
             }
             //But if not shooting, close distance first if needed
-            else if(math_util::dist(enemy->state.pos, target->state.pos) > Enemy::ATTACK_RADIUS)
+            else if(math_util::dist(enemy->state.pos, target->state.pos) > Enemy::CHASE_RADIUS)
             {
                 enemy->nextState.aiState = Enemy::AI_CHASE;
             }
@@ -512,6 +522,8 @@ void tickEnemy(GameState * state, Enemy* enemy)
             {
                 enemy->nextState.chargeTime++;
             }
+
+            navigateEnemy(state, enemy, target->state.pos);
         }
         else
         {

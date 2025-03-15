@@ -97,7 +97,7 @@ struct ObjectState
     bool holdingObject;
     int heldObjectId;
 
-    //Used for throwables
+    //Used for throwables and enemies
     float speed;
 
 

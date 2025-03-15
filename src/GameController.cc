@@ -453,6 +453,20 @@ void GameController::updateAlarmConnections()
         Alarm * alarm = dynamic_cast<Alarm*>(m_gameState->objects().at(crime->state.assignedAlarm).get());
         alarm->crimes.push_back(crime->id);
 
+        if(!alarm->activeAt(m_gameState->tick))
+        {
+            //Alarm ended, this crime should be too
+            if(crime->backwards)
+            {
+                crime->beginning = m_gameState->tick;
+            }
+            else
+            {
+                crime->ending = m_gameState->tick;
+                crime->hasEnding = true;
+            }
+        }
+
         //By default assume the target will not be visible, tickEnemy can override this
         crime->nextState.targetVisible = false;
     }
@@ -464,6 +478,10 @@ void GameController::updateAlarmConnections()
             continue;
         }
         if(enemy->state.assignedAlarm == -1)
+        {
+            continue;
+        }
+        if(enemy->state.aiState == Enemy::AI_DEAD)
         {
             continue;
         }

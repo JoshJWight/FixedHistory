@@ -3,7 +3,6 @@
 
 Enemy::Enemy(int id)
     : GameObject(id)
-    , moveSpeed(0.5)
 {
     colliderType = CIRCLE;
     size = point_t(10, 10);
