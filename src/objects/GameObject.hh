@@ -37,6 +37,7 @@ struct ObjectState
         , discovered(false)
         , alarmRadius(0)
         , assignedAlarm(-1)
+        , targetVisible(false)
     {
     }
 
@@ -62,6 +63,7 @@ struct ObjectState
         , discovered(other.discovered)
         , alarmRadius(other.alarmRadius)
         , assignedAlarm(other.assignedAlarm)
+        , targetVisible(other.targetVisible)
     {
     }
 
@@ -104,6 +106,7 @@ struct ObjectState
     bool discovered; //For dead enemies
     float alarmRadius;
     int assignedAlarm;
+    bool targetVisible;
 };
 
 class GameObject

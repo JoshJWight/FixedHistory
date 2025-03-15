@@ -452,6 +452,9 @@ void GameController::updateAlarmConnections()
 
         Alarm * alarm = dynamic_cast<Alarm*>(m_gameState->objects().at(crime->state.assignedAlarm).get());
         alarm->crimes.push_back(crime->id);
+
+        //By default assume the target will not be visible, tickEnemy can override this
+        crime->nextState.targetVisible = false;
     }
     //Add enemies to their respective alarms' temporary info
     for(Enemy * enemy : m_gameState->enemies())
@@ -609,7 +612,7 @@ void GameController::playTick()
             }
             else if(m_gameState->tick > m_gameState->historyBuffer()[obj->id].size())
             {
-                throw std::runtime_error("It is tick " + std::to_string(m_gameState->tick) + " but object " + std::to_string(obj->id) + " has history buffer size " + std::to_string(m_gameState->historyBuffer()[obj->id].size()));
+                throw std::runtime_error("playTick: It is tick " + std::to_string(m_gameState->tick) + " but object " + std::to_string(obj->id) + " has history buffer size " + std::to_string(m_gameState->historyBuffer()[obj->id].size()));
             }
             else
             {

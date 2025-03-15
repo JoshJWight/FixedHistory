@@ -18,6 +18,7 @@ void createCrime(GameState * state, Enemy* enemy, Crime::CrimeType crimeType, Ga
             if(crime->crimeType == Crime::TRESPASSING)
             {
                 crime->nextState.pos = subject->state.pos;
+                crime->nextState.targetVisible = true;
                 crime->nextState.searchStatus = 0;
             }
             //Murder does not need to be updated based on the enemy still seeing the body
@@ -75,6 +76,7 @@ void createCrime(GameState * state, Enemy* enemy, Crime::CrimeType crimeType, Ga
     crime->crimeType = crimeType;
     crime->subjectId = subject->id;
     crime->state.assignedAlarm = alarmId;
+    crime->state.targetVisible = true;
     crime->initialTimeline = state->currentTimeline();
     crime->backwards = enemy->backwards;
     crime->nextState = crime->state;
@@ -136,6 +138,17 @@ void reportSearches(GameState * state, Enemy* enemy)
     Alarm * alarm = dynamic_cast<Alarm*>(state->objects().at(enemy->state.assignedAlarm).get());
     for(Crime * crime : state->crimes())
     {
+        if(!crime->activeAt(state->tick) || crime->backwards != state->backwards())
+        {
+            continue;
+        }
+        if(crime->state.targetVisible)
+        {
+            //Crimes can't be searched while the target is still visible
+            //(only really applies to Trespassing)
+            continue;
+        }
+
         for(int x = -Crime::SEARCH_RADIUS; x <= Crime::SEARCH_RADIUS; x++)
         {
             for(int y = -Crime::SEARCH_RADIUS; y <= Crime::SEARCH_RADIUS; y++)
@@ -185,6 +198,7 @@ float crimePriority(GameState * state, Crime* crime, Enemy* enemy)
     const int MURDER_MULTIPLIER = 1;
     const float DISTANCE_MULTIPLIER = 1;
     const float ANGLE_MULTIPLIER = 1;
+    const float TARGET_VISIBLE_MULTIPLIER = 5;
 
 
     float priority = 0;
@@ -196,6 +210,11 @@ float crimePriority(GameState * state, Crime* crime, Enemy* enemy)
     else if(crime->crimeType == Crime::MURDER)
     {
         priority = BASE_PRIORITY * MURDER_MULTIPLIER;
+    }
+
+    if(crime->state.targetVisible)
+    {
+        priority *= TARGET_VISIBLE_MULTIPLIER;
     }
 
     priority -= math_util::dist(enemy->state.pos, crime->state.pos) * DISTANCE_MULTIPLIER;
@@ -544,20 +563,27 @@ void tickEnemy(GameState * state, Enemy* enemy)
             
             bestPriority = -1e12;
             point_t bestSearchPos = enemy->state.pos;
-            for(int x=-Crime::SEARCH_RADIUS; x<=Crime::SEARCH_RADIUS; x++)
+            if(bestCrime->state.targetVisible)
             {
-                for(int y=-Crime::SEARCH_RADIUS; y<=Crime::SEARCH_RADIUS; y++)
+                bestSearchPos = bestCrime->state.pos;
+            }
+            else
+            {
+                for(int x=-Crime::SEARCH_RADIUS; x<=Crime::SEARCH_RADIUS; x++)
                 {
-                    if(bestCrime->isSearched(x, y))
+                    for(int y=-Crime::SEARCH_RADIUS; y<=Crime::SEARCH_RADIUS; y++)
                     {
-                        continue;
-                    }
-                    point_t searchPos = bestCrime->state.pos + (point_t(x * state->level->scale, y * state->level->scale));
-                    float priority = searchPriority(state, searchPos, enemy);
-                    if(priority > bestPriority)
-                    {
-                        bestPriority = priority;
-                        bestSearchPos = searchPos;
+                        if(bestCrime->isSearched(x, y))
+                        {
+                            continue;
+                        }
+                        point_t searchPos = bestCrime->state.pos + (point_t(x * state->level->scale, y * state->level->scale));
+                        float priority = searchPriority(state, searchPos, enemy);
+                        if(priority > bestPriority)
+                        {
+                            bestPriority = priority;
+                            bestSearchPos = searchPos;
+                        }
                     }
                 }
             }
