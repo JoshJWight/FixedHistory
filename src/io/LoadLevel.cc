@@ -63,11 +63,9 @@ void constructObject(GameState * state, int id, const std::string & objType, poi
     else if(objType == "enemy")
     {
         std::shared_ptr<Enemy> enemy = std::make_shared<Enemy>(id);
-        enemy->patrolPoints.push_back(position);
         for(int i=3; i<tokens.size(); i++)
         {
             std::string patrolPoint = tokens[i];
-            //enemy->patrolPoints.push_back(getLocation(tileLines, patrolPoint, SCALE, BOTTOM_LEFT));
             enemy->patrolPoints.push_back(parsePoint(patrolPoint));
         }
         obj = enemy;
