@@ -137,11 +137,6 @@ std::string checkObservations(GameState * state, Player * player, int tick)
                     break;
                 }
             }
-            //Temporary until we have better stealth options
-            if(obj->type() == GameObject::PLAYER)
-            {
-                continue;
-            }
 
             if(!matched)
             {
