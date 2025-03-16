@@ -21,9 +21,11 @@ VisibilityGrid createVisibilityGrid(GameState * state, point_t center, float sta
     //From here on out we work in level coordinates
     point_t center_level = state->level->toLevelCoords(center);
 
-    //Center point is always visible
-    grid[(size_t)center_level.x][(size_t)center_level.y] = true;
-
+    //Center point is always visible (if in bounds)
+    if(state->level->levelCoordsInBounds(center_level))
+    {
+        grid[(size_t)center_level.x][(size_t)center_level.y] = true;
+    }
     float startAngle_rad = startAngle_deg * M_PI / 180.0;
     float endAngle_rad = endAngle_deg * M_PI / 180.0;
     float increment = (endAngle_rad - startAngle_rad) / N_RAYCASTS;
