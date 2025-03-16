@@ -2,7 +2,7 @@
 
 namespace search{
 
-VisibilityGrid createVisibilityGrid(GameState * state, point_t center, float startAngle_deg, float endAngle_deg)
+VisibilityGrid createVisibilityGrid(GameState * state, point_t center, float startAngle_deg, float endAngle_deg, float distanceLimit)
 {
     if(startAngle_deg > endAngle_deg)
     {
@@ -15,11 +15,14 @@ VisibilityGrid createVisibilityGrid(GameState * state, point_t center, float sta
     VisibilityGrid & levelGrid = state->obstructionGrid;
 
     const int N_RAYCASTS = 360;
-    const float DISTANCE_LIMIT = 100;
+    const float DISTANCE_LIMIT = distanceLimit / state->level->scale;
     const float DELTA_SIZE = 0.2f;
 
     //From here on out we work in level coordinates
     point_t center_level = state->level->toLevelCoords(center);
+
+    //Center point is always visible
+    grid[(size_t)center_level.x][(size_t)center_level.y] = true;
 
     float startAngle_rad = startAngle_deg * M_PI / 180.0;
     float endAngle_rad = endAngle_deg * M_PI / 180.0;
@@ -82,6 +85,21 @@ VisibilityGrid createVisibilityGrid(GameState * state, point_t center, float sta
     }
 
     return grid;
+}
+
+VisibilityGrid playerVisibilityGrid(GameState * state, Player * player)
+{
+    if(player->state.boxOccupied)
+    {
+        return VisibilityGrid(state->level->width, std::vector<bool>(state->level->height, false));
+    }
+
+    return createVisibilityGrid(
+        state,
+        player->state.pos,
+        player->state.angle_deg - Player::HALF_VIEW_ANGLE,
+        player->state.angle_deg + Player::HALF_VIEW_ANGLE,
+        Player::VIEW_RADIUS);
 }
 
 VisibilityGrid createObstructionGrid(GameState * state)

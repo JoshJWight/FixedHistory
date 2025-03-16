@@ -430,6 +430,24 @@ void GameController::pushTimeline()
 
 }
 
+void GameController::updateVisibilityGrids()
+{
+    m_gameState->obstructionGrid = search::createObstructionGrid(m_gameState.get());
+
+    m_gameState->visibilityGrids.clear();
+
+    for(Player* player : m_gameState->players())
+    {
+        if(!player->activeAt(m_gameState->tick))
+        {
+            continue;
+        }
+
+        VisibilityGrid grid = search::playerVisibilityGrid(m_gameState.get(), player);
+        m_gameState->visibilityGrids[player->id] = std::move(grid);
+    }
+}
+
 void GameController::updateAlarmConnections()
 {
     //Clear temporary info from the last tick
@@ -643,7 +661,7 @@ void GameController::playTick()
         }
     }
     //Creating it both here and elsewhere because we want it to be right before recoring observations
-    m_gameState->obstructionGrid = search::createObstructionGrid(m_gameState.get());
+    updateVisibilityGrids();
     observation::recordObservations(m_gameState.get(), m_gameState->currentPlayer(), m_gameState->tick);
 }
 
@@ -733,5 +751,5 @@ void GameController::tick(TickType type)
     }
     m_gameState->shouldReverse = false;
 
-    m_gameState->obstructionGrid = search::createObstructionGrid(m_gameState.get());
+    updateVisibilityGrids();
 }

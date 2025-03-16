@@ -2,6 +2,33 @@
 
 namespace observation{
 
+bool isVisible(GameState * state, Player * player, GameObject * obj, int tick)
+{
+    if(!obj->activeAt(tick))
+    {
+        return false;
+    }
+    if(obj->id == player->id)
+    {
+        return false;
+    }
+    if(obj->state.visible == false)
+    {
+        return false;
+    }
+    if(obj->isDebugGraphic())
+    {
+        return false;
+    }
+
+    point_t levelCoords = state->level->toLevelCoords(obj->state.pos);
+    if(!state->level->levelCoordsInBounds(levelCoords))
+    {
+        return false;
+    }
+    return state->visibilityGrids[player->id][levelCoords.x][levelCoords.y];
+}
+
 void recordObservations(GameState * state, Player * player, int tick)
 {
     if(player->recorded)
@@ -29,25 +56,8 @@ void recordObservations(GameState * state, Player * player, int tick)
     for(auto & objpair : state->objects())
     {
         GameObject * obj = objpair.second.get();
-        if(!obj->activeAt(tick))
-        {
-            continue;
-        }
-        if(obj->id == player->id)
-        {
-            continue;
-        }
-        if(obj->state.visible == false)
-        {
-            continue;
-        }
 
-        if(obj->isDebugGraphic())
-        {
-            continue;
-        }
-
-        if(search::checkVisibility(state, player->state.pos, player->radius(), obj->state.pos, obj->radius()))
+        if(isVisible(state, player, obj, tick))
         {
             frame.push_back({obj->type(), obj->state, obj->id});
         }
@@ -105,25 +115,8 @@ std::string checkObservations(GameState * state, Player * player, int tick)
     for(auto & objpair : state->objects())
     {
         GameObject * obj = objpair.second.get();
-        if(!obj->activeAt(tick))
-        {
-            continue;
-        }
-        if(obj->id == player->id)
-        {
-            continue;
-        }
-        if(obj->state.visible == false)
-        {
-            continue;
-        }
 
-        if(obj->isDebugGraphic())
-        {
-            continue;
-        }
-
-        if(search::checkVisibility(state, player->state.pos, player->radius(), obj->state.pos, obj->radius()))
+        if(isVisible(state, player, obj, tick))
         {
             actual.push_back({obj->type(), obj->state, obj->id});
 

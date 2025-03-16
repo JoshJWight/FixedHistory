@@ -7,6 +7,9 @@ class Player : public GameObject
 {
 public:
     constexpr static float INTERACT_RADIUS = 10;
+    constexpr static float VIEW_RADIUS = 200;
+    constexpr static float VIEW_ANGLE = 135;
+    constexpr static float HALF_VIEW_ANGLE = VIEW_ANGLE / 2.0f;
 
     Player(int id);
     Player(int id, Player* ancestor);

@@ -75,7 +75,17 @@ void Graphics::draw(GameState * state, point_t cameraCenter)
 
     m_window.clear();
 
-    VisibilityGrid visibilityGrid = search::createVisibilityGrid(state, m_cameraWorldPos, 0, 360);
+    VisibilityGrid visibilityGrid;
+    if(state->players().size() > 0)
+    {
+        visibilityGrid = search::playerVisibilityGrid(state, state->currentPlayer());
+    }
+    else
+    {
+        visibilityGrid = search::createVisibilityGrid(state, m_cameraWorldPos, 0, 360, 1000);
+    }
+
+     
 
     VisibilityGrid crimeSearchGrid(state->level->width, std::vector<bool>(state->level->height, false));
     for(Crime * crime : state->crimes())

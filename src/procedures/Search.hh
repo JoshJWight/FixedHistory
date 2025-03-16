@@ -7,7 +7,9 @@
 
 namespace search {
 
-VisibilityGrid createVisibilityGrid(GameState * state, point_t center, float startAngle_deg, float endAngle_deg);
+VisibilityGrid createVisibilityGrid(GameState * state, point_t center, float startAngle_deg, float endAngle_deg, float distanceLimit);
+
+VisibilityGrid playerVisibilityGrid(GameState * state, Player * player);
 
 VisibilityGrid createObstructionGrid(GameState * state);
 

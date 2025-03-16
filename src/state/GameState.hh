@@ -258,6 +258,7 @@ struct GameState {
     std::string infoString;
     bool shouldReverse;
     int boxToEnter;
+    std::map<int, VisibilityGrid> visibilityGrids;
 
     EditorState editorState;
 

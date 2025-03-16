@@ -61,6 +61,8 @@ private:
     void popTimeline();
     void pushTimeline();
 
+    void updateVisibilityGrids();
+
     void updateAlarmConnections();
 
     void createPromises();
