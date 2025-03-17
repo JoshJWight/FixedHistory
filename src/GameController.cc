@@ -382,6 +382,8 @@ void GameController::pushTimeline()
     m_gameState->historyBuffer().buffer[newPlayer->id] = std::vector<ObjectState>(m_gameState->tick+1);
     m_gameState->historyBuffer().buffer[newPlayer->id][m_gameState->tick] = newPlayer->state;
 
+    updateVisibilityGrids();
+
     newPlayer->observations.resize(m_gameState->tick+1);
     observation::recordObservations(m_gameState.get(), newPlayer.get(), m_gameState->tick);
 
