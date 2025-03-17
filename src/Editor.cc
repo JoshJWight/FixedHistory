@@ -1,5 +1,7 @@
 #include "Editor.hh"
 #include <thread>
+#include <tick/tickSwitch.hh>
+#include <tick/tickDoor.hh>
 
 Editor::Editor(Graphics* graphics, const std::string & level)
     : m_graphics(graphics)
@@ -63,6 +65,20 @@ void Editor::mainLoop()
         else
         {
             m_gameState->statusString = "";
+        }
+
+        //Update certain objects
+        for(Switch * sw : m_gameState->switches())
+        {
+            sw->nextState = sw->state;
+            tick::tickSwitch(m_gameState.get(), sw);
+            sw->state = sw->nextState;
+        }
+        for(Door * door : m_gameState->doors())
+        {
+            door->nextState = door->state;
+            tick::tickDoor(m_gameState.get(), door);
+            door->state = door->nextState;
         }
 
         m_graphics->draw(m_gameState.get(), m_cameraCenter);
