@@ -20,6 +20,12 @@ bool isVisible(GameState * state, Player * player, GameObject * obj, int tick)
     {
         return false;
     }
+    if(state->level->tileAt(obj->state.pos) == Level::WALL)
+    {
+        //This is to prevent players from seeing things that are slightly clipped
+        //into the *other* side of a wall
+        return false;
+    }
 
     point_t levelCoords = state->level->toLevelCoords(obj->state.pos);
     if(!state->level->levelCoordsInBounds(levelCoords))

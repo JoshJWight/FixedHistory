@@ -9,6 +9,7 @@ void tickPlayer(GameState* state, Player* player, Controls * controls)
     player->nextState.willInteract = controls->interact;
     player->nextState.willThrow = controls->throw_;
     player->nextState.willFire = false;
+    player->nextState.aimPoint = state->mousePos;
 
     if(player->state.boxOccupied)
     {

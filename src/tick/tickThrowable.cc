@@ -73,7 +73,7 @@ void tickThrowable(GameState * state, Throwable* throwable)
 
         if(throwable->type() == GameObject::GUN)
         {
-            throwable->nextState.angle_deg = math_util::angleBetween(throwable->state.pos, state->mousePos);
+            throwable->nextState.angle_deg = math_util::angleBetween(throwable->state.pos, holder->state.aimPoint);
         }
         else
         {
@@ -125,17 +125,17 @@ void tickThrowable(GameState * state, Throwable* throwable)
             case GameObject::GUN:
             {
                 Gun * gun = dynamic_cast<Gun*>(throwable);
-                throwable->nextState.angle_deg = math_util::angleBetween(throwable->state.pos, state->mousePos);
+                throwable->nextState.angle_deg = math_util::angleBetween(throwable->state.pos, holder->state.aimPoint);
 
                 if(throwable->nextState.chargeTime == 1)
                 {
-                    point_t direction = math_util::normalize(state->mousePos - gun->state.pos);
+                    point_t direction = math_util::normalize(holder->state.aimPoint - gun->state.pos);
                     point_t bulletPos = gun->state.pos + direction * gun->size.x;
                     std::shared_ptr<Bullet> bullet(new Bullet(state->nextID()));
                     bullet->creatorId = holder->id;
                     bullet->state.pos = bulletPos;
                     bullet->velocity = direction * Bullet::SPEED;
-                    bullet->state.angle_deg = math_util::angleBetween(gun->state.pos, state->mousePos);
+                    bullet->state.angle_deg = math_util::angleBetween(gun->state.pos, holder->state.aimPoint);
                     bullet->initialTimeline = state->currentTimeline();
                     bullet->backwards = holder->backwards;
                     bullet->nextState = bullet->state;
@@ -155,6 +155,8 @@ void tickThrowable(GameState * state, Throwable* throwable)
                     state->objects()[bullet->id] = bullet;
                     state->historyBuffer().buffer[bullet->id] = std::vector<ObjectState>(state->tick+1);
                     state->historyBuffer().buffer[bullet->id][state->tick] = bullet->state;
+
+                    std::cout << "Player " << holder->id << " fired bullet " << bullet->id << " on tick " << state->tick << std::endl;
                 }
 
                 break;

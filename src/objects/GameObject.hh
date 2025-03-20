@@ -21,6 +21,7 @@ struct ObjectState
         , angle_deg(0)
         , animIdx(0)
         , cooldown(0)
+        , aimPoint(0, 0)
         , boxOccupied(false)
         , attachedObjectId(-1)
         , visible(true)
@@ -46,6 +47,7 @@ struct ObjectState
         , angle_deg(other.angle_deg)
         , animIdx(other.animIdx)
         , cooldown(other.cooldown)
+        , aimPoint(other.aimPoint)
         , boxOccupied(other.boxOccupied)
         , attachedObjectId(other.attachedObjectId)
         , visible(other.visible)
@@ -75,6 +77,7 @@ struct ObjectState
     int animIdx;
 
     int cooldown; //Used by player
+    point_t aimPoint; //Mouse pos for active player, recorded mouse pos for recorded players
 
     //Time box related stuff - these are used by both the box and the occupant
     bool boxOccupied;
