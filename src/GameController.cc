@@ -19,6 +19,8 @@ bool GameController::mainLoop()
     //~60 FPS
     int msPerFrame = 16;
     std::chrono::duration<int, std::milli> frameDuration(msPerFrame);
+    int slowMotionMultiplier = 10;
+    std::chrono::duration<int, std::milli> slowFrameDuration(msPerFrame * slowMotionMultiplier);
 
     bool paradox = false;
     bool win = false;
@@ -146,7 +148,14 @@ bool GameController::mainLoop()
         if(tickCounter % playbackSpeed == 0)
         {
             m_graphics->draw(m_gameState.get(), cameraCenter);
-            std::this_thread::sleep_until(lastDraw + frameDuration);
+            if(m_controls.slowMotion)
+            {
+                std::this_thread::sleep_until(lastDraw + slowFrameDuration);
+            }
+            else
+            {
+                std::this_thread::sleep_until(lastDraw + frameDuration);
+            }
             lastDraw = std::chrono::system_clock::now();
         }
     }

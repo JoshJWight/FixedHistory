@@ -36,6 +36,8 @@ void Controls::tick()
 
     promiseAbsence = sf::Keyboard::isKeyPressed(sf::Keyboard::Q) && !m_lastStateMap[sf::Keyboard::Q];
 
+    slowMotion = sf::Keyboard::isKeyPressed(sf::Keyboard::Space);
+
     for(auto key : m_actOnPressKeys)
     {
         m_lastStateMap[key] = sf::Keyboard::isKeyPressed(key);
@@ -61,6 +63,7 @@ void Controls::tick(short encoded)
     m_lastStateMap[sf::Keyboard::R] = encoded & 1 << 9;
     promiseAbsence = (encoded & 1 << 10) && !m_lastStateMap[sf::Keyboard::Q];
     m_lastStateMap[sf::Keyboard::Q] = encoded & 1 << 10;
+    slowMotion = encoded & 1 << 11;
 }
 
 short Controls::encode()
