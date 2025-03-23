@@ -20,6 +20,9 @@ void createCrime(GameState * state, Enemy* enemy, Crime::CrimeType crimeType, Ga
                 crime->nextState.pos = subject->state.pos;
                 crime->nextState.targetVisible = true;
                 crime->nextState.searchStatus = 0;
+
+                Alarm * alarm = dynamic_cast<Alarm*>(state->objects().at(crime->state.assignedAlarm).get());
+                alarm->nextState.pos = subject->state.pos;
             }
             //Murder does not need to be updated based on the enemy still seeing the body
 
@@ -95,7 +98,7 @@ void createCrime(GameState * state, Enemy* enemy, Crime::CrimeType crimeType, Ga
     state->historyBuffer().buffer[crime->id] = std::vector<ObjectState>(state->tick+1);
     state->historyBuffer().buffer[crime->id][state->tick] = crime->state;
 
-    std::cout << "Crime " << crime->id << " created on tick " << state->tick << std::endl;
+    std::cout << "Crime " << crime->id << " created on tick " << state->tick << " under alarm " << alarmId << std::endl;
 }
 
 void reportCrimes(GameState * state, Enemy* enemy)
@@ -412,7 +415,14 @@ void tickEnemy(GameState * state, Enemy* enemy)
         Player* target = dynamic_cast<Player*>(state->objects().at(enemy->state.targetId).get());
         if(!target->activeAt(state->tick))
         {
-            enemy->nextState.aiState = Enemy::AI_PATROL;
+            if(enemy->state.assignedAlarm != -1)
+            {
+                enemy->nextState.aiState = Enemy::AI_SEARCH;
+            }
+            else
+            {
+                enemy->nextState.aiState = Enemy::AI_PATROL;
+            }
             return;
         }
 
@@ -432,7 +442,14 @@ void tickEnemy(GameState * state, Enemy* enemy)
         {
             if(math_util::dist(enemy->state.pos, enemy->state.lastSeen) < enemy->state.speed)
             {
-                enemy->nextState.aiState = Enemy::AI_PATROL;
+                if(enemy->state.assignedAlarm != -1)
+                {
+                    enemy->nextState.aiState = Enemy::AI_SEARCH;
+                }
+                else
+                {
+                    enemy->nextState.aiState = Enemy::AI_PATROL;
+                }
             }
             else
             {
