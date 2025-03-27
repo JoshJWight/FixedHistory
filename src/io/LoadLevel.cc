@@ -4,6 +4,9 @@
 #include <sstream>
 #include <string>
 
+namespace textlevel
+{
+
 const float SCALE = 20.0f;
 const point_t BOTTOM_LEFT(0, 0);
 
@@ -356,3 +359,5 @@ bool levelExists(const std::string & levelName)
     std::ifstream file(BASE_LEVEL_DIR + levelName + ".txt");
     return file.is_open();
 }
+
+} //namespace textlevel

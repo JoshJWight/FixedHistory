@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = --std=c++23 -I$(SRC_DIR) -g
+CXXFLAGS = --std=c++23 -I$(SRC_DIR) -I$(SRC_DIR)/include -g
 LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system
 
 SRC_DIR = src

@@ -34,9 +34,9 @@ Editor::Editor(Graphics* graphics, const std::string & level)
         "gun: =\n"
         "snap to grid: \\\n";
 
-    if(levelExists(level))
+    if(textlevel::levelExists(level))
     {
-        loadLevel(m_gameState.get(), level);
+        textlevel::loadLevel(m_gameState.get(), level);
     }
     else
     {
@@ -429,7 +429,7 @@ void Editor::handleInputs()
     //SAVE
     if(m_controls.save)
     {
-        saveLevel(m_gameState.get(), m_levelName);
+        jsonlevel::saveLevel(m_gameState.get(), m_levelName);
         m_hasUnsavedChanges = false;
     }
 

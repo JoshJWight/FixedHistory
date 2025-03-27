@@ -4,6 +4,7 @@
 #include <state/GameState.hh>
 #include <io/Graphics.hh>
 #include <io/LoadLevel.hh>
+#include <io/LoadJsonLevel.hh>
 #include <io/EditorControls.hh>
 
 #include <memory>

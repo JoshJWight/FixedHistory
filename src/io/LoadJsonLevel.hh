@@ -1,9 +1,10 @@
-#ifndef __LOADLEVEL_HH__
-#define __LOADLEVEL_HH__
+#ifndef LOADJSONLEVEL_HH
+#define LOADJSONLEVEL_HH
 
 #include <state/GameState.hh>
+#include <string>
 
-namespace textlevel
+namespace jsonlevel
 {
 
 void loadLevel(GameState * state, const std::string & levelName);
@@ -12,5 +13,6 @@ void saveLevel(GameState * state, const std::string & levelName);
 bool levelExists(const std::string & levelName);
 
 }
+
 
 #endif

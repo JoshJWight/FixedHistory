@@ -6,7 +6,7 @@ GameController::GameController(const std::string & levelPath, Graphics * graphic
     , m_demoWriter(demoWriter)
     , m_gameState(new GameState())
 {
-    loadLevel(m_gameState.get(), levelPath);
+    textlevel::loadLevel(m_gameState.get(), levelPath);
     m_gameState->obstructionGrid = search::createObstructionGrid(m_gameState.get());
 }
 
