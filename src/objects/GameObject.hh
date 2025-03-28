@@ -174,6 +174,74 @@ public:
         }
     }
 
+    static ObjectType stringToType(const std::string & str)
+    {
+        if(str == "player")
+        {
+            return PLAYER;
+        }
+        else if(str == "bullet")
+        {
+            return BULLET;
+        }
+        else if(str == "enemy")
+        {
+            return ENEMY;
+        }
+        else if(str == "timebox")
+        {
+            return TIMEBOX;
+        }
+        else if(str == "switch")
+        {
+            return SWITCH;
+        }
+        else if(str == "door")
+        {
+            return DOOR;
+        }
+        else if(str == "closet")
+        {
+            return CLOSET;
+        }
+        else if(str == "turnstile")
+        {
+            return TURNSTILE;
+        }
+        else if(str == "spikes")
+        {
+            return SPIKES;
+        }
+        else if(str == "objective")
+        {
+            return OBJECTIVE;
+        }
+        else if(str == "knife")
+        {
+            return KNIFE;
+        }
+        else if(str == "gun")
+        {
+            return GUN;
+        }
+        else if(str == "exit")
+        {
+            return EXIT;
+        }
+        else if(str == "crime")
+        {
+            return CRIME;
+        }
+        else if(str == "alarm")
+        {
+            return ALARM;
+        }
+        else
+        {
+            return UNDEFINED;
+        }
+    }
+
     GameObject(int id);
     GameObject(int id, GameObject* ancestor);
 

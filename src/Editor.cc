@@ -34,9 +34,9 @@ Editor::Editor(Graphics* graphics, const std::string & level)
         "gun: =\n"
         "snap to grid: \\\n";
 
-    if(textlevel::levelExists(level))
+    if(jsonlevel::levelExists(level))
     {
-        textlevel::loadLevel(m_gameState.get(), level);
+        jsonlevel::loadLevel(m_gameState.get(), level);
     }
     else
     {

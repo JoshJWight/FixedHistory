@@ -237,9 +237,7 @@ void loadLevel(GameState * state, const std::string & levelName)
             constructObject(state, id, objType, position, tokens, tileLines);
         }
     }
-
-    return;
-}
+}//loadLevel
 
 void saveLevel(GameState * state, const std::string & levelName)
 {

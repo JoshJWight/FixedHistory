@@ -15,6 +15,17 @@ public:
         UP = 2
     };
 
+    Spikes(int id)
+        : GameObject(id)
+        , downDuration(0)
+        , upDuration(0)
+        , cycleOffset(0)
+    {
+        colliderType = BOX;
+        size = point_t(20, 20);
+        setupSprites({"spikes_down.png", "spikes_warning.png", "spikes_up.png"});
+    }
+
     Spikes(int id, int _downDuration, int _upDuration, int _cycleOffset)
         : GameObject(id)
         , downDuration(_downDuration)
