@@ -482,23 +482,6 @@ void GameController::updateAlarmConnections()
         Alarm * alarm = dynamic_cast<Alarm*>(m_gameState->objects().at(crime->assignedAlarm).get());
         alarm->crimes.push_back(crime->id);
 
-        /*
-        //This section should be OBE due to alarms no longer being able to end
-        if(!alarm->activeAt(m_gameState->tick))
-        {
-            //Alarm ended, this crime should be too
-            if(crime->backwards)
-            {
-                crime->beginning = m_gameState->tick;
-            }
-            else
-            {
-                crime->ending = m_gameState->tick;
-                crime->hasEnding = true;
-            }
-        }
-        */
-
         //By default assume the target will not be visible, tickEnemy can override this
         crime->nextState.targetVisible = false;
     }
@@ -522,31 +505,35 @@ void GameController::updateAlarmConnections()
         alarm->enemies.push_back(enemy->id);
     }
 
-    /*
-    //With permanent alarms this no longer happens
-    //Alarms with no crimes left (or no witnesses left) are ended
+    //Alarms with no enemies left end all remaining crimes
     for(Alarm * alarm : m_gameState->alarms())
     {
-        if(!alarm->activeAt(m_gameState->tick) || alarm->backwards != m_gameState->backwards())
+        if(alarm->backwards != m_gameState->backwards())
+        {
+            continue;
+        }
+        if(alarm->enemies.size() > 0)
         {
             continue;
         }
 
-        if(alarm->crimes.size() == 0 || alarm->enemies.size() == 0)
+        for(int crimeId : alarm->crimes)
         {
-            std::cout << "Alarm " << alarm->id << " ended on tick " << m_gameState->tick << std::endl;
-            if(alarm->backwards)
+            Crime * crime = dynamic_cast<Crime*>(m_gameState->objects().at(crimeId).get());
+            if(crime->activeAt(m_gameState->tick))
             {
-                alarm->beginning = m_gameState->tick;
-            }
-            else
-            {
-                alarm->ending = m_gameState->tick;
-                alarm->hasEnding = true;
+                if(crime->backwards)
+                {
+                    crime->beginning = m_gameState->tick;
+                }
+                else
+                {
+                    crime->hasEnding = true;
+                    crime->ending = m_gameState->tick;
+                }
             }
         }
     }
-    */
 
     //Handle crimes/alarms with the wrong backwardsness
     for(Crime* crime : m_gameState->crimes())
@@ -678,7 +665,7 @@ void GameController::playTick()
             obj->state = m_gameState->historyBuffer()[obj->id][m_gameState->tick];
         }
     }
-    //Creating it both here and elsewhere because we want it to be right before recoring observations
+    //Creating it both here and elsewhere because we want it to be right before recording observations
     updateVisibilityGrids();
     observation::recordObservations(m_gameState.get(), m_gameState->currentPlayer(), m_gameState->tick);
 }
