@@ -72,6 +72,14 @@ void loadLevel(GameState * state, const std::string & levelName)
                 {
                     enemy->patrolPoints.push_back(point_t(point["x"], point["y"]));
                 }
+                if(object.find("assignedAlarm") != object.end())
+                {
+                    enemy->assignedAlarm = object["assignedAlarm"];
+                }
+                else
+                {
+                    enemy->assignedAlarm = -1;
+                }
                 state->addObject(enemy);
                 break;
             }
@@ -153,6 +161,13 @@ void loadLevel(GameState * state, const std::string & levelName)
                 state->addObject(exit);
                 break;
             }
+            case GameObject::ALARM:
+            {
+                std::shared_ptr<Alarm> alarm = std::make_shared<Alarm>(id);
+                alarm->state.pos = location;
+                state->addObject(alarm);
+                break;
+            }
             default:
             {
                 throw std::runtime_error("Unknown object type " + objType);
@@ -231,6 +246,7 @@ void saveLevel(GameState * state, const std::string & levelName)
                     patrolPoints.push_back(point);
                 }
                 objData["patrolPoints"] = patrolPoints;
+                objData["assignedAlarm"] = enemy->assignedAlarm;
                 break;
             }
             case GameObject::SWITCH:
@@ -284,6 +300,10 @@ void saveLevel(GameState * state, const std::string & levelName)
                 break;
             }
             case GameObject::EXIT:
+            {
+                break;
+            }
+            case GameObject::ALARM:
             {
                 break;
             }
