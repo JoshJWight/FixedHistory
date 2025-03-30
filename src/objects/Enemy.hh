@@ -31,6 +31,7 @@ public:
     Enemy(int id, Enemy* ancestor)
         : GameObject(id, ancestor)
         , patrolPoints(ancestor->patrolPoints)
+        , assignedAlarm(ancestor->assignedAlarm)
     {
     }
 
@@ -40,6 +41,8 @@ public:
     }
 
     std::vector<point_t> patrolPoints;
+
+    int assignedAlarm;
 };
 
 #endif

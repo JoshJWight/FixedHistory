@@ -29,6 +29,7 @@ public:
     Crime(int id)
         : GameObject(id)
         , subjectId(-1)
+        , assignedAlarm(-1)
     {
         colliderType = CIRCLE;
         size = point_t(10, 10);
@@ -39,6 +40,7 @@ public:
         : GameObject(id, ancestor)
         , crimeType(ancestor->crimeType)
         , subjectId(ancestor->subjectId)
+        , assignedAlarm(ancestor->assignedAlarm)
     {
     }
 
@@ -80,6 +82,7 @@ public:
 
     CrimeType crimeType;
     int subjectId;
+    int assignedAlarm;
 
 };
 

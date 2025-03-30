@@ -3,6 +3,7 @@
 
 Enemy::Enemy(int id)
     : GameObject(id)
+    , assignedAlarm(-1)
 {
     colliderType = CIRCLE;
     size = point_t(10, 10);

@@ -28,7 +28,7 @@ public:
 
     bool isTransient() override
     {
-        return true;
+        return false;
     }
 
     bool isDebugGraphic() override

@@ -4,13 +4,18 @@ namespace tick{
 
 void createCrime(GameState * state, Enemy* enemy, Crime::CrimeType crimeType, GameObject* subject)
 {
-    //Check if this report matches an existing crime
+    //Check if this report matches an existing crime in this enemy's alarm
     for(Crime * crime : state->crimes())
     {
         if(!crime->activeAt(state->tick) || crime->backwards != enemy->backwards)
         {
             continue;
         }
+        if(crime->assignedAlarm != enemy->assignedAlarm)
+        {
+            continue;
+        }
+
 
         if(crime->crimeType == crimeType
            && crime->subjectId == subject->id)
@@ -21,20 +26,24 @@ void createCrime(GameState * state, Enemy* enemy, Crime::CrimeType crimeType, Ga
                 crime->nextState.targetVisible = true;
                 crime->nextState.searchStatus = 0;
 
-                Alarm * alarm = dynamic_cast<Alarm*>(state->objects().at(crime->state.assignedAlarm).get());
-                alarm->nextState.pos = subject->state.pos;
+                //Alarm * alarm = dynamic_cast<Alarm*>(state->objects().at(crime->state.assignedAlarm).get());
+                //alarm->nextState.pos = subject->state.pos;
             }
             //Murder does not need to be updated based on the enemy still seeing the body
 
-            //No need to create a new crime for the same thing, but assign this enemy to that alarm
-            enemy->nextState.assignedAlarm = crime->state.assignedAlarm;
+            //Found an existing matching crime, nothing more needs to be done
             return;
         }
     }
 
-    int alarmId = enemy->state.assignedAlarm;
+    int alarmId = enemy->assignedAlarm;
     if(alarmId == -1)
     {
+        //In this new permanent alarm system, all enemies should have an assigned alarm
+        //If an enemy hasn't been assigned an alarm, it can't report crimes
+        return;
+
+        /*
         //Search for an existing alarm whose radius contains this crime
         for(Alarm * alarm : state->alarms())
         {
@@ -70,6 +79,7 @@ void createCrime(GameState * state, Enemy* enemy, Crime::CrimeType crimeType, Ga
         alarmId = alarm->id;
 
         std::cout << "Alarm " << alarm->id << " created on tick " << state->tick << std::endl;
+        */
     }
 
 
@@ -78,7 +88,7 @@ void createCrime(GameState * state, Enemy* enemy, Crime::CrimeType crimeType, Ga
     crime->state.pos = subject->state.pos;
     crime->crimeType = crimeType;
     crime->subjectId = subject->id;
-    crime->state.assignedAlarm = alarmId;
+    crime->assignedAlarm = alarmId;
     crime->state.targetVisible = true;
     crime->initialTimeline = state->currentTimeline();
     crime->backwards = enemy->backwards;
@@ -133,14 +143,15 @@ void reportCrimes(GameState * state, Enemy* enemy)
 
 void reportSearches(GameState * state, Enemy* enemy)
 {
-    if(enemy->state.assignedAlarm == -1)
+    if(enemy->assignedAlarm == -1)
     {
         return;
     }
 
-    Alarm * alarm = dynamic_cast<Alarm*>(state->objects().at(enemy->state.assignedAlarm).get());
-    for(Crime * crime : state->crimes())
+    Alarm * alarm = dynamic_cast<Alarm*>(state->objects().at(enemy->assignedAlarm).get());
+    for(int crimeId : alarm->crimes)
     {
+        Crime * crime = dynamic_cast<Crime*>(state->objects().at(crimeId).get());
         if(!crime->activeAt(state->tick) || crime->backwards != state->backwards())
         {
             continue;
@@ -327,6 +338,7 @@ void tickEnemy(GameState * state, Enemy* enemy)
         reportCrimes(state, enemy);
         reportSearches(state, enemy);
 
+        /*
         if(enemy->state.assignedAlarm == -1)
         {
             for(Alarm * alarm : state->alarms())
@@ -338,6 +350,7 @@ void tickEnemy(GameState * state, Enemy* enemy)
                 }
             }
         }
+        */
     }
 
     if(enemy->state.aiState == Enemy::AI_CHASE || enemy->state.aiState == Enemy::AI_SEARCH)
@@ -393,9 +406,13 @@ void tickEnemy(GameState * state, Enemy* enemy)
 
         navigateEnemy(state, enemy, enemy->patrolPoints[enemy->state.patrolIdx]);
 
-        if(enemy->state.assignedAlarm != -1)
+        if(enemy->assignedAlarm != -1)
         {
-            enemy->nextState.aiState = Enemy::AI_SEARCH;
+            Alarm * alarm = dynamic_cast<Alarm*>(state->objects().at(enemy->assignedAlarm).get());
+            if(alarm->crimes.size() > 0)
+            {
+                enemy->nextState.aiState = Enemy::AI_SEARCH;
+            }
         }
 
         //Check if a player is seen
@@ -415,9 +432,17 @@ void tickEnemy(GameState * state, Enemy* enemy)
         Player* target = dynamic_cast<Player*>(state->objects().at(enemy->state.targetId).get());
         if(!target->activeAt(state->tick))
         {
-            if(enemy->state.assignedAlarm != -1)
+            if(enemy->assignedAlarm != -1)
             {
-                enemy->nextState.aiState = Enemy::AI_SEARCH;
+                Alarm * alarm = dynamic_cast<Alarm*>(state->objects().at(enemy->assignedAlarm).get());
+                if(alarm->crimes.size() > 0)
+                {
+                    enemy->nextState.aiState = Enemy::AI_SEARCH;
+                }
+                else
+                {
+                    enemy->nextState.aiState = Enemy::AI_PATROL;
+                }
             }
             else
             {
@@ -442,9 +467,17 @@ void tickEnemy(GameState * state, Enemy* enemy)
         {
             if(math_util::dist(enemy->state.pos, enemy->state.lastSeen) < enemy->state.speed)
             {
-                if(enemy->state.assignedAlarm != -1)
+                if(enemy->assignedAlarm != -1)
                 {
-                    enemy->nextState.aiState = Enemy::AI_SEARCH;
+                    Alarm * alarm = dynamic_cast<Alarm*>(state->objects().at(enemy->assignedAlarm).get());
+                    if(alarm->crimes.size() > 0)
+                    {
+                        enemy->nextState.aiState = Enemy::AI_SEARCH;
+                    }
+                    else
+                    {
+                        enemy->nextState.aiState = Enemy::AI_PATROL;
+                    }
                 }
                 else
                 {
@@ -565,11 +598,15 @@ void tickEnemy(GameState * state, Enemy* enemy)
     }
     else if(enemy->state.aiState == Enemy::AI_SEARCH)
     {
-        Alarm * alarm = dynamic_cast<Alarm*>(state->objects().at(enemy->state.assignedAlarm).get());
-        if(!alarm->activeAt(state->tick) || alarm->crimes.size() == 0)
+        if(enemy->assignedAlarm == -1)
+        {
+            throw std::runtime_error("Enemy " + std::to_string(enemy->id) + " in AI_SEARCH state without an assigned alarm");
+        }
+
+        Alarm * alarm = dynamic_cast<Alarm*>(state->objects().at(enemy->assignedAlarm).get());
+        if(alarm->crimes.size() == 0)
         {
             enemy->nextState.aiState = Enemy::AI_PATROL;
-            enemy->nextState.assignedAlarm = -1;
         }
         else
         {

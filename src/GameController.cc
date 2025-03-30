@@ -474,14 +474,16 @@ void GameController::updateAlarmConnections()
         {
             continue;
         }
-        if(crime->state.assignedAlarm == -1)
+        if(crime->assignedAlarm == -1)
         {
             throw std::runtime_error("Crime has no assigned alarm!");
         }
 
-        Alarm * alarm = dynamic_cast<Alarm*>(m_gameState->objects().at(crime->state.assignedAlarm).get());
+        Alarm * alarm = dynamic_cast<Alarm*>(m_gameState->objects().at(crime->assignedAlarm).get());
         alarm->crimes.push_back(crime->id);
 
+        /*
+        //This section should be OBE due to alarms no longer being able to end
         if(!alarm->activeAt(m_gameState->tick))
         {
             //Alarm ended, this crime should be too
@@ -495,6 +497,7 @@ void GameController::updateAlarmConnections()
                 crime->hasEnding = true;
             }
         }
+        */
 
         //By default assume the target will not be visible, tickEnemy can override this
         crime->nextState.targetVisible = false;
@@ -506,7 +509,7 @@ void GameController::updateAlarmConnections()
         {
             continue;
         }
-        if(enemy->state.assignedAlarm == -1)
+        if(enemy->assignedAlarm == -1)
         {
             continue;
         }
@@ -515,9 +518,12 @@ void GameController::updateAlarmConnections()
             continue;
         }
 
-        Alarm * alarm = dynamic_cast<Alarm*>(m_gameState->objects().at(enemy->state.assignedAlarm).get());
+        Alarm * alarm = dynamic_cast<Alarm*>(m_gameState->objects().at(enemy->assignedAlarm).get());
         alarm->enemies.push_back(enemy->id);
     }
+
+    /*
+    //With permanent alarms this no longer happens
     //Alarms with no crimes left (or no witnesses left) are ended
     for(Alarm * alarm : m_gameState->alarms())
     {
@@ -540,6 +546,7 @@ void GameController::updateAlarmConnections()
             }
         }
     }
+    */
 
     //Handle crimes/alarms with the wrong backwardsness
     for(Crime* crime : m_gameState->crimes())

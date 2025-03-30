@@ -36,8 +36,6 @@ struct ObjectState
         , speed(0)
         , searchStatus(0)
         , discovered(false)
-        , alarmRadius(0)
-        , assignedAlarm(-1)
         , targetVisible(false)
     {
     }
@@ -63,8 +61,6 @@ struct ObjectState
         , speed(other.speed)
         , searchStatus(other.searchStatus)
         , discovered(other.discovered)
-        , alarmRadius(other.alarmRadius)
-        , assignedAlarm(other.assignedAlarm)
         , targetVisible(other.targetVisible)
     {
     }
@@ -107,8 +103,6 @@ struct ObjectState
     //Crime/alarm related params
     uint64_t searchStatus;
     bool discovered; //For dead enemies
-    float alarmRadius;
-    int assignedAlarm;
     bool targetVisible;
 };
 
