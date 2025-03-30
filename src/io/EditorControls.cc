@@ -26,6 +26,7 @@ EditorControls::EditorControls()
     , placeKnife(false)
     , placeExit(false)
     , placeGun(false)
+    , placeAlarm(false)
     , save(false)
     , toggleSnapToGrid(false)
 {
@@ -50,6 +51,7 @@ EditorControls::EditorControls()
     m_actOnPressKeys.push_back(sf::Keyboard::Dash);
     m_actOnPressKeys.push_back(sf::Keyboard::BackSlash);
     m_actOnPressKeys.push_back(sf::Keyboard::Equal);
+    m_actOnPressKeys.push_back(sf::Keyboard::P);
 
     for(auto key : m_actOnPressKeys)
     {
@@ -88,6 +90,7 @@ void EditorControls::tick()
     placeKnife = sf::Keyboard::isKeyPressed(sf::Keyboard::Num0) && !m_lastStateMap[sf::Keyboard::Num0];
     placeExit = sf::Keyboard::isKeyPressed(sf::Keyboard::Dash) && !m_lastStateMap[sf::Keyboard::Dash];
     placeGun = sf::Keyboard::isKeyPressed(sf::Keyboard::Equal) && !m_lastStateMap[sf::Keyboard::Equal];
+    placeAlarm = sf::Keyboard::isKeyPressed(sf::Keyboard::P) && !m_lastStateMap[sf::Keyboard::P];
 
     save = sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::S) && !m_lastStateMap[sf::Keyboard::S];
 

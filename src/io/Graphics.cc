@@ -178,7 +178,7 @@ void Graphics::draw(GameState * state, point_t cameraCenter)
     if(state->statusString!="")
     {
         m_statusText.setString(state->statusString);
-        int charSize = std::max(10.0, 200 / std::sqrt((double)state->statusString.size()));
+        int charSize = std::max(10.0, 200.0 / std::sqrt((double)state->statusString.size()));
         m_statusText.setCharacterSize(charSize);
         m_window.draw(m_statusText);
     }
@@ -332,12 +332,6 @@ void Graphics::drawObjects(GameState* state, const VisibilityGrid & visibilityGr
             obj->getSprite().setColor(HOLOGRAM_COLOR);
             drawObj(obj);
         }
-        /*
-        else if(obj->type() == GameObject::ENEMY)
-        {
-            drawObjAs(obj, m_hiddenEnemySprite);
-        }
-        */
     }
 }
 
@@ -389,6 +383,28 @@ void Graphics::drawDebug(GameState * state)
             {
                 sf::Vertex(sf::Vector2f(doorPos.x, doorPos.y)),
                 sf::Vertex(sf::Vector2f(swPos.x, swPos.y))
+            };
+            line[0].color = sf::Color::Green;
+            line[1].color = sf::Color::Green;
+            m_window.draw(line, 2, sf::Lines);
+        }
+    }
+
+    //Draw alarm-enemy connections
+    for(Alarm * alarm: state->alarms())
+    {
+        for(Enemy * enemy: state->enemies())
+        {
+            if(enemy->assignedAlarm != alarm->id)
+            {
+                continue;
+            }
+            point_t alarmPos = worldToCamera(alarm->state.pos);
+            point_t enemyPos = worldToCamera(enemy->state.pos);
+            sf::Vertex line[] =
+            {
+                sf::Vertex(sf::Vector2f(alarmPos.x, alarmPos.y)),
+                sf::Vertex(sf::Vector2f(enemyPos.x, enemyPos.y))
             };
             line[0].color = sf::Color::Green;
             line[1].color = sf::Color::Green;

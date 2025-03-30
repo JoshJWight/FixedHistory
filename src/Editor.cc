@@ -32,6 +32,7 @@ Editor::Editor(Graphics* graphics, const std::string & level)
         "knife: 0\n"
         "exit: -\n"
         "gun: =\n"
+        "alarm: P\n"
         "snap to grid: \\\n";
 
     if(jsonlevel::levelExists(level))
@@ -272,6 +273,24 @@ void Editor::handleInputs()
                 m_hasUnsavedChanges = true;
                 break;
             }
+            case GameObject::ALARM:
+            {
+                Alarm * alarm = static_cast<Alarm*>(m_state->selectedObject);
+                if(highlightedObject != nullptr && highlightedObject->type() == GameObject::ENEMY)
+                {
+                    Enemy * enemy = static_cast<Enemy*>(highlightedObject);
+                    if(enemy->assignedAlarm == alarm->id)
+                    {
+                        enemy->assignedAlarm = -1;
+                    }
+                    else
+                    {
+                        enemy->assignedAlarm = alarm->id;
+                    }
+                    m_hasUnsavedChanges = true;
+                }
+                break;
+            }
             default:
             {
                 std::cout << "Cannot connect with selected object type " << GameObject::typeToString(m_state->selectedObject->type()) << std::endl;
@@ -424,6 +443,14 @@ void Editor::handleInputs()
         m_gameState->addObject(exit);
         m_hasUnsavedChanges = true;
         m_state->selectedObject = exit.get();
+    }
+    if(m_controls.placeAlarm)
+    {
+        std::shared_ptr<Alarm> alarm = std::make_shared<Alarm>(m_gameState->nextID());
+        alarm->state.pos = placement(m_gameState->mousePos);
+        m_gameState->addObject(alarm);
+        m_hasUnsavedChanges = true;
+        m_state->selectedObject = alarm.get();
     }
 
     //SAVE
