@@ -25,9 +25,6 @@ void createCrime(GameState * state, Enemy* enemy, Crime::CrimeType crimeType, Ga
                 crime->nextState.pos = subject->state.pos;
                 crime->nextState.targetVisible = true;
                 crime->nextState.searchStatus = 0;
-
-                //Alarm * alarm = dynamic_cast<Alarm*>(state->objects().at(crime->state.assignedAlarm).get());
-                //alarm->nextState.pos = subject->state.pos;
             }
             //Murder does not need to be updated based on the enemy still seeing the body
 
@@ -42,44 +39,6 @@ void createCrime(GameState * state, Enemy* enemy, Crime::CrimeType crimeType, Ga
         //In this new permanent alarm system, all enemies should have an assigned alarm
         //If an enemy hasn't been assigned an alarm, it can't report crimes
         return;
-
-        /*
-        //Search for an existing alarm whose radius contains this crime
-        for(Alarm * alarm : state->alarms())
-        {
-            if(alarm->state.alarmRadius > math_util::dist(alarm->state.pos, subject->state.pos))
-            {
-                alarmId = alarm->id;
-                break;
-            }
-        }
-
-        //If no alarm found, create a new one
-        std::shared_ptr<Alarm> alarm(new Alarm(state->nextID()));
-        alarm->state.pos = enemy->state.pos;
-        alarm->initialTimeline = state->currentTimeline();
-        alarm->backwards = enemy->backwards;
-        alarm->state.alarmRadius = Alarm::DEFAULT_RADIUS;
-        alarm->nextState = alarm->state;
-        if(enemy->backwards)
-        {
-            alarm->ending = state->tick;
-            alarm->hasEnding = true;
-        }
-        else
-        {
-            alarm->beginning = state->tick;
-        }
-
-        state->alarms().push_back(alarm.get());
-        state->objects()[alarm->id] = alarm;
-        state->historyBuffer().buffer[alarm->id] = std::vector<ObjectState>(state->tick+1);
-        state->historyBuffer().buffer[alarm->id][state->tick] = alarm->state;
-
-        alarmId = alarm->id;
-
-        std::cout << "Alarm " << alarm->id << " created on tick " << state->tick << std::endl;
-        */
     }
 
 
@@ -198,6 +157,22 @@ void reportSearches(GameState * state, Enemy* enemy)
                             crime->hasEnding = true;
                             crime->ending = state->tick;
                         }
+                    }
+                }
+                else
+                {
+                    const float ALLOWABLE_DISTANCE = 9;
+
+                    //Check if it's not easily navigable
+                    point_t navResult = search::navigate(
+                        state,
+                        crime->state.pos,
+                        state->level->fromLevelCoords(searchPos),
+                        ALLOWABLE_DISTANCE * state->level->scale);
+
+                    if(navResult == crime->state.pos)
+                    {
+                        crime->submitSearch(x, y);
                     }
                 }
             }
@@ -337,20 +312,6 @@ void tickEnemy(GameState * state, Enemy* enemy)
     {
         reportCrimes(state, enemy);
         reportSearches(state, enemy);
-
-        /*
-        if(enemy->state.assignedAlarm == -1)
-        {
-            for(Alarm * alarm : state->alarms())
-            {
-                if(alarm->activeAt(state->tick) && math_util::dist(enemy->state.pos, alarm->state.pos) < alarm->state.alarmRadius)
-                {
-                    enemy->nextState.assignedAlarm = alarm->id;
-                    break;
-                }
-            }
-        }
-        */
     }
 
     if(enemy->state.aiState == Enemy::AI_CHASE || enemy->state.aiState == Enemy::AI_SEARCH)

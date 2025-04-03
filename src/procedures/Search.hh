@@ -7,6 +7,8 @@
 
 namespace search {
 
+const float UNLIMITED_DISTANCE = 1e12;
+
 VisibilityGrid createVisibilityGrid(GameState * state, point_t center, float startAngle_deg, float endAngle_deg, float distanceLimit);
 
 VisibilityGrid playerVisibilityGrid(GameState * state, Player * player);
@@ -21,7 +23,7 @@ bool checkVisibility(GameState * state, point_t start, point_t dest_center, floa
 
 bool checkVisibility(GameState * state, point_t start, float start_radius, point_t dest_center, float dest_radius);
 
-point_t navigate(GameState * state, const point_t & start, const point_t & end);
+point_t navigate(GameState * state, const point_t & start, const point_t & end, float maxDistance = UNLIMITED_DISTANCE);
 
 float bounceOffWall(GameState * state, const point_t & startPoint, const point_t & obstructedPoint);
 }

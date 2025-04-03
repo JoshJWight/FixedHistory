@@ -218,7 +218,7 @@ bool checkVisibility(GameState * state, point_t start, float start_radius, point
     return result;
 }
 
-point_t navigate(GameState * state, const point_t & start, const point_t & end) {
+point_t navigate(GameState * state, const point_t & start, const point_t & end, float maxDistance) {
     float startX = (start.x - state->level->bottomLeft.x) / state->level->scale;
     float startY = (start.y - state->level->bottomLeft.y) / state->level->scale;
     float endX = (end.x - state->level->bottomLeft.x) / state->level->scale;
@@ -277,6 +277,11 @@ point_t navigate(GameState * state, const point_t & start, const point_t & end) 
 
         for (Level::NavNode* neighbor : move.node->neighbors) {
             float newDist = dist[move.node->id] + math_util::dist(move.node->pos, neighbor->pos);
+            if(newDist > maxDistance)
+            {
+                continue;
+            }
+
             if (dist.find(neighbor->id) == dist.end()) {
                 queue.push({neighbor, newDist});
             }
@@ -289,7 +294,11 @@ point_t navigate(GameState * state, const point_t & start, const point_t & end) 
     }
 
     if (!found) {
-        std::cout << "Could not find path!" << std::endl;
+        //If there's a distance limit, it's less surprising that a path could not be found, so don't print a message
+        if(maxDistance == UNLIMITED_DISTANCE)
+        {
+            std::cout << "navigate: Could not find path!" << std::endl;
+        }
         return start;
     }
     else {
