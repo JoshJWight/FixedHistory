@@ -232,6 +232,28 @@ bool GameController::checkParadoxes()
         }
     }
 
+    //Player seen by a backwards enemy
+    //This is not a paradox that *needs* to exist to maintain the timeline, just an anti-frustration feature
+    //Since being seen by an opposite-timed enemy is likely to result in paradoxes when you get back to this time later
+    for(Enemy* enemy : m_gameState->enemies())
+    {
+        if(!enemy->activeAt(m_gameState->tick))
+        {
+            continue;
+        }
+
+        //I *think* we only really need to check the current player
+        //Other players will get nailed by other paradoxes in time
+        Player * player = m_gameState->currentPlayer();
+        if(player->backwards != enemy->backwards
+           && tick::playerVisibleToEnemy(m_gameState.get(), player, enemy))
+        {
+            m_gameState->statusString = "SEEN BY AN ENEMY WHILE BACKWARDS";
+            
+            return true;
+        }
+    }
+
     //If we got here, no paradoxes
     return false;
 }
