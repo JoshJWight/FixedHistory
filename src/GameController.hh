@@ -23,6 +23,7 @@
 #include <tick/tickThrowable.hh>
 
 #include <io/Graphics.hh>
+#include <io/AudioPlayback.hh>
 #include <io/TextureBank.hh>
 #include <state/Level.hh>
 #include <io/Controls.hh>
@@ -42,7 +43,7 @@
 class  GameController
 {
 public:
-    GameController(const std::string & levelPath, Graphics * graphics, DemoReader * demoReader, DemoWriter * demoWriter);
+    GameController(const std::string & levelPath, Graphics * graphics, AudioPlayback * audio, DemoReader * demoReader, DemoWriter * demoWriter);
     //False means restart level, true means go to next level
     bool mainLoop();
 private:
@@ -73,6 +74,7 @@ private:
     void tick(TickType type);
 
     Graphics * m_graphics;
+    AudioPlayback * m_audio;
     Controls m_controls;
     DemoReader * m_demoReader;
     DemoWriter * m_demoWriter;

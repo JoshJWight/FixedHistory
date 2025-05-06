@@ -2,6 +2,7 @@
 #include "GameController.hh"
 #include "Editor.hh"
 #include <io/Graphics.hh>
+#include <io/AudioPlayback.hh>
 #include <io/Demo.hh>
 
 int main(int argc, char** argv)
@@ -40,6 +41,7 @@ int main(int argc, char** argv)
     }
 
     Graphics graphics(1920, 1080);
+    AudioPlayback audio;
 
     if(program["--edit"] == true)
     {
@@ -66,7 +68,7 @@ int main(int argc, char** argv)
         for(int i = 0; i < levels.size(); i++)
         {
             std::string level = std::string(levels[i]);
-            GameController gc(level, &graphics, demoReader.get(), demoWriter.get());
+            GameController gc(level, &graphics, &audio, demoReader.get(), demoWriter.get());
             bool rc = gc.mainLoop();
             if(!rc)
             {

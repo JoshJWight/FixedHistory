@@ -1,13 +1,15 @@
 #include "GameController.hh"
 
-GameController::GameController(const std::string & levelPath, Graphics * graphics, DemoReader * demoReader, DemoWriter * demoWriter)
+GameController::GameController(const std::string & levelPath, Graphics * graphics, AudioPlayback * audio, DemoReader * demoReader, DemoWriter * demoWriter)
     : m_graphics(graphics)
+    , m_audio(audio)
     , m_demoReader(demoReader)
     , m_demoWriter(demoWriter)
     , m_gameState(new GameState())
 {
     jsonlevel::loadLevel(m_gameState.get(), levelPath);
     m_gameState->obstructionGrid = search::createObstructionGrid(m_gameState.get());
+    audio->init("HallOfTheMountainKing.wav");
 }
 
 bool GameController::mainLoop()
@@ -144,6 +146,13 @@ bool GameController::mainLoop()
                 return true;
             }
         }
+
+        AudioContext context;
+        context.frameRate = 1.0f / msPerFrame;
+        context.playbackSpeed = playbackSpeed;
+        context.tick = m_gameState->tick;
+        context.backwards = m_gameState->backwards();
+        m_audio->update(context);
 
         if(tickCounter % playbackSpeed == 0)
         {
