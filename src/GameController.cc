@@ -151,7 +151,7 @@ bool GameController::mainLoop()
         context.frameRate = 1.0f / msPerFrame;
         context.playbackSpeed = playbackSpeed;
         context.tick = m_gameState->tick;
-        context.backwards = m_gameState->backwards();
+        context.backwards = m_gameState->backwards() xor rewinding;
         m_audio->update(context);
 
         if(tickCounter % playbackSpeed == 0)

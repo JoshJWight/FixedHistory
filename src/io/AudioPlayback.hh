@@ -4,14 +4,6 @@
 #include <string>
 #include <SDL2/SDL.h>
 
-// Audio callback structure to keep track of playback position
-struct AudioData {
-    Uint8* buffer;     // Start of the buffer
-    Uint8* position;   // Current position in the buffer
-    Uint32 length;     // Total length of the buffer
-    bool finished;     // Flag to indicate if playback is complete
-};
-
 struct AudioContext {
     float frameRate;
     float playbackSpeed;
@@ -34,11 +26,13 @@ public:
 
 private:
     static void audioCallback(void* userdata, Uint8* stream, int streamLength);
+    void doAudioCallback(Uint8* stream, int streamLength);
 
     SDL_AudioSpec m_wavSpec;
     SDL_AudioSpec m_deviceSpec;
     Uint8* m_wavBuffer;
-    AudioData m_audio;
+    uint32_t m_bufferSize;
+    size_t m_currentPosition;
 
     AudioContext m_lastContext;
 };
