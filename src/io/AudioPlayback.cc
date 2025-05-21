@@ -17,19 +17,19 @@ void AudioPlayback::init(const std::string& audioFilePath)
 {
     std::cout << "Attempting to load WAV file: " << audioFilePath << std::endl;
     
-    if (SDL_LoadWAV(audioFilePath.c_str(), &m_wavSpec, &m_wavBuffer, &m_bufferSize) == NULL) {
+    if (SDL_LoadWAV(audioFilePath.c_str(), &m_wavSpec, (Uint8**)&m_wavBuffer, &m_bufferSize) == NULL) {
         std::cerr << "Failed to load WAV file: " << SDL_GetError() << std::endl;
         SDL_Quit();
         throw std::runtime_error("Failed to load WAV file");
     }
 
     std::cout << "WAV file loaded successfully" << std::endl;
-    std::cout << "Format: 0b" << std::bitset<16>(m_wavSpec.format) << std::endl;
+    std::cout << "Format: 0b" << std::bitset<16>(m_wavSpec.format) << " (" << m_wavSpec.format << ")" << std::endl;
     std::cout << "Channels: " << (int)m_wavSpec.channels << std::endl;
     std::cout << "Sample Rate: " << m_wavSpec.freq << std::endl;
     std::cout << "Length: " << m_bufferSize << " bytes" << std::endl;
 
-    short expectedFormat = 32784; // 16-bit signed integer, little-endian
+    unsigned short expectedFormat = 32784; // 16-bit signed integer, little-endian
     if(!(m_wavSpec.format == expectedFormat)) {
         throw std::runtime_error("WAV format different than expected!");
     }
@@ -42,7 +42,7 @@ void AudioPlayback::init(const std::string& audioFilePath)
     SDL_AudioDeviceID deviceId = SDL_OpenAudioDevice(NULL, 0, &m_wavSpec, &m_deviceSpec, 0);
     if (deviceId == 0) {
         std::cerr << "Failed to open audio device: " << SDL_GetError() << std::endl;
-        SDL_FreeWAV(m_wavBuffer);
+        SDL_FreeWAV((Uint8*)m_wavBuffer);
         SDL_Quit();
         throw std::runtime_error("Failed to open audio device");
     }
@@ -72,7 +72,10 @@ void AudioPlayback::audioCallback(void* userdata, Uint8* stream, int streamLengt
 }
 
 void AudioPlayback::doAudioCallback(Uint8* stream, int streamLength) {
-    float expectedPosition = static_cast<float>(m_lastContext.tick) / m_lastContext.frameRate * static_cast<float>(m_wavSpec.freq);
+    //float expectedPosition = static_cast<float>(m_lastContext.tick) / m_lastContext.frameRate * static_cast<float>(m_wavSpec.freq);
+
+    short *streamShort = reinterpret_cast<short*>(stream);
+    int streamLengthShort = streamLength / sizeof(short);
 
     if(m_lastContext.playbackSpeed == 0)
     {
@@ -90,11 +93,11 @@ void AudioPlayback::doAudioCallback(Uint8* stream, int streamLength) {
                 return;
             }
 
-            for(int i = 0; i < streamLength; ++i) {
-                stream[i] = m_wavBuffer[m_currentPosition - i];
+            for(int i = 0; i < streamLengthShort; ++i) {
+                streamShort[i] = m_wavBuffer[m_currentPosition - i];
             }
 
-            m_currentPosition -= streamLength;
+            m_currentPosition -= streamLengthShort;
         }
         else{
             if(m_currentPosition + streamLength > m_bufferSize) {
@@ -103,23 +106,23 @@ void AudioPlayback::doAudioCallback(Uint8* stream, int streamLength) {
             }
 
             SDL_memcpy(stream, m_wavBuffer + m_currentPosition, streamLength);
-            m_currentPosition += streamLength;
+            m_currentPosition += streamLengthShort;
         }
     }
     else
     {
         //Custom playback speed
         float position = m_currentPosition;
-        for(int i = 0; i < streamLength; ++i) {
+        for(int i = 0; i < streamLengthShort; ++i) {
 
             int floor = std::floor(position);
             int ceil = std::ceil(position);
             if(floor == ceil) {
-                stream[i] = m_wavBuffer[floor];
+                streamShort[i] = m_wavBuffer[floor];
             }
             else {
                 float fraction = position - floor;
-                stream[i] = static_cast<Uint8>((1.0f - fraction) * m_wavBuffer[floor] + fraction * m_wavBuffer[ceil]);
+                streamShort[i] = static_cast<short>((1.0f - fraction) * m_wavBuffer[floor] + fraction * m_wavBuffer[ceil]);
             }
 
             if(m_lastContext.backwards) {

@@ -20,7 +20,7 @@ public:
     void update(const AudioContext& context);
 
     ~AudioPlayback() {
-        SDL_FreeWAV(m_wavBuffer);
+        SDL_FreeWAV((Uint8*)m_wavBuffer);
         SDL_Quit();
     }
 
@@ -30,7 +30,7 @@ private:
 
     SDL_AudioSpec m_wavSpec;
     SDL_AudioSpec m_deviceSpec;
-    Uint8* m_wavBuffer;
+    short* m_wavBuffer;
     uint32_t m_bufferSize;
     size_t m_currentPosition;
 
