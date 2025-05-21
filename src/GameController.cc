@@ -9,7 +9,7 @@ GameController::GameController(const std::string & levelPath, Graphics * graphic
 {
     jsonlevel::loadLevel(m_gameState.get(), levelPath);
     m_gameState->obstructionGrid = search::createObstructionGrid(m_gameState.get());
-    audio->init("HallOfTheMountainKing.wav");
+    audio->init("silent_circuitry_mono.wav");
 }
 
 bool GameController::mainLoop()
@@ -150,6 +150,10 @@ bool GameController::mainLoop()
         AudioContext context;
         context.frameRate = 1.0f / msPerFrame;
         context.playbackSpeed = playbackSpeed;
+        if(m_controls.slowMotion)
+        {
+            context.playbackSpeed /= static_cast<float>(slowMotionMultiplier);
+        }
         context.tick = m_gameState->tick;
         context.backwards = m_gameState->backwards() xor rewinding;
         m_audio->update(context);

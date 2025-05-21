@@ -3,6 +3,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <functional>
+#include <bitset>
 
 AudioPlayback::AudioPlayback()
 {
@@ -23,10 +24,15 @@ void AudioPlayback::init(const std::string& audioFilePath)
     }
 
     std::cout << "WAV file loaded successfully" << std::endl;
-    std::cout << "Format: " << m_wavSpec.format << std::endl;
+    std::cout << "Format: 0b" << std::bitset<16>(m_wavSpec.format) << std::endl;
     std::cout << "Channels: " << (int)m_wavSpec.channels << std::endl;
     std::cout << "Sample Rate: " << m_wavSpec.freq << std::endl;
     std::cout << "Length: " << m_bufferSize << " bytes" << std::endl;
+
+    short expectedFormat = 32784; // 16-bit signed integer, little-endian
+    if(!(m_wavSpec.format == expectedFormat)) {
+        throw std::runtime_error("WAV format different than expected!");
+    }
 
     // Set up the callback
     m_wavSpec.callback = AudioPlayback::audioCallback;
@@ -45,6 +51,7 @@ void AudioPlayback::init(const std::string& audioFilePath)
 
     // Calculate total duration for progress display
     float bytesPerSample = SDL_AUDIO_BITSIZE(m_wavSpec.format) / 8.0f;
+    std::cout << "Bytes per sample: " << bytesPerSample << std::endl;
     float samplesPerChannel = m_bufferSize / (bytesPerSample * m_wavSpec.channels);
     Uint32 totalDurationMs = static_cast<Uint32>((samplesPerChannel * 1000.0f) / m_wavSpec.freq);
     std::cout << "Total duration: " << totalDurationMs / 1000 << " seconds" << std::endl;
@@ -67,25 +74,64 @@ void AudioPlayback::audioCallback(void* userdata, Uint8* stream, int streamLengt
 void AudioPlayback::doAudioCallback(Uint8* stream, int streamLength) {
     float expectedPosition = static_cast<float>(m_lastContext.tick) / m_lastContext.frameRate * static_cast<float>(m_wavSpec.freq);
 
-    if(m_lastContext.backwards) {
-        if(m_currentPosition < streamLength) {
-            SDL_memset(stream, 0, streamLength);
-            return;
-        }
+    if(m_lastContext.playbackSpeed == 0)
+    {
+        //Paused
+        //TODO might be able to do something interesting with FFT
+        SDL_memset(stream, 0, streamLength);
+        return;
+    }
+    else if(m_lastContext.playbackSpeed == 1)
+    {
+        //Normal playback
+        if(m_lastContext.backwards) {
+            if(m_currentPosition < streamLength) {
+                SDL_memset(stream, 0, streamLength);
+                return;
+            }
 
+            for(int i = 0; i < streamLength; ++i) {
+                stream[i] = m_wavBuffer[m_currentPosition - i];
+            }
+
+            m_currentPosition -= streamLength;
+        }
+        else{
+            if(m_currentPosition + streamLength > m_bufferSize) {
+                SDL_memset(stream, 0, streamLength);
+                return;
+            }
+
+            SDL_memcpy(stream, m_wavBuffer + m_currentPosition, streamLength);
+            m_currentPosition += streamLength;
+        }
+    }
+    else
+    {
+        //Custom playback speed
+        float position = m_currentPosition;
         for(int i = 0; i < streamLength; ++i) {
-            stream[i] = m_wavBuffer[m_currentPosition - i];
-        }
 
-        m_currentPosition -= streamLength;
-    }
-    else{
-        if(m_currentPosition + streamLength > m_bufferSize) {
-            SDL_memset(stream, 0, streamLength);
-            return;
-        }
+            int floor = std::floor(position);
+            int ceil = std::ceil(position);
+            if(floor == ceil) {
+                stream[i] = m_wavBuffer[floor];
+            }
+            else {
+                float fraction = position - floor;
+                stream[i] = static_cast<Uint8>((1.0f - fraction) * m_wavBuffer[floor] + fraction * m_wavBuffer[ceil]);
+            }
 
-        SDL_memcpy(stream, m_wavBuffer + m_currentPosition, streamLength);
-        m_currentPosition += streamLength;
+            if(m_lastContext.backwards) {
+                position -= m_lastContext.playbackSpeed;
+            }
+            else {
+                position += m_lastContext.playbackSpeed;
+            }
+        }
+        m_currentPosition = static_cast<size_t>(position);
     }
+
+
+    
 }
