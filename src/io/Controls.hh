@@ -35,9 +35,14 @@ public:
     bool slowMotion;
 
 private:
+    void doTick();
+
+    std::map<sf::Keyboard::Key, bool> m_currentKeys;
     std::map<sf::Keyboard::Key, bool> m_lastStateMap;
     std::vector<sf::Keyboard::Key> m_actOnPressKeys;
 
+    bool m_leftMouse;
+    bool m_rightMouse;
     bool m_leftMouseLastState;
     bool m_rightMouseLastState;
 };
