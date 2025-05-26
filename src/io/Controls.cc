@@ -125,6 +125,11 @@ short Controls::encode()
     {
         encoded |= 1 << 10;
     }
+    //Slow Motion
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+    {
+        encoded |= 1 << 11;
+    }
 
     return encoded;
 }

@@ -23,11 +23,13 @@ void AudioPlayback::init(const std::string& audioFilePath)
         throw std::runtime_error("Failed to load WAV file");
     }
 
+    m_bufferSize /= sizeof(short); // Convert to number of samples
+
     std::cout << "WAV file loaded successfully" << std::endl;
     std::cout << "Format: 0b" << std::bitset<16>(m_wavSpec.format) << " (" << m_wavSpec.format << ")" << std::endl;
     std::cout << "Channels: " << (int)m_wavSpec.channels << std::endl;
     std::cout << "Sample Rate: " << m_wavSpec.freq << std::endl;
-    std::cout << "Length: " << m_bufferSize << " bytes" << std::endl;
+    std::cout << "Length: " << m_bufferSize << " samples" << std::endl;
 
     unsigned short expectedFormat = 32784; // 16-bit signed integer, little-endian
     if(!(m_wavSpec.format == expectedFormat)) {
@@ -52,7 +54,7 @@ void AudioPlayback::init(const std::string& audioFilePath)
     // Calculate total duration for progress display
     float bytesPerSample = SDL_AUDIO_BITSIZE(m_wavSpec.format) / 8.0f;
     std::cout << "Bytes per sample: " << bytesPerSample << std::endl;
-    float samplesPerChannel = m_bufferSize / (bytesPerSample * m_wavSpec.channels);
+    float samplesPerChannel = m_bufferSize / m_wavSpec.channels;
     Uint32 totalDurationMs = static_cast<Uint32>((samplesPerChannel * 1000.0f) / m_wavSpec.freq);
     std::cout << "Total duration: " << totalDurationMs / 1000 << " seconds" << std::endl;
 
@@ -72,6 +74,11 @@ void AudioPlayback::audioCallback(void* userdata, Uint8* stream, int streamLengt
 }
 
 void AudioPlayback::doAudioCallback(Uint8* stream, int streamLength) {
+    if(m_currentPosition >= m_bufferSize) {
+        std::cout << "End of audio buffer reached" << std::endl;
+        return;
+    }
+
     //float expectedPosition = static_cast<float>(m_lastContext.tick) / m_lastContext.frameRate * static_cast<float>(m_wavSpec.freq);
 
     short *streamShort = reinterpret_cast<short*>(stream);
@@ -100,7 +107,7 @@ void AudioPlayback::doAudioCallback(Uint8* stream, int streamLength) {
             m_currentPosition -= streamLengthShort;
         }
         else{
-            if(m_currentPosition + streamLength > m_bufferSize) {
+            if(m_currentPosition + streamLengthShort > m_bufferSize) {
                 SDL_memset(stream, 0, streamLength);
                 return;
             }
@@ -117,6 +124,13 @@ void AudioPlayback::doAudioCallback(Uint8* stream, int streamLength) {
 
             int floor = std::floor(position);
             int ceil = std::ceil(position);
+
+            if(floor < 0) {
+                floor = 0;
+                ceil = 0;
+                position = 0;
+            }
+
             if(floor == ceil) {
                 streamShort[i] = m_wavBuffer[floor];
             }
